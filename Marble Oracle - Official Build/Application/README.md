@@ -27,6 +27,8 @@ All tabs retain the established dark Oggcultist-inspired visual style and bundle
 
 - FFmpeg and FFprobe are necessary for video encoding/probing. Playback capability depends on local multimedia support.
 - The in-app video viewer is an **initial 12 fps preview implementation**, not a fully synchronised libmpv player; HDR, track switching and precise audio/video synchronisation are not assured.
+- **RESOLUTION** (CONVERT page): Original, 1080p, 720p or 480p. Video is only scaled down, keeping its aspect ratio (a widescreen film at 720p becomes 1280×536), and the output name gains a tag such as `[AV1 720p]`. From 1080p, 720p encodes about 2–3× faster, more for grainy video.
+- **Fast AV1 (preset 8)** sits between Balanced and Faster CPU AV1: several times faster than Balanced, with slightly larger files.
 - **Balanced archive** is 10-bit CPU SVT-AV1 and can encode slowly. Choose **USE FAST PROFILE** to prefer compatible NVIDIA NVENC hardware or a quicker CPU preset. Neither speed nor size reduction is guaranteed.
 - Automatic TV/movie filenames recognise episode markers such as `S02E05` and movie years; ambiguous names should be reviewed before queuing.
 - Outputs are written separately and checked (track counts, codec, 10-bit, duration); original input files are **never deleted or overwritten**. HDR and unsupported track cases are blocked for safety with a reason.

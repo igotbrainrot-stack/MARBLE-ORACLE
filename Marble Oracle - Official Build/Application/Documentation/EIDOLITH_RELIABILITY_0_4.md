@@ -94,6 +94,27 @@ remaining jobs queued for the next launch. The profile description is no longer 
 
 Result: `Mr. Robot (2015) - S01E01 - eps1.0_hellofriend.mov [AV1].mkv`.
 
+## 2a. Speed and resolution (added after first review)
+
+- **RESOLUTION** (Original / 1080p / 720p / 480p) is on the CONVERT page.
+  - The video is scaled down to fit the box with its aspect ratio kept, and is never scaled up.
+  - Portrait video uses the rotated box.
+  - The exact even size is computed before encoding, applied to the main video only (cover art is untouched) and verified on the output.
+  - Output names gain the tag, e.g. `[AV1 720p]`.
+  - Lossless remux cannot resize, so that combination is refused when queuing.
+- **Fast AV1 (preset 8)** is a new SVT-AV1 10-bit profile at CRF 30.
+
+Measured speed: grainy 1080p synthetic clip, 2-core Xeon at 2.1 GHz. Values are the fraction of real time (1.0× = as fast as playback).
+
+| Profile | 1080p | 720p |
+|---|---:|---:|
+| Balanced archive (preset 5) | 0.02× | 0.13× |
+| Fast AV1 (preset 8) | 0.20× | 0.62× |
+| Faster CPU AV1 (preset 10) | 0.41× | 1.23× |
+| Fast CPU H.264 (x264 veryfast) | 0.71× | 1.57× |
+
+SVT-AV1 speed scales with CPU cores, so a desktop with 8–16 cores is typically several times faster than these figures. The ratios between rows are the useful part. NVIDIA NVENC was not measured (no GPU).
+
 ## 3. Tests and results
 
 Environment: Ubuntu 24.04 container, Xvfb, Python 3.12.3 (system, Tk 8.6, Pillow 10.2, mutagen 1.48),
@@ -111,7 +132,7 @@ python3 Application/Tests/test_eidolith_naming_regression.py                # 14
 |---|---|
 | Baseline 0.3, full suite (same environment) | 21/21 tests pass. `verify_release.py` fails only after the tests rewrite `TAB_OGGCULTIST_DEFAULT.png` (D11); it passes on a fresh extract |
 | 0.4 branch, full suite | **23/23 tests pass** (the 21 existing tests plus 2 new EIDOLITH tests) |
-| `test_eidolith_queue_reliability.py` | **54/54**, repeated 4× with no flakes (≈36 s per run) |
+| `test_eidolith_queue_reliability.py` | **61/61** including resolution checks (54/54 before that addition, repeated 4× with no flakes) |
 | `verify_release.py` on the packaged 0.4 tree | PASS (inventory regenerated) |
 | Offline launch: `START MARBLE ORACLE - LINUX.sh`, no network namespace, Xvfb, Python 3.12 | Requirements window and main “Marble_Oracle CRT V2 - Integrated” window appear; no download attempted |
 
