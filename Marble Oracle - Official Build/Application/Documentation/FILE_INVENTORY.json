@@ -1,1810 +1,1830 @@
 {
-  "release": "Marble Oracle / EIDOLITH 0.3 conservative cleanup",
-  "generated_utc": "2026-11-10",
-  "schema": "sha256-inventory-v1",
-  "excluded_from_hashes": [
-    "Application/Documentation/AUDIT_REPORT.md",
-    "Application/Documentation/BUILD_MANIFEST.json",
-    "Application/Documentation/FILE_INVENTORY.json",
-    "Application/Documentation/VERIFICATION_REPORT.md"
-  ],
-  "inventory_file_count": 359,
-  "inventory_total_bytes": 114368288,
-  "files": [
-    {
-      "path": "Application/.gitignore",
-      "bytes": 164,
-      "sha256": "5f2a44b6ee500238580d1b33f5d26d851a96934507b1a85650bcfee5fb054236"
-    },
-    {
-      "path": "Application/Documentation/ACTUAL_OGGCULTIST_TEXTURE_INTEGRATION.md",
-      "bytes": 2437,
-      "sha256": "ebc651851fa9f051315596afdf1f75ddd5d021367c8fb6b78b960b19ce456109"
-    },
-    {
-      "path": "Application/Documentation/ASCII_WASHOUT_ROOT_CAUSE_AND_REPAIR.md",
-      "bytes": 2299,
-      "sha256": "4f37ba093ef796b2c23a7a1c4a093437e6131cccabcc28f50bbce6f17a880b69"
-    },
-    {
-      "path": "Application/Documentation/CONSOLE_FREE_LAUNCH.md",
-      "bytes": 1459,
-      "sha256": "93dfc051afe280236fb60d4c4245bb5b215aab085500124deae9c84d9e53583c"
-    },
-    {
-      "path": "Application/Documentation/DOCUMENTATION_INDEX.md",
-      "bytes": 1882,
-      "sha256": "c20410eeaf187cc0f1ef5044fd1de680a3932e91d0d9389bc5445d90108f22e7"
-    },
-    {
-      "path": "Application/Documentation/EIDOLITH_PLAYER_WORKSPACES_AND_SELECT_ALL.md",
-      "bytes": 3842,
-      "sha256": "adcd79b051964261fcc8d88ba4d8d9db4c3124e1c8059b0d31177b11f04caea5"
-    },
-    {
-      "path": "Application/Documentation/EIDOLITH_SPEED_AND_NAMING_0_3.md",
-      "bytes": 4306,
-      "sha256": "45d73ff72150449d2bc9a92627af0a8ec84161dc60c528af775042e6bc9a9aaa"
-    },
-    {
-      "path": "Application/Documentation/FIRST_RUN_REQUIREMENTS.md",
-      "bytes": 2862,
-      "sha256": "f66abe04e3ffa68ca59ebfb79ae813ecc221bf3b686bad8701bb116f14c15684"
-    },
-    {
-      "path": "Application/Documentation/HOME_SIDEBAR_AND_MUTED_ASCII.md",
-      "bytes": 1332,
-      "sha256": "5542cfb68150e55b6919c447a64bf8f6f2217a1074617cf9c350cb851f37a475"
-    },
-    {
-      "path": "Application/Documentation/History/ALL_SECTIONS_TEXTURE_UPDATE.md",
-      "bytes": 702,
-      "sha256": "f17c460a879587375f4c34aaec50d5139a2d5016d0b5a6e19a94881be62b4317"
-    },
-    {
-      "path": "Application/Documentation/History/ASCII_BRIGHTNESS_UPDATE.md",
-      "bytes": 446,
-      "sha256": "25dbb9433d66eafeedeeefae249325698cddf99f01cff367397671dfe3e8058d"
-    },
-    {
-      "path": "Application/Documentation/History/ASCII_CONTRAST_FIX.md",
-      "bytes": 1156,
-      "sha256": "ff95216867ec65c0891c1d1121f9ff620ae140e0d35f497e5284b90c24d4af5b"
-    },
-    {
-      "path": "Application/Documentation/History/ASCII_PLATE_REFINEMENT.md",
-      "bytes": 624,
-      "sha256": "a158f7c439126b6e6e159692d42abbcf3579238489bf0065f8c776976763d5c7"
-    },
-    {
-      "path": "Application/Documentation/History/CONSOLE_FREE_RELEASE_CHANGELOG.md",
-      "bytes": 2140,
-      "sha256": "0b547a0b51783abb74c5f9eb99c91775a026b3ee6a0e6bb18b3d0e0ba00fa6dd"
-    },
-    {
-      "path": "Application/Documentation/History/EIDOLITH_TAB_ORDER.md",
-      "bytes": 314,
-      "sha256": "55799844d3d88dc9dfdfcdb36303e156c4eb439e5ab719f1ab208f85c40df071"
-    },
-    {
-      "path": "Application/Documentation/History/EMBER_UNIFICATION_AND_STARTUP_FIX.md",
-      "bytes": 1272,
-      "sha256": "9a0237e73cfc26d82c0653a025adde6fb7bc7242d4ec26c485d1f6b66d064f54"
-    },
-    {
-      "path": "Application/Documentation/History/EXCLUSIVE_STARTUP_HANDOFF_REPAIR.md",
-      "bytes": 3436,
-      "sha256": "21b68c19b7168bb47f970953a1a1901488e36581eb41938aebb5aa303fd7d793"
-    },
-    {
-      "path": "Application/Documentation/History/GRADE_RIGHT_SIDE_CHANGELOG.md",
-      "bytes": 919,
-      "sha256": "ff4c1509f441f107ae31cae9595a0e07704b12b04735fc2be6eb3454eea0d2a7"
-    },
-    {
-      "path": "Application/Documentation/History/HANDOVER.md",
-      "bytes": 2992,
-      "sha256": "c393115502b3a22f18f704d733a1073151d627876beeeffc490744c055dc52b7"
-    },
-    {
-      "path": "Application/Documentation/History/HOME_BACKGROUND_DARKER.md",
-      "bytes": 521,
-      "sha256": "875b5976b96fc29e82c37e5d2760f28152225098c87f2cecfd31ae1867cbbcd0"
-    },
-    {
-      "path": "Application/Documentation/History/MEDIA_REQUIREMENTS_CHANGELOG.md",
-      "bytes": 1795,
-      "sha256": "02f3cd6d45857259de9b14ba11460ae14b45e995d6a501ea70010bb54391827c"
-    },
-    {
-      "path": "Application/Documentation/History/OFFICIAL_BUILD_INFO.md",
-      "bytes": 1345,
-      "sha256": "40dfa615eb626f26e029b0b85825cea41f5ba1c5dece84c927e840f372546108"
-    },
-    {
-      "path": "Application/Documentation/History/OFFICIAL_RELEASE_ORGANISATION.md",
-      "bytes": 1547,
-      "sha256": "5cc1db44ebd16275b1a8cb145558cb80e7b8d606087f325e3fbc673173b5d82f"
-    },
-    {
-      "path": "Application/Documentation/History/OFFICIAL_STYLE_AND_STARTUP_CHANGELOG.md",
-      "bytes": 2552,
-      "sha256": "a2fe43ba9c788f2645bc0f6ee39de8fdc15086e6c78d6200ed9b35dea246e20a"
-    },
-    {
-      "path": "Application/Documentation/History/PASSPHRASE_INTEGRATION.md",
-      "bytes": 1885,
-      "sha256": "89231e8f9c70d7de5506b3eccf3c771651ecac998b4f1f7dbc281150e2f7feb5"
-    },
-    {
-      "path": "Application/Documentation/History/PASSPHRASE_LAYOUT_RETURN_FIX.md",
-      "bytes": 1654,
-      "sha256": "7323cde99b2cb5760e89021631daf4ebe65713655fdf1945044f4c487ca02f93"
-    },
-    {
-      "path": "Application/Documentation/History/PRE_CLEANUP_BUILD_MANIFEST.json",
-      "bytes": 2512,
-      "sha256": "f8e3b79681bbdcf43999c43089aee6ffd98d62c8f246d0e508ac7db552b82d80"
-    },
-    {
-      "path": "Application/Documentation/History/PRE_CLEANUP_FILE_INVENTORY.json",
-      "bytes": 23893,
-      "sha256": "4306efcf61a16e4df45f2a4da1e7d4ebc8abab167a5abfed96aa35e6a4751c1e"
-    },
-    {
-      "path": "Application/Documentation/History/README.md",
-      "bytes": 754,
-      "sha256": "8fba8a3693ee21de18e89ae1534fadeeb9c3486dc2b855c0ae4fadf9400c21c7"
-    },
-    {
-      "path": "Application/Documentation/History/README_MODERNIZATION.md",
-      "bytes": 1380,
-      "sha256": "6f4d8a89fd58fc64098118fbdc061c1e60be266513bc64447868dbe14f1e14be"
-    },
-    {
-      "path": "Application/Documentation/History/READ_ME_FIRST.md",
-      "bytes": 1928,
-      "sha256": "d5595311e1281b0ce9a0f4564f41ad1509e26217f913619f3c581020904aea66"
-    },
-    {
-      "path": "Application/Documentation/History/REFINEMENT_CHANGELOG.md",
-      "bytes": 2660,
-      "sha256": "9808c117f13e274106641da3038f874b0b4b7bad5c3e0f14173944be16f1dc00"
-    },
-    {
-      "path": "Application/Documentation/History/REFINEMENT_REPORT.md",
-      "bytes": 3757,
-      "sha256": "b987aa6d4db223b6e2e6cd17549a60f739581c4132f4081121f2b764ae35579f"
-    },
-    {
-      "path": "Application/Documentation/History/RENDERING_FIX_NOTES.md",
-      "bytes": 1879,
-      "sha256": "5d357ad25e48053561bb600fca48d5c75fadc3ab87fd0722f50c57766a1b42d3"
-    },
-    {
-      "path": "Application/Documentation/History/RUNE_ANIMATION_HANDOVER.md",
-      "bytes": 2859,
-      "sha256": "1d1513d95f4a4b1a731a6387450de972631be68f9135352b74fd83722b066b8f"
-    },
-    {
-      "path": "Application/Documentation/History/RUNE_ASSET_AUDIT.md",
-      "bytes": 1906,
-      "sha256": "facbf21b5a991691002848c780d1bcfc18e2a0764e64c216c94d22c0aaa14d29"
-    },
-    {
-      "path": "Application/Documentation/History/RUNE_BORDER_FIT_FIX.md",
-      "bytes": 2375,
-      "sha256": "21c1887e8ba4b22986951a3710462aa39412c7a8e4919c747008140ceae3cb32"
-    },
-    {
-      "path": "Application/Documentation/History/RUNE_CLIP_PREREVEAL_FIX.md",
-      "bytes": 533,
-      "sha256": "0f3f553a6f643a75be3868534e63fb94b233d32b3ed18c276683253a5f097d16"
-    },
-    {
-      "path": "Application/Documentation/History/RUNE_COMPLETE_REBUILD.md",
-      "bytes": 1839,
-      "sha256": "f11c8abdfcc5b721deb95584d38e1737d4bef831dda2aa0b88b6340cc847ff89"
-    },
-    {
-      "path": "Application/Documentation/History/RUNE_FEATURE_CHANGELOG.md",
-      "bytes": 747,
-      "sha256": "2eab301bdf1f50f32ab5180cd6549246cc6f4d44ecaac74b4ff7cfa1ea789c90"
-    },
-    {
-      "path": "Application/Documentation/History/RUNE_INTERACTION_AND_CLIPPING_FIX.md",
-      "bytes": 2245,
-      "sha256": "b9f010f0c3f869ed0476eaf504b08316db0c3e5aa95e9412711f2b6dee478d4e"
-    },
-    {
-      "path": "Application/Documentation/History/RUNE_LONG_SESSION_AND_SELECTION.md",
-      "bytes": 1405,
-      "sha256": "8e1ee735ada75e0dc6e6db7866abe293467861f7d693bf8c81375a626bf4dfc3"
-    },
-    {
-      "path": "Application/Documentation/History/RUNE_PLAYBACK_FIX.md",
-      "bytes": 1897,
-      "sha256": "ed01ada7c35e8c8ae77714cb58ab51231660a8b41d4b86d5e0bd9323fb269eb7"
-    },
-    {
-      "path": "Application/Documentation/History/RUNE_VISIBILITY_REPAIR.md",
-      "bytes": 1815,
-      "sha256": "650d1bb994e30e0b1aa71f6fc5312a5b830b8c3c823c7b0cbb5d805d167b578a"
-    },
-    {
-      "path": "Application/Documentation/History/STARTUP_CRASH_REPAIR.md",
-      "bytes": 3422,
-      "sha256": "b134cd681b1aa5708e901844f6fbd66e9c41c171e8d3ccfe2173f87487b916b0"
-    },
-    {
-      "path": "Application/Documentation/History/START_HERE.md",
-      "bytes": 2205,
-      "sha256": "7c205f7bbdf265154b8b8bc417ac0f234e667f5129bfe59263953478c727e538"
-    },
-    {
-      "path": "Application/Documentation/History/START_HERE_LINUX.md",
-      "bytes": 2032,
-      "sha256": "e1f6443c94e22a694c6c190416f53d120d89bf71b8f888c5c1a5c0cecdeeed7c"
-    },
-    {
-      "path": "Application/Documentation/History/START_REFINED.md",
-      "bytes": 1185,
-      "sha256": "0833bc0a1f0c71bce093cc5bbdc99a1e21d6dd95e8cfd14976425c8d0f2ec229"
-    },
-    {
-      "path": "Application/Documentation/History/START_TABS.md",
-      "bytes": 2065,
-      "sha256": "13d1a58fc27a0f8fb9c9adcabf0bd09cedc0d2b2b5057a9b9b742d198d5765e5"
-    },
-    {
-      "path": "Application/Documentation/History/TAB_NAVIGATION_CHANGELOG.md",
-      "bytes": 4078,
-      "sha256": "a5e2cf92bc5bc820c5b6e66bb68ba524bc652805191467fb279f72e3471548c7"
-    },
-    {
-      "path": "Application/Documentation/History/TAB_ORDER_UPDATE.md",
-      "bytes": 379,
-      "sha256": "6b39b99272e11daf236713e24047f3b054714326c09a0d1520dc0cdef0a634d4"
-    },
-    {
-      "path": "Application/Documentation/History/THIS_IS_THE_FULL_APPLICATION.md",
-      "bytes": 1123,
-      "sha256": "89e3895dae804edfbbc46c2cb54a1cac6e69515addd8afbf6b70ef15eb08fe66"
-    },
-    {
-      "path": "Application/Documentation/MEDIA_TOOLS_INSTALLER.md",
-      "bytes": 2854,
-      "sha256": "044c5fdd18f17508887bfb1472cebd76205548779e8fe106f1850198100a27d6"
-    },
-    {
-      "path": "Application/Documentation/OFFICIAL_LAUNCHER_REPAIR.md",
-      "bytes": 3554,
-      "sha256": "c16d817a1506042654494bf2bc20d99383561f88f8b5c6a62d5cdef249246d6b"
-    },
-    {
-      "path": "Application/Documentation/OGGCULTIST_2_0_6_INTEGRATION.md",
-      "bytes": 3547,
-      "sha256": "39be0e4a9505d4eb7c9cf2e3fede6246096ef0a83ca6a2e23251e5b647867e20"
-    },
-    {
-      "path": "Application/Documentation/PROJECT_STRUCTURE.md",
-      "bytes": 6705,
-      "sha256": "daf645988263cdd73e1f1e19d07a44758c38791982dd094cac6dbb593e75d28c"
-    },
-    {
-      "path": "Application/Documentation/RUNE_PANEL_EXPANSION.md",
-      "bytes": 1717,
-      "sha256": "c0ba3efc5ab19cc553de0873ecac28ed22a5d91b30cf4f0b219d904d15119c87"
-    },
-    {
-      "path": "Application/Documentation/Reference/EIDOLITH_design_document_v0.1.md",
-      "bytes": 15447,
-      "sha256": "40819425b09ca1695273828a00ab8da3b5b61fc1d81112d1e7759ab9fdd782d2"
-    },
-    {
-      "path": "Application/Documentation/TOUCH_TYPE_GAMES.md",
-      "bytes": 2477,
-      "sha256": "e2aa8a850750cbfd438fd329e72eda0ab12ff2b4f918bc938f6ea1ed24ab4c77"
-    },
-    {
-      "path": "Application/README.md",
-      "bytes": 4898,
-      "sha256": "907a4ccdb7666a6cb1a53483ab17d49a49af6ffc96b4f168840484919e69ebef"
-    },
-    {
-      "path": "Application/Runtime/Launch_Marble_Oracle.vbs",
-      "bytes": 568,
-      "sha256": "854ed6de1e50aa36897e2d443a0045a4a58e393b20b2a1e0ceb246d9145197db"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle.bat",
-      "bytes": 84,
-      "sha256": "e92f7f3cf7a66c83313d136780d7bbf11d13554e8960eb11ad38f7452f5e363b"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle.pyw",
-      "bytes": 1071,
-      "sha256": "89bd514e5efd803aa78e955edd4b4d180e68dde77bd58cd416af84735b8182cf"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/INSTALL_LINUX_MINT_MENU.sh",
-      "bytes": 1457,
-      "sha256": "d329d75a5972e58eb771b232179a3259d21b37767f1d08a9409df7b248147aff"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/LINUX LAUNCHER.sh",
-      "bytes": 8264,
-      "sha256": "6d96cf41ab17a944086546c9c2dc5df2f236b595844ba18b9c58c6cb2546e2d9"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Marble_Oracle.pyw",
-      "bytes": 219,
-      "sha256": "96def28d4558702b4ba7dde6fddbf97a9b1ca6b5d781312ad59aef536e59451a"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/CHANGELOG.md",
-      "bytes": 42943,
-      "sha256": "96d8a5feb87047853b3d29cce0594cc44de7272acb41740b9f3205b169c87b2f"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/DIAGNOSE_WINDOWS.bat",
-      "bytes": 225,
-      "sha256": "b6e8ff39eb7eb15f33d72d9004c9ca9df454a731158bdbd29553ec47aebd23cd"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/LICENSE",
-      "bytes": 1080,
-      "sha256": "d76093d86926bc40faadd7a9d5baaa22b9915ce56c554f1ec9305c602288edf3"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/Oggcultist.pyw",
-      "bytes": 987,
-      "sha256": "4d1e2103e9009e6c1f72e211578330e9e065b76559de63670985ad42f663175e"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/README.md",
-      "bytes": 6034,
-      "sha256": "eb5ab16eb6617f946580e61cf106999d149bee5d05a8bb89f2e2f63e75a0e3d0"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/README.md",
-      "bytes": 634,
-      "sha256": "e56394543872b191b31dad0e4d62f51215e08ce71ae16599ed8acbadef08ec7b"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/ORIGINAL-USER-APPROVED-REFERENCE.png",
-      "bytes": 518463,
-      "sha256": "39dd3319ead84b9d4ef073ba5e332723d8b2ff87f68bb99845d23802cdc7914d"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/Oggcultist.ico",
-      "bytes": 44907,
-      "sha256": "efaac192d2edbae3b9da76c99938ae04e15cda9fe46f4aa9cb7a5e31635d0d0f"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/favicon-16.png",
-      "bytes": 556,
-      "sha256": "30588003614bc8b29ba6a2a278afc0dd70c463cc500cc8324a2c4c72c76d4035"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/favicon-32.png",
-      "bytes": 1273,
-      "sha256": "b336055d99e64798f113952f58ad047e5d32778b709046a8213efb3933208c3c"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/favicon-64.png",
-      "bytes": 2657,
-      "sha256": "76bf5acd3136c6b33fcce9bf14276a01bd473c6bf986bb083f8850a92e39d58a"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/horizontal-lockup.svg",
-      "bytes": 6034,
-      "sha256": "cf295fcf74aa2e32e8c2d292bd6b62a784caa5e8c1d36569584d5b9cb133c098"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-1024.png",
-      "bytes": 42889,
-      "sha256": "fb1c88eeb904bdb88a31f0a9e6d8b19ee5ba2a6ca8fa010435e8789e5b08cd3c"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-128.png",
-      "bytes": 5675,
-      "sha256": "b32d518c706ec0bedfde0a4529f5e59b290609f040fc6187fb00dcf45f190204"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-16.png",
-      "bytes": 711,
-      "sha256": "cf6ec2a2afbeb7cd9c40ac9c3a673bfe68e845051b69efdf85eaec6edfeb0061"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-24.png",
-      "bytes": 1193,
-      "sha256": "b867e871f4b4b3fd194de2dac45df72859753d691dd579755e0c1ffbd212b8ef"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-256.png",
-      "bytes": 10671,
-      "sha256": "d43688868a696abffc6c6dad6653a4bef6daaa99563672215a844ca50f2f95fc"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-32.png",
-      "bytes": 1685,
-      "sha256": "b1f3eb7e20bc349007a40a126d02a58f0ccfd211016e1c85da5dd988cd49a3d6"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-48.png",
-      "bytes": 2272,
-      "sha256": "a02e743c5a4c3d1e67d77367d6f74d68887397729c4eef1de3ae60c2888ee7a5"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-512.png",
-      "bytes": 20997,
-      "sha256": "45d8c9f201648ea33432b49884788f10f09aabc312de4ae764e84ca15ddc4fdd"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-64.png",
-      "bytes": 3020,
-      "sha256": "a62b94d2be59ec127161d4b5fa8f2cca58e30eaabd008d511da4ee0e3608a2cc"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/lockup-black-transparent.png",
-      "bytes": 33849,
-      "sha256": "cf53db901353fd9e876324dd4e7d7b14e976c490dfa8591b9750fd8682a9ba0e"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/lockup-cream-transparent.png",
-      "bytes": 37829,
-      "sha256": "f3c33234a5f89e25cda4b034913e7d9a9e1470caa7fabc0c91f33d29b08b5944"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/preview-dark.png",
-      "bytes": 38161,
-      "sha256": "39f88d8eed847c11feaa5c5210e20b21e44b6588a35dbe5717583992b80d5f70"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/preview-light.png",
-      "bytes": 35831,
-      "sha256": "735e1589396bcc05831ae405cbcded2a037f5ddf518707c7bfd79a3bfce8f062"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/symbol-black-transparent.png",
-      "bytes": 28402,
-      "sha256": "0d7c6675dd9cbea5dc69aaae546d1ed948ca2ba5c1825398db34af2413648182"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/symbol-cream-transparent.png",
-      "bytes": 30443,
-      "sha256": "8a8c56eab622201ae3b7f598ef47ff1a50864a3ba7cc455dcb9458ba3a163d86"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/symbol.svg",
-      "bytes": 2276,
-      "sha256": "7fa68f3e8ad907b637cf528ddc2ee03e1f52a5575e90d262eb94440a32330c5e"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/wordmark-black-transparent.png",
-      "bytes": 18871,
-      "sha256": "f5dae1d35d01ff845e62c3639aba2ea024e114cbb57e43809af0aca59ece27d9"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/wordmark-cream-transparent.png",
-      "bytes": 21843,
-      "sha256": "36bcb271c83129582d625e350eaa849f73041abc75a42121a5684c9a4c9d35c3"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/wordmark-outlined.svg",
-      "bytes": 3836,
-      "sha256": "0287a788f03285caf4d129012f656df34756ebd2f441d4a6688fe0ac7605d3ea"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/ORIGINAL-USER-APPROVED-REFERENCE.png",
-      "bytes": 518463,
-      "sha256": "39dd3319ead84b9d4ef073ba5e332723d8b2ff87f68bb99845d23802cdc7914d"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/README.md",
-      "bytes": 2268,
-      "sha256": "048ba590bc4089d88ae27ae69ab48340b972ce50a7649250531d09bcfba2554b"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/build_brand.py",
-      "bytes": 1744,
-      "sha256": "7dc79172b2e92dee7767a91bcd0b0550baad6e257f34915e52b0a7950607eb77"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/horizontal-lockup.svg",
-      "bytes": 6034,
-      "sha256": "cf295fcf74aa2e32e8c2d292bd6b62a784caa5e8c1d36569584d5b9cb133c098"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-1024.png",
-      "bytes": 42889,
-      "sha256": "fb1c88eeb904bdb88a31f0a9e6d8b19ee5ba2a6ca8fa010435e8789e5b08cd3c"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-128.png",
-      "bytes": 5675,
-      "sha256": "b32d518c706ec0bedfde0a4529f5e59b290609f040fc6187fb00dcf45f190204"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-16.png",
-      "bytes": 711,
-      "sha256": "cf6ec2a2afbeb7cd9c40ac9c3a673bfe68e845051b69efdf85eaec6edfeb0061"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-24.png",
-      "bytes": 1193,
-      "sha256": "b867e871f4b4b3fd194de2dac45df72859753d691dd579755e0c1ffbd212b8ef"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-256.png",
-      "bytes": 10671,
-      "sha256": "d43688868a696abffc6c6dad6653a4bef6daaa99563672215a844ca50f2f95fc"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-32.png",
-      "bytes": 1685,
-      "sha256": "b1f3eb7e20bc349007a40a126d02a58f0ccfd211016e1c85da5dd988cd49a3d6"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-48.png",
-      "bytes": 2272,
-      "sha256": "a02e743c5a4c3d1e67d77367d6f74d68887397729c4eef1de3ae60c2888ee7a5"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-512.png",
-      "bytes": 20997,
-      "sha256": "45d8c9f201648ea33432b49884788f10f09aabc312de4ae764e84ca15ddc4fdd"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-64.png",
-      "bytes": 3020,
-      "sha256": "a62b94d2be59ec127161d4b5fa8f2cca58e30eaabd008d511da4ee0e3608a2cc"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/symbol-small.svg",
-      "bytes": 2276,
-      "sha256": "7fa68f3e8ad907b637cf528ddc2ee03e1f52a5575e90d262eb94440a32330c5e"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/symbol.svg",
-      "bytes": 2276,
-      "sha256": "7fa68f3e8ad907b637cf528ddc2ee03e1f52a5575e90d262eb94440a32330c5e"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/wordmark-outlined.svg",
-      "bytes": 3836,
-      "sha256": "0287a788f03285caf4d129012f656df34756ebd2f441d4a6688fe0ac7605d3ea"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/launch.py",
-      "bytes": 1327,
-      "sha256": "08cbbca7515fb7806a4a92e24b34222203ed79945f298248d473a605d9ec7356"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/__init__.py",
-      "bytes": 106,
-      "sha256": "48c0e4695c3451e24173f60ad1bb9afc0738bb6507416d320acd6258dcab1421"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/__main__.py",
-      "bytes": 129,
-      "sha256": "ed71f910be84aa81a6554dceb47cdaf2a90aa6748abf8d531877c64ec57a9475"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/app.py",
-      "bytes": 380,
-      "sha256": "756d66136cfedccd83ae628779794840db9289ba965ead759cbbaa168760b461"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/artwork.py",
-      "bytes": 404,
-      "sha256": "ce2ca052e5d3dc24c506191d8efb3c5736534fb5e443f4077cc8ab9355d2e0db"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/converter/__init__.py",
-      "bytes": 86,
-      "sha256": "68a124fe69f4395abff6083d2ee03eaa148c8d03c18f8425879ec06ba84cef70"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/converter/artwork.py",
-      "bytes": 35096,
-      "sha256": "517a453c51051f0de21fc9eba4e7d72838601e00a479fb99a71801db732e2731"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/converter/core.py",
-      "bytes": 34826,
-      "sha256": "959c5af02b3cef9d7102fcf2631ff48360e79d8c193b7cae4381b0777e7a9ba3"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/converter/cover_editor.py",
-      "bytes": 20963,
-      "sha256": "1075e53173ee8465f4f41ec1a8e3c010d47207f95120c9c25b3988fd61bbce42"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/converter/musicbrainz.py",
-      "bytes": 6834,
-      "sha256": "eb705f054ee34bd49bc07561608dc51bf117d0ab979314d28cf08bb2e6d8eca1"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/core.py",
-      "bytes": 395,
-      "sha256": "1c1a665cb3c3d19102a26dfc24832d00b44ac44bfd779c8e24baaac53a6ef9cd"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/fonts.py",
-      "bytes": 6318,
-      "sha256": "0517d6235c60ffb4ba84916c33db9ecf05b031161da9149e74424d8b12562f7c"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/__init__.py",
-      "bytes": 146,
-      "sha256": "ebb01856c6145f99f4ac933aabd66b86297393c8081a1f5db0dd92dce7baa039"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/animation.py",
-      "bytes": 12216,
-      "sha256": "ecf60955fb5825b38082d256ae0105c8ff6c04b9c9c3f3945b9773dbe04cc371"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/app.py",
-      "bytes": 34090,
-      "sha256": "38914647d3b53e888952940c3e8f334a9cc9059dbeaa48045a5c52a1f04eee62"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/art_view.py",
-      "bytes": 24434,
-      "sha256": "8cc8aaabf941bd54797faaeb218c687910da7ecb476c85945e0ee6abd28999d9"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/brand.py",
-      "bytes": 3074,
-      "sha256": "e7c117cd01d4e7c22d7502be79350a183be39f054d60d6f7777bd1e3b211d353"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/collection_pages.py",
-      "bytes": 12931,
-      "sha256": "e746a02885a2e8af2992c4e859228946e1bb30e07f9c16c958c8b51e65d0108f"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/converter_view.py",
-      "bytes": 31592,
-      "sha256": "886f91bf5b9695fc5169f09e3701947cd1950065ec4038707fbc41d10a53fcc9"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/design_system.py",
-      "bytes": 5414,
-      "sha256": "78dcca2d264896e2c6c0c00dbd2120f34e97947a0cd5e5ff5867961da9fcdc5f"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/dialogs.py",
-      "bytes": 6768,
-      "sha256": "f00594c277ece5ba145ce47d9013507cb8e79c07efa056800a219c1b0499c965"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/icons.py",
-      "bytes": 5236,
-      "sha256": "85d2406c32d8ef9f01b42c93f56ef5c88a63121cdca32877031820f3f9e93036"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/line_icons.py",
-      "bytes": 6607,
-      "sha256": "898c60abf3728dd2485fcd24c519f02454343698188a405d9cf6fed08100da0f"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/media_keys.py",
-      "bytes": 19288,
-      "sha256": "86e298080a6a8c3e77010e23ea56bf69186079d398a1b37955f962bae453e0c2"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/native_folders.py",
-      "bytes": 8573,
-      "sha256": "68c658d5909363b2475611e98846f9834c3dd0c342070586e140015e9b66fd93"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/now_playing.py",
-      "bytes": 14157,
-      "sha256": "32b07722d7703cfbec1a25594ddedbdabc14438d14e884c73f4af911681dd53d"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/player_view.py",
-      "bytes": 22239,
-      "sha256": "63bf300b1d914cae101642a1ac39c2bd05505972768e7fb5a354ab3ab99aa46d"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/selection.py",
-      "bytes": 2163,
-      "sha256": "37534a508d5997d026cb876275b596f47be63c9aae2f6b0fbc1b1030d1642ee2"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/settings_view.py",
-      "bytes": 14451,
-      "sha256": "26a2daa03aa2fafd1ac9325cd4b1735987d1483756b7abe1c6f1a209b0bb6791"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/sliders.py",
-      "bytes": 19377,
-      "sha256": "63eb11b873e4b825560ea897a3909362d67be0fa8f6c214d9e25343c30b8f97a"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/textures.py",
-      "bytes": 12744,
-      "sha256": "7085eecedb90b1ae4961676ef9d9cf62f3034c24f8583c0e2630271bb31428c1"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/theme.py",
-      "bytes": 35452,
-      "sha256": "89a8333cdb4c93e9a352fa6729755dd06f48436cc99e5b4381f44d790eab4af8"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/widgets.py",
-      "bytes": 9905,
-      "sha256": "9df8b1b7cbe77ccff257ddad535473d528021a1179f65dc69fe2699b7ae66d38"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/window_frame.py",
-      "bytes": 3085,
-      "sha256": "6cbe536e28141e4f5e2b7d276269c84697f05c520f2ffcc953741360ce4ab27d"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/metadata/__init__.py",
-      "bytes": 358,
-      "sha256": "a2e139a947aab88a65f01ac5fb078dfa7c7883e5400f4a5fe10c0653e599fcb5"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/metadata/tags.py",
-      "bytes": 13590,
-      "sha256": "a72c1e37231bafd97b74ecc811661b9e1d791c2a74cfc6aff59ee62604249af5"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/musicbrainz.py",
-      "bytes": 416,
-      "sha256": "e5dc15bcadc54a207e8f0142127876dd30f3c41ecc79a62ba7774b21f2d55a5c"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/paths.py",
-      "bytes": 7309,
-      "sha256": "9e473b2bd5b5e43a34f1e73a3037cde75c6dffd1838ce846d4654aa2c023b181"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/pillow_tk_compat.py",
-      "bytes": 3091,
-      "sha256": "58804c22cdc4843099f3ca68c2fb9160acf8043424bef267dd5b21549c38c9f5"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/player/__init__.py",
-      "bytes": 732,
-      "sha256": "5437e5745262828d7a9271006830ebeb5ac755a8d826ccd4537e2b49bb9720e0"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/player/library.py",
-      "bytes": 4617,
-      "sha256": "0adb81d76cc7e27ffce8f68bbd4253f16ac29eaa2f985092b3ca88fe3beed31c"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/player/order.py",
-      "bytes": 8342,
-      "sha256": "b2fb893fd314c4c462ec7c9ac517cefff45cfb806ae5939cfd07322c94839161"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/player/playlists.py",
-      "bytes": 4647,
-      "sha256": "41507c21faebf3f5ba9bc646b1b6c975fbb8e957eeba8203ee04738f25616247"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/player/stream.py",
-      "bytes": 24504,
-      "sha256": "9d797bba3b2f7ea442bd649f57c107016fe594271f738431601f1243b08c754d"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/player/transport.py",
-      "bytes": 15093,
-      "sha256": "82bd97878487475d48660688aea12489a033e9788b1cffed2295660130ce384e"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/brand_symbol.png",
-      "bytes": 30443,
-      "sha256": "8a8c56eab622201ae3b7f598ef47ff1a50864a3ba7cc455dcb9458ba3a163d86"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/brand_wordmark.png",
-      "bytes": 21843,
-      "sha256": "36bcb271c83129582d625e350eaa849f73041abc75a42121a5684c9a4c9d35c3"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/fonts/NOTO_SOURCE_NOTICE.md",
-      "bytes": 578,
-      "sha256": "38d9ee9909a274d971b1b839738688befed83e13e987a4f935c2af707acb0801"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/fonts/OFL_UBERATA_CLEAR.txt",
-      "bytes": 4490,
-      "sha256": "d797d9e364b97a724ce8a9f504c69da5080e11869438f4d8507fba5ed6d77c47"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/fonts/README.md",
-      "bytes": 892,
-      "sha256": "5c9bc3be8fd634160a38f75569aa8cf3f951f6d0e0c2533c418e3eff47675182"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/fonts/Uberata-Clear.ttf",
-      "bytes": 575724,
-      "sha256": "248df02a4e0c52c541456ac19f29a2ccc50ff0b12428982a378d1576a5097482"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/icon-16.png",
-      "bytes": 711,
-      "sha256": "cf6ec2a2afbeb7cd9c40ac9c3a673bfe68e845051b69efdf85eaec6edfeb0061"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/icon-32.png",
-      "bytes": 1685,
-      "sha256": "b1f3eb7e20bc349007a40a126d02a58f0ccfd211016e1c85da5dd988cd49a3d6"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/icon-48.png",
-      "bytes": 2272,
-      "sha256": "a02e743c5a4c3d1e67d77367d6f74d68887397729c4eef1de3ae60c2888ee7a5"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/icon.ico",
-      "bytes": 44907,
-      "sha256": "efaac192d2edbae3b9da76c99938ae04e15cda9fe46f4aa9cb7a5e31635d0d0f"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/icon.png",
-      "bytes": 10671,
-      "sha256": "d43688868a696abffc6c6dad6653a4bef6daaa99563672215a844ca50f2f95fc"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/selection.py",
-      "bytes": 398,
-      "sha256": "ec8060ebc11682478304a05eda0b1ff6c1387962ec2276f857a7e0ea50827e90"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/services/__init__.py",
-      "bytes": 80,
-      "sha256": "d0cfdbdec643269ca7c1cbca94d1234dbdd5dcb29b099d20c7ed3cf0b1dc9cf1"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/services/ffmpeg_setup.py",
-      "bytes": 11640,
-      "sha256": "4f366993167deacf5ed8d7e1b7ad6376d6d2463b07e0d70343cd1311b6f693d9"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/services/tools.py",
-      "bytes": 4565,
-      "sha256": "1f897b6bda189ce73e58d0900193742444976a9fcc07efdbb60dd4b895506582"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/services/windows_launcher.py",
-      "bytes": 4891,
-      "sha256": "537c25d0ec1030cd03d4cd72d81eb046d9513612322c3a7cda2c07dd0ffc96a8"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/startup.py",
-      "bytes": 13659,
-      "sha256": "b05470c2298a312ba4b6e2548e1d7ce5d14d1c351a37ec2c3aa2404c681cb65c"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/suite_bridge.py",
-      "bytes": 3691,
-      "sha256": "21c7b1a03aa53f45d83305fd8fc13dd28262700af12cca1a4ad1059d69041902"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/windows_launcher.py",
-      "bytes": 429,
-      "sha256": "6827afc79068206a972f3a335bc3a10a0eab017dbbf3138e13ed399c55e1712f"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/packaging/PORTABLE_README.txt",
-      "bytes": 1064,
-      "sha256": "73179ab1df9e8af9d0d2fc1de0155741e000b13e56287dbfd8fa6bed8ceb2ba4"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/packaging/build.py",
-      "bytes": 5171,
-      "sha256": "77f6904ca31bf0deb977b1daf13aae72c16f25ac0df2e42a88941aaf3b625e44"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/packaging/entry.py",
-      "bytes": 278,
-      "sha256": "4185ac36dbc5d76c9750390dcefd50dc548c74309fa9e41a07aefef51a99ae69"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/packaging/oggcultist.spec",
-      "bytes": 2969,
-      "sha256": "c060df8d481a9e102e4e1d28ac7321d477155dd04e8307840c2ef205a3d4d98f"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/packaging/requirements-build.txt",
-      "bytes": 161,
-      "sha256": "553c403f9ad8a3b16bd2310d7a7de5584281e53989d4b6cb6dd4869036a777c2"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/packaging/source_release.py",
-      "bytes": 6511,
-      "sha256": "14fabe672573b48ebced82c6447003681da6752f3d25eb157025b721ee5d9c16"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/packaging/windows/build_windows.bat",
-      "bytes": 895,
-      "sha256": "083318d866e0d944baee852a437750ed9328ef20a0e2446f13238bee29f366dc"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/packaging/windows/version_info.txt",
-      "bytes": 941,
-      "sha256": "848b30aa1fcfecd62f82c3e948f7bfbfc26ae7d28d3a08ae8eb089af834149f6"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/pyproject.toml",
-      "bytes": 767,
-      "sha256": "c65e6b97642f0769a9a7ba4a3e8f54526e75ac440c8b9bcd236e222dbfcc6b07"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/requirements-dev.txt",
-      "bytes": 202,
-      "sha256": "72dd7f4a8578fbdccdc450bde6e92346c31628f7f7fa74d8ebc57f45c11eb582"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/requirements.txt",
-      "bytes": 119,
-      "sha256": "b1cf1880a8fb26df91a5f6b0d5612fdd12ef21543b4e3f6d6ce514af4a32a4e7"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/setup_ffmpeg.py",
-      "bytes": 468,
-      "sha256": "ea7ee08fbbd919e533e502d8994c74cf4a7f0221b3ccbee41107c39ddc98ceed"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/suite_integration/README.md",
-      "bytes": 2469,
-      "sha256": "79efc5aea007701a74f0aea5ecf4395a005ad0063ad549c963d78a4fc8863390"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/suite_integration/manifest.json",
-      "bytes": 1521,
-      "sha256": "bae515d60aea9a710a8fa7a73d5436553b582fad8cd67cc8dedaacc483bebfff"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_audit.py",
-      "bytes": 22971,
-      "sha256": "6f7137fa33ac64be40a66d268fc6d7be24ea60176853bc75d9266ad4bdc8a421"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_core.py",
-      "bytes": 9612,
-      "sha256": "ca5ba175ce73a34924387b229a32bffbd953fc8b647ac32900264924901e3188"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_ffmpeg_setup.py",
-      "bytes": 4698,
-      "sha256": "af6fa4f20169111aaa6c846c38bde0156b32ce0bd8a04c7dd4ff1f85a7446980"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_ffplay_launch_selection.py",
-      "bytes": 7318,
-      "sha256": "6ee7c2fa7257b46733772e7e0ae03a1c5bf4647973aab96988b976119428343d"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_filename_fallback.py",
-      "bytes": 5342,
-      "sha256": "e621c1411610101f705b80c7f6aefd6b5a2d2ede912aacf85c16fa6bbd8ebb5b"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_followup.py",
-      "bytes": 11432,
-      "sha256": "573b7029a0d78130e4c443fca3812d2632520b20ac95e3b142eadbaa4c0067f5"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_input_stream_diagnostics.py",
-      "bytes": 3527,
-      "sha256": "85752e180f4ef4f1837ded0fb5c0ee0d9058e43d3d1b4ff1dd2ceba0fa1d9145"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_music_player.py",
-      "bytes": 7147,
-      "sha256": "e7366d6bdbab904de7b7f693ab8f40f9a5413ffad6aada2eac81bd6d0d25aa22"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_player_first_startup.py",
-      "bytes": 4405,
-      "sha256": "11245c98ce019d0afe95c4b151f6f38313864b117e5cea4c6d0ceddc9a27f8de"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_suite_bridge.py",
-      "bytes": 1499,
-      "sha256": "6aa7c61dfec9492ffe221ab8c1ca9c2a37269472e486b7af4a33de36cb721148"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_upgrade.py",
-      "bytes": 3524,
-      "sha256": "e7ece641dc5b48d98d002bb262a50ed5e27742294ac792a73e8673585bb0a3a5"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v12.py",
-      "bytes": 4044,
-      "sha256": "fa1c8fa1cf27d6772af7f5858972ace889d7eb40cfd9e52935cf77feb45c5d8e"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v12_audit.py",
-      "bytes": 7509,
-      "sha256": "8e8430bf1d90e3687e65f1a5a134a1ec773365210b53783906da1266580fb4b1"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v13.py",
-      "bytes": 5194,
-      "sha256": "bfa8c80a62340eeb1822bc9f5a10e83432078eb161bb26467c77675afe34f8bb"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v13_audit.py",
-      "bytes": 9292,
-      "sha256": "4d76b02e5a6462820cfec2d72b64d140b59acc7c9bbb606143e68cbb21f45894"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v14.py",
-      "bytes": 2277,
-      "sha256": "8a0ee9fe3fea1ea8e7c369b04bc7a93ab0bef58921fa91071899710d3a5f109c"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v14_audit.py",
-      "bytes": 6804,
-      "sha256": "2bad17dfe25342912ce2820f21f5aacf16f2328688dd36330038a0d934da3e51"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v15.py",
-      "bytes": 4532,
-      "sha256": "8ff24c014d79d2820b3878c52e7ac2af3243e059d81c073b7869470a18e81ec6"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v17.py",
-      "bytes": 43609,
-      "sha256": "9a2b4d5f870ce8bbefe0801f874e133ae5af14c5f2e52d51ccc70506652a69af"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v172_playback.py",
-      "bytes": 12295,
-      "sha256": "2423ac77f937f0adbefa750c6d20a528deb923fa4d43087bffdc5189ed738fdc"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v174_modes.py",
-      "bytes": 7168,
-      "sha256": "d4c603d3f1d9cc6aa133a7546bf4960aad1469d5b396368fc9337e924d91c0f1"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v181_stream.py",
-      "bytes": 6066,
-      "sha256": "4bf39f769482d4a66b88bf54aecfaf1afc0cf5a8961b379972859f01aaec4c8f"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v182_media.py",
-      "bytes": 7797,
-      "sha256": "88c169677b578ff91a468a4f4fa54e934af598f03ca6e9204e07739f93ff4b80"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v183_lifecycle.py",
-      "bytes": 5186,
-      "sha256": "7d5206263afac172cd34e3e286bb52b1fa8e7ec8caacca86e86c106ab8c8a487"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v183_window_frame.py",
-      "bytes": 2420,
-      "sha256": "3745b4f71c8c7ae19499e1ebe00aef5621f2fff9a4a3027c2a5ca248ba5454a2"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v189_motion.py",
-      "bytes": 6386,
-      "sha256": "cbac0a1a3debd5a5537cbb27a525deefa6704e24fe56a55bad67ccc0f61bd285"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v18_cover_editor.py",
-      "bytes": 10095,
-      "sha256": "f96ee7f254b310219c28263b73528bb25e1602b849070f6e55abe589aa6e7bdb"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v190_look.py",
-      "bytes": 6774,
-      "sha256": "ae623a8721663ee75c591663c12df386768791ae1b06c9fed9fe73a0782e259f"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v194_windows_launch_release.py",
-      "bytes": 2825,
-      "sha256": "97a082f18b550fc89d7db4c23a3d0f78815f8bafd5d21bc14537d0f863405998"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v196_bevel.py",
-      "bytes": 1168,
-      "sha256": "7f246235752f18444014404bad6d2882f737b680b39d63d82bc0c6cb659a5562"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v198_sidebar.py",
-      "bytes": 3241,
-      "sha256": "78a8564431db53d887594575f385cccb92168bee03d4004af163806b6c523a98"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v199_redesign.py",
-      "bytes": 4475,
-      "sha256": "6a608136c8ce29187ebde34f3a80b06ce238318e80a07655ca510d0c04ddc4c7"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v200_ember.py",
-      "bytes": 23580,
-      "sha256": "69cf34ef44b644fee3754f9073025c38ffbb3c0de24ea80e6d7fef53bc01a001"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v204_uberata_native_folders.py",
-      "bytes": 4525,
-      "sha256": "d303683a5be9f7ef864c67b14224462265ad791b613ad8824491526f51682b1a"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v205_bundled_uberata.py",
-      "bytes": 2748,
-      "sha256": "2a85cc2c2bda68ac7b642c4dfbad77949b1af50e88439d7b23dbb2b2417c3344"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v206_branding.py",
-      "bytes": 2188,
-      "sha256": "378db7e7565b993d06f5e3aabdf319204e2a87bedd338adebb71e8fda8e6f57f"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_windows_bootstrap.py",
-      "bytes": 3890,
-      "sha256": "8c802c31da2344a087040d337582785f29e349c1d1bfd61056442771405cdb8e"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_windows_conversion.py",
-      "bytes": 3915,
-      "sha256": "fdc0f77beac74385ba56f4a16307b0158fc489df6bdc70ca677d4c1c7501c5cb"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_windows_startup.py",
-      "bytes": 3670,
-      "sha256": "5fb2e99228eeb9a1927fe4d9ba61c7b1e949b22105fc64719d95114169f234b3"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/VERSION.txt",
-      "bytes": 132,
-      "sha256": "9ab6eb2fd55c87511a516a2db6fd68c6cb9ae3ee9327cb1998a1a68fcff9ef1f"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/WINDOWS LAUNCHER.bat",
-      "bytes": 6520,
-      "sha256": "88ac8318555b9dc68df5b6f55f84903c57e3ac75ed09b2b6aabe61f8be537612"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/crt_barrel_filter.py",
-      "bytes": 10845,
-      "sha256": "7a029bba126c0404ef0942f6288ef2ac856b7261f81492ee803b79f10aef2789"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/crt_barrel_no_feedback.py",
-      "bytes": 8723,
-      "sha256": "788aa96cb80515d34f90672e4f3d6cc7d864f2a5ec8b8ed375b54bbfd1e8dfa9"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/bezel.zip",
-      "bytes": 1394336,
-      "sha256": "b1314bb9a932014c7f3e28bd56178f77a2d14724f2cbc4eba01ff4a2c1b1942c"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/bezel_shape_rows.json",
-      "bytes": 10576,
-      "sha256": "db6b49d041f4d0850f9ed396e2e1a143707418aa3dc357f155377d68880d5efd"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/crt_v2/aperture_mask.png",
-      "bytes": 9979,
-      "sha256": "fcce42d5da8b7d74a85129e9383d1006ff4861d516a83d541c7c5a4988e29540"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/crt_v2/frame.png",
-      "bytes": 2186999,
-      "sha256": "c05ec499c057957b12e714e1dbc466f9beaeaf3053b3b592d063412ae2b027eb"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/crt_v2/layout.json",
-      "bytes": 12760,
-      "sha256": "106795db5d5fb51cc226e47b2bf566bc336fa8cae796f8f7d0fa5a27d9d0216a"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/crt_v2/outer_mask.png",
-      "bytes": 10059,
-      "sha256": "ab800f787ec0d6e12e8021a46d8bdb5e1ab7e1904ceb2d312f34c92852bd2050"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/crt_v2/shape_rows.json",
-      "bytes": 12066,
-      "sha256": "f528d13c775c56d15d57914bd28b411ecc090a40ddfcf52151dbedac84e7091b"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/eff_large.txt",
-      "bytes": 108800,
-      "sha256": "addd35536511597a02fa0a9ff1e5284677b8883b83e986e43f15a3db996b903e"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/eff_large_CREDITS.txt",
-      "bytes": 504,
-      "sha256": "9c52c707aee7bfdf7eafd6fa05d71338afdc8a1de563a4f6e9f11790f64f0867"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/latin_voices.zip",
-      "bytes": 5535134,
-      "sha256": "4503c3aeffc07117015034a14bf45e2e3f7cc8fa5f2d08bc638f8772115953d2"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/latin_voices_CREDITS.txt",
-      "bytes": 2276,
-      "sha256": "139cade79496b96a9f6ac6a318f35b0ef37d8faece5aa04fd98f204178ec51e0"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/marble_archive.zip",
-      "bytes": 738630,
-      "sha256": "7ff0848bc51a0d4d43152c701122a87d3268a4ded2fffe51ff75455bd9ecc788"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_0.png",
-      "bytes": 22069,
-      "sha256": "9dd4d2cf66aaed38d727bba80da6b8d0de50c724d9fb8d0033ebfb74faef3aa0"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_1.png",
-      "bytes": 15280,
-      "sha256": "85a78f09936480106ade30cb97d6ef6d84083eba9643f27df6f740a2e549d7a1"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_2.png",
-      "bytes": 23715,
-      "sha256": "b668e9297ee8c31dba321ece8bbf62c40dc99706016adb9da11e60821eef8591"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_3.png",
-      "bytes": 20970,
-      "sha256": "e913f80ececb0852544d9bf8c9ccbbe72980bc7fbbbe514bfa7982283538511a"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_4.png",
-      "bytes": 20146,
-      "sha256": "e338ed1a606bfc650800c6b394dccbdbd4c15bbc0eadffaaf1dd268c36668ca5"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_5.png",
-      "bytes": 23015,
-      "sha256": "b835d957edec41067b187078646c86934ad17fecc717a3560cccc6958247fe87"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_6.png",
-      "bytes": 19272,
-      "sha256": "cd7bc6ee73c545eb7393f16e7a0fa1e38be0eb8d9dcab5f101c67db38b12af0f"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_7.png",
-      "bytes": 17680,
-      "sha256": "0bab604d1a29ee573ab851005b3d4637159e2ea886d9dabd5741375b33f5a011"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_8.png",
-      "bytes": 21861,
-      "sha256": "ad6607da163feca3674a473619e39eaba3788dbc656f68d4051c068c52a6223e"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_9.png",
-      "bytes": 21284,
-      "sha256": "7560eaab63e210498e771aa7513304b5cd59e2a9c5a51eb498857649899a1756"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/nixie_shell_base.png",
-      "bytes": 76714,
-      "sha256": "f9ffd7d5d2ef2be6476c8d7ce347d9b03114b4e3eeb9f7275db712b236152fea"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/oggcultist_texture/SOURCE_MANIFEST.json",
-      "bytes": 1484,
-      "sha256": "ec339e12736ef28601cadeaacc9ed6f2db1e023984f25af5d89cdc2855053313"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/oggcultist_texture/accent_soft.png",
-      "bytes": 40206,
-      "sha256": "df068b3bba4ed24e705b131211f8a8535d9d1172c9e3b9055ac0d07bfc7c4f98"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/oggcultist_texture/card.png",
-      "bytes": 38735,
-      "sha256": "e967522de73ba83db441ba39ca4c4861ebe9b57f933d70cad6f23dda28801870"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/oggcultist_texture/control.png",
-      "bytes": 38757,
-      "sha256": "16ec3e023a10c5bdf1f615aeef67deeef550dca10f02b91952e48d5d886f308a"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/oggcultist_texture/page.png",
-      "bytes": 40350,
-      "sha256": "90afc61ae8a092f7437ee923c5603b531caa1ad73ba839eb1e6ecb5cd9b5a254"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/oggcultist_texture/side.png",
-      "bytes": 41426,
-      "sha256": "a64a09d049eeb9a2a4ce31ce42c4cb3182d834c6dffc29e0439e0a3b9639f1ca"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/oggcultist_texture/sunken.png",
-      "bytes": 40245,
-      "sha256": "35c3954ee2ee60a1b2b8d850a14a71275f0e1bf5b072af3285133d8fe4179a34"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/oggcultist_texture/sunken_alt.png",
-      "bytes": 38549,
-      "sha256": "4127ac6122a703f79633f8e7b1da74d4c80a5a81646467bdd4ed9ca83b1ae7ed"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/photo_bezel_locked.zip",
-      "bytes": 6520800,
-      "sha256": "da962b4f535a4f4a93fdbfd20dcfdfe0bffa6048def61ce6b788b8f751ca677a"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/rune_asset_manifest.json",
-      "bytes": 5716,
-      "sha256": "d146e13a5a20b9d121bbb0eebf6eb396a1932ec98d282dda0154c0c39cbe349b"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/rune_consistent_flips.zip",
-      "bytes": 66150565,
-      "sha256": "ec362ddd04277db8eef9542599a08ed8b533b640d300f6fbbfe468248f142aea"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/rune_flip_strips.zip",
-      "bytes": 6722883,
-      "sha256": "16ffebbaa9317145cb17968461db32b55597fef0424856b5cd555f16b052d21c"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/rune_native_frames.zip",
-      "bytes": 6958943,
-      "sha256": "f559b46540ac7f7025d753e5a485e941271ec7aacc500d5e812419ae11b68997"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/runes.zip",
-      "bytes": 818716,
-      "sha256": "f4cb02bed47d6b85b8b4288d61cdc4019849756153a8f7d1ba2fbe800106e3d7"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/data/tarot_cards.zip",
-      "bytes": 5669018,
-      "sha256": "a086f1a7bd6f638284e0e36fe345c8b1a67d3ea6791d8dce6823f8258cbcb50d"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/fonts/NOTO_SOURCE_NOTICE.md",
-      "bytes": 578,
-      "sha256": "38d9ee9909a274d971b1b839738688befed83e13e987a4f935c2af707acb0801"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/fonts/OFL_UBERATA_CLEAR.txt",
-      "bytes": 4490,
-      "sha256": "d797d9e364b97a724ce8a9f504c69da5080e11869438f4d8507fba5ed6d77c47"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/fonts/Uberata-Clear.ttf",
-      "bytes": 575724,
-      "sha256": "248df02a4e0c52c541456ac19f29a2ccc50ff0b12428982a378d1576a5097482"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/layered_nixie_adapter.py",
-      "bytes": 1943,
-      "sha256": "18e9c4a59fccf5824a528c8d9407e3eeb4e0a94b2eb4b383bb479e82d116e018"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/marble_oracle.ico",
-      "bytes": 163604,
-      "sha256": "0af44265099205fb88ef860668a7dab6a8e1fff75f4b6a45131b6ae718f87697"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/marble_oracle.png",
-      "bytes": 114397,
-      "sha256": "cc31889d56df9c6f90e0072cfa5708227118f73f8c9cea2a39804caaf43ee2f9"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/marble_oracle.py",
-      "bytes": 192420,
-      "sha256": "8812ccf7425732860fe64986e206f7bd879c1b66b62d3dcba92c3423e2f2aaca"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/marble_oracle_window.ico",
-      "bytes": 34494,
-      "sha256": "eb512ab981df3a8794d3fe855a0d7fc53488a17beea49e709bb3165dbce9cd0c"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/marble_passphrase_tab.py",
-      "bytes": 9038,
-      "sha256": "47508ec4dc01f3b54008d6bcad240b3ed219d686fcd2ec01029c997242a703e4"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/marble_uberata.py",
-      "bytes": 1940,
-      "sha256": "0ded232df1033e5b2900309e41dcfeaef4e3d73a523a54a627894121abd132ba"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/marketdata.py",
-      "bytes": 5633,
-      "sha256": "8541e3b6a9af76403d86b1a1cd6c4b3195a4fd3dea080ae26a7d94842076e2f8"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oggcultist_design_system.py",
-      "bytes": 5414,
-      "sha256": "78dcca2d264896e2c6c0c00dbd2120f34e97947a0cd5e5ff5867961da9fcdc5f"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_ascii.py",
-      "bytes": 17375,
-      "sha256": "b66522a577afd2afdfe4e88ba0f9105e1adc929ee4be1b871b2756fe859be7a7"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_ascii_bitmap.py",
-      "bytes": 3826,
-      "sha256": "a9e465973ddfd2dd7636a86e68d3f306a01344450b4f21f9650e692eb0de03a2"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_asset_recovery.py",
-      "bytes": 4361,
-      "sha256": "7953df45396ae7c5a83787a927c69f6d56fae2979679bc14137daacb7ec92c5e"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_assets.py",
-      "bytes": 10861,
-      "sha256": "f502289639a472a04b57b8dcd65a4b49f04c975b56c4978fc8bccf0d976060d7"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_audio.py",
-      "bytes": 17261,
-      "sha256": "3a0a2e8b890b6037990ff1beea567c01b7446f265aaebcbdffec4db4133338db"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_audio_scope.py",
-      "bytes": 5526,
-      "sha256": "59e32962b11323e99a0eee3c04a721ac5cd200ad789c094389312fff72219a12"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_bootstrap.py",
-      "bytes": 6443,
-      "sha256": "ca662d5af80b0a12805a168013141dd649bc51871b5c948c4359f3c418bd8dc0"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_chrome.py",
-      "bytes": 64033,
-      "sha256": "2d2e5f60ae0c7a459921928185dbcbee4cc304ba42803466e51a7feec8ff6423"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_crt_v2.py",
-      "bytes": 21974,
-      "sha256": "b6477b8602b9e1fe535f7044c62c0cc5f64f63a683d92adae71b16d323b08d5f"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_dicekey.py",
-      "bytes": 11380,
-      "sha256": "79bb790e274de4b78d192e3797f381c769893a5e942744948bf3ecdd10f18b43"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith.py",
-      "bytes": 56953,
-      "sha256": "2caf0de4b43be56ae997fc7b8766cbf0a647b409e38ab1b7bd46f9e7d44edcd3"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_core.py",
-      "bytes": 10085,
-      "sha256": "706186f0ef7d974c3378fa39e3598b9bbc7c8076b01ce69a17fa6c64a3d60506"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_player.py",
-      "bytes": 19976,
-      "sha256": "68df7d388ff8435d54222fcd0622a217432f81d9684cbef91c1ac40a62b78873"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_feeds.py",
-      "bytes": 4091,
-      "sha256": "52d6d30e229393b0e0be629c9a619227beabffdca71c4e71dffd101f8d5dd203"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_glass.py",
-      "bytes": 6497,
-      "sha256": "36087b5e1f4ce3513e000c6eff07930960d59a1d77eb22d23678464e585c7c3d"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_latin.py",
-      "bytes": 27204,
-      "sha256": "f3cc26c4cd40cb86930409520d9eb27c033f617b747aa4b7d2c91a436d289793"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_media.py",
-      "bytes": 15245,
-      "sha256": "d184d847dd776d4bb7fcecf7ee648ffafc131d555df7c9b4e028c3b590185c82"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_nixie.py",
-      "bytes": 15463,
-      "sha256": "a0345172b73b7afc9ff76800455bc5763fb7a1e6af44e89a9b3232c3dc501785"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_ogg_tab.py",
-      "bytes": 6000,
-      "sha256": "dbfe79f134cfcaa38cde234cc684fceaee2ca6000fc06ab45332752abd56b6e3"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_ogg_texture.py",
-      "bytes": 3618,
-      "sha256": "b5376a33bc4fdf5ee18d134d3c43680a8f70d8c373b56b5f08795938ae8f378c"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_photo_bezel.py",
-      "bytes": 49548,
-      "sha256": "619428b1bf81a31dd731fdab503023060760f6955ec9b269509e8dd7a6c945c3"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_pixel_crt.py",
-      "bytes": 12765,
-      "sha256": "3fcd2a4309a89373c813e70d99531056e98abb0c7333894cd9f174b3ca7aa96d"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_runes.py",
-      "bytes": 10810,
-      "sha256": "9edd0598a91b77962a801f408bc48848980fb5c76c84642d359eea70b2a8d80f"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_sententiae.py",
-      "bytes": 15691,
-      "sha256": "84d5d527895fb62c0a55087b139e3561d735c29cc0d15be57ad9139df61a545e"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_skin.py",
-      "bytes": 23064,
-      "sha256": "ece4ea19c904c4095f106973e7282e1d5d86d8566507f9adc0dafcf45d934950"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_sysmetrics.py",
-      "bytes": 8284,
-      "sha256": "505d34f544cbc5892692f53b0be0c4ee3257688f07d60e7417c3f5cda3d062bd"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_touch_type.py",
-      "bytes": 28170,
-      "sha256": "deaa1f46887a995627e9e9c3d6dc1348fe3453c928f5ced94ae7ead39ce27779"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_train.py",
-      "bytes": 18042,
-      "sha256": "4a243ddeeb3d077fef1426eff3c929979c1acb79f45838f93074d2a3c4d5ed03"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_vhs.py",
-      "bytes": 8558,
-      "sha256": "1eaa0093300040194f61d464bc06fde88ee0c97995380ec36a936bf18b6ea360"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_window_shape.py",
-      "bytes": 4236,
-      "sha256": "09e834c983549747dfa92ffed0476035ec798f7fc866ff3a55fc96e5e0222e5b"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/oracle_wire.py",
-      "bytes": 51421,
-      "sha256": "4faf4e4d36941be37b7d29cda2890efee3e844a36d95d493dbacf3dc0f7cd8e3"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/quotes.txt",
-      "bytes": 27166,
-      "sha256": "bd0d96c10967f152b13362eda086a6e0a28d2fa8b6c6ddc9c6b07b840be28455"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/requirements-audio.txt",
-      "bytes": 115,
-      "sha256": "f65bb40c34c51fdfd99fb7e1f6b9cf677e9cd13f9b045bf21bbdc0b79602d962"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/requirements-crt.txt",
-      "bytes": 157,
-      "sha256": "dc739230331d62104b3f889c3c8266e079a4466e02ed24faa81f1640535ba9d4"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/test_rune_border_fit.py",
-      "bytes": 4331,
-      "sha256": "55bf748bc7fc311515ec9a85d2d51df5b9258f755b08b05903b5f9596922e335"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_App/test_rune_native_assets.py",
-      "bytes": 1493,
-      "sha256": "f8c16a1ac7b6eb761d249849fd9cc34b66ab77978c18743914f0260a596eecb8"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_Linux.sh",
-      "bytes": 622,
-      "sha256": "52140a75b7be10a4a2b17a12de741ffcbe3a767bc7159167cb35cbfe0b158c6e"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_Linux_Original_CRT.sh",
-      "bytes": 416,
-      "sha256": "ed06c548020bf7b3686e225a5924bb2c230b7614c0933c3b00d503fb011a57d3"
-    },
-    {
-      "path": "Application/Runtime/Marble_Oracle_ORIGINAL_CRT.bat",
-      "bytes": 113,
-      "sha256": "a310331d68b025e6eaa8e0041de43014e58226b0660d68ef1f777870dfaa0920"
-    },
-    {
-      "path": "Application/Runtime/install_linux_desktop.sh",
-      "bytes": 1650,
-      "sha256": "6b92820d63ff56a0e1545c18e42382b84a0d6ad9ce1b52daa44ebcb8b32fc0ae"
-    },
-    {
-      "path": "Application/Runtime/launch_suite.pyw",
-      "bytes": 36628,
-      "sha256": "cc439a4d00505cbd4b4753ccd6581c0685edafda47f50c97817b90c7b63dc455"
-    },
-    {
-      "path": "Application/Tests/README.md",
-      "bytes": 1133,
-      "sha256": "4512c4ee8189c1684b5f37e7af1921266c395cccedf11b28d5436c289bbc5d6a"
-    },
-    {
-      "path": "Application/Tests/TAB_LAYOUT_BEZEL.png",
-      "bytes": 1355017,
-      "sha256": "726c11506872ab15fca67680ccbe90e1a4814dc115ec8bf269661445e4a2ef96"
-    },
-    {
-      "path": "Application/Tests/TAB_LAYOUT_DEFAULT.png",
-      "bytes": 524942,
-      "sha256": "f7fba99ce3dbb34f9c9ade5b767340d7246fd313a172a121512b18f3f0b12ab4"
-    },
-    {
-      "path": "Application/Tests/TAB_LAYOUT_PREVIEW.png",
-      "bytes": 1182829,
-      "sha256": "c46fca664edcf94d5b9a71aa43f2f509e114776620699143c8d065da3bd7956c"
-    },
-    {
-      "path": "Application/Tests/TAB_OGGCULTIST_BEZEL.png",
-      "bytes": 860135,
-      "sha256": "f85b2eea65f7b6aeb8c05b8c6b94bc5442fb4a237abde7cf4daef1b39517b63f"
-    },
-    {
-      "path": "Application/Tests/TAB_OGGCULTIST_DEFAULT.png",
-      "bytes": 375407,
-      "sha256": "29e69fc42c1c823eed37948973d4a8b49fc2bf39354d4749995b22990e7c20f9"
-    },
-    {
-      "path": "Application/Tests/TOUCH_TYPE_PREVIEW.png",
-      "bytes": 672888,
-      "sha256": "c457bfca2102e02b168a0268a4dfddf725eb2f028e9a85c39ec1294011ceffa3"
-    },
-    {
-      "path": "Application/Tests/TOUCH_TYPE_SMALL.png",
-      "bytes": 428795,
-      "sha256": "e412f95580034164f7e939b1eca7b626f41e993e99cbb5c630cf174a2bb6afb3"
-    },
-    {
-      "path": "Application/Tests/test_actual_mode.py",
-      "bytes": 1584,
-      "sha256": "8fd45a7567cabec204f8706ee3c134e2048c97fd57011da3153320af5066b6ab"
-    },
-    {
-      "path": "Application/Tests/test_ascii_visibility.py",
-      "bytes": 2610,
-      "sha256": "212f4d8bd1256fdd1e1ce68a2bdfdbef08baa0687e5908803455bcc82e37fc39"
-    },
-    {
-      "path": "Application/Tests/test_console_free_launch.py",
-      "bytes": 3001,
-      "sha256": "42e9ef73cf3ba3d88bdd5731beb2cedf23a3b9100c9f6662b8b1b47a0cdd66ea"
-    },
-    {
-      "path": "Application/Tests/test_eidolith_speed_naming.py",
-      "bytes": 4683,
-      "sha256": "84374f80fe80171acf0766c76d2f48edeabf6f6d31b955f95896c3cf10487ac2"
-    },
-    {
-      "path": "Application/Tests/test_eidolith_workspaces.py",
-      "bytes": 5539,
-      "sha256": "4143b8066adcbe519af95f9f9acc28a5315cb082be7e176da1160001faf48cb9"
-    },
-    {
-      "path": "Application/Tests/test_exclusive_handoff.py",
-      "bytes": 5077,
-      "sha256": "c2a053f35722f66bfe9d14391319dcf2724d185d092622f3956accbbf652e61e"
-    },
-    {
-      "path": "Application/Tests/test_home_sidebar_and_muted_ascii.py",
-      "bytes": 2209,
-      "sha256": "55b61f7fba416559b829c3e7c156e1db65e37641326b5d349be2c498a6f3d0ef"
-    },
-    {
-      "path": "Application/Tests/test_launch_gate.py",
-      "bytes": 5879,
-      "sha256": "671f1a1287d4290f84b3f0f1c12a75ef4059c19d5df10bc1a8dca69b9fe22705"
-    },
-    {
-      "path": "Application/Tests/test_media_setup.py",
-      "bytes": 6371,
-      "sha256": "75333611d9c24c0918d49bebff1fea7229d2a6fe2b1ceedc4087540bcbafd323"
-    },
-    {
-      "path": "Application/Tests/test_ogg206_embedded.py",
-      "bytes": 1841,
-      "sha256": "83e6d8670dbff2613fe2e25c91d14d3cf5e20efe7fbb61415d2cdc3fec02a316"
-    },
-    {
-      "path": "Application/Tests/test_refinement.py",
-      "bytes": 1942,
-      "sha256": "41273b342d90f6e13ce714bfd58d937c32df687892d5de79d8c39dea6b8fddf1"
-    },
-    {
-      "path": "Application/Tests/test_rune_click_and_art.py",
-      "bytes": 3593,
-      "sha256": "8e6fe9ecb1c9164161946a9e2624a103904c954d3fbc251ec5a59be55c785197"
-    },
-    {
-      "path": "Application/Tests/test_rune_consistency.py",
-      "bytes": 1747,
-      "sha256": "f728cf9ce945f0218a2726f5cc1004ce563827c21faab373d3dfbe733344f167"
-    },
-    {
-      "path": "Application/Tests/test_rune_long_session.py",
-      "bytes": 3162,
-      "sha256": "c1d6e04b0a100b9b99457ed0928b951130ee084b55184f223bbb02d15ec585af"
-    },
-    {
-      "path": "Application/Tests/test_rune_panel_scale.py",
-      "bytes": 2692,
-      "sha256": "99b45c3921a0f929ce85896d3dfcad37eaf4e3cfe0328e9be4c025517ec46b1d"
-    },
-    {
-      "path": "Application/Tests/test_source_ogg_texture.py",
-      "bytes": 2984,
-      "sha256": "d9bb16d474707dc9ba485811a9d1d7c47a79360a26821ce814c514fc800dccf6"
-    },
-    {
-      "path": "Application/Tests/test_tab_layout.py",
-      "bytes": 4715,
-      "sha256": "c63b62dac1d7431fb5d36da3c7b7d39d0e730fab73526ed777ffca0a9ea99982"
-    },
-    {
-      "path": "Application/Tests/test_touch_type.py",
-      "bytes": 5546,
-      "sha256": "cc27bbe59c02145a377a4c085cd3d652b3ba21dbc2593a13c1bae5439e1ff82e"
-    },
-    {
-      "path": "Application/Tools/Rune-24-New-Stones.png",
-      "bytes": 245353,
-      "sha256": "79f1f683354aa84e3b158ca7a051e8a24f4a01cae8c860d539748c5b5c7a2426"
-    },
-    {
-      "path": "Application/Tools/Rune-Flip-Preview.gif",
-      "bytes": 49533,
-      "sha256": "6d724407b57407e3dfd7d5002e0ff2bbebd4b51160105405497fffab5bb686b5"
-    },
-    {
-      "path": "Application/Tools/export_actual_oggcultist_textures.py",
-      "bytes": 2024,
-      "sha256": "ae5acd3563f4c246726be2b447606d42eea03710ae2a554c602b6d33156e32a3"
-    },
-    {
-      "path": "Application/Tools/new_rune_blank_256.png",
-      "bytes": 93183,
-      "sha256": "0836b73f086f871b687110014c6bc53fc7cd21ccfec45cc82cd55b12569e038e"
-    },
-    {
-      "path": "Application/Tools/regenerate_runes.py",
-      "bytes": 6686,
-      "sha256": "2b55557023b3e7fa415c63abe2a60ad6682164648c7afdcbfff2e9c2e166d709"
-    },
-    {
-      "path": "Application/Tools/verify_release.py",
-      "bytes": 3423,
-      "sha256": "41d5e8b1041098fcbf4a3c10171f14ce0a048b9d3b32e60fdbc3e3f298d8a6d4"
-    },
-    {
-      "path": "START MARBLE ORACLE - LINUX.sh",
-      "bytes": 2764,
-      "sha256": "713cd5549905fcb423500bb1a28ffac7743c130e85abe2a7678f74d941dcd41f"
-    },
-    {
-      "path": "START MARBLE ORACLE - WINDOWS.vbs",
-      "bytes": 1503,
-      "sha256": "69f0a3c6a50fcb2b6ada63888be29ece27ca81c9e7e911261543733f1f343b2d"
-    }
-  ]
+ "release": "Marble Oracle / EIDOLITH 0.4 conversion reliability",
+ "generated_utc": "2026-11-10",
+ "schema": "sha256-inventory-v1",
+ "excluded_from_hashes": [
+  "Application/Documentation/AUDIT_REPORT.md",
+  "Application/Documentation/BUILD_MANIFEST.json",
+  "Application/Documentation/FILE_INVENTORY.json",
+  "Application/Documentation/VERIFICATION_REPORT.md"
+ ],
+ "inventory_file_count": 363,
+ "inventory_total_bytes": 114450634,
+ "files": [
+  {
+   "path": "Application/.gitignore",
+   "bytes": 164,
+   "sha256": "5f2a44b6ee500238580d1b33f5d26d851a96934507b1a85650bcfee5fb054236"
+  },
+  {
+   "path": "Application/Documentation/ACTUAL_OGGCULTIST_TEXTURE_INTEGRATION.md",
+   "bytes": 2437,
+   "sha256": "ebc651851fa9f051315596afdf1f75ddd5d021367c8fb6b78b960b19ce456109"
+  },
+  {
+   "path": "Application/Documentation/ASCII_WASHOUT_ROOT_CAUSE_AND_REPAIR.md",
+   "bytes": 2299,
+   "sha256": "4f37ba093ef796b2c23a7a1c4a093437e6131cccabcc28f50bbce6f17a880b69"
+  },
+  {
+   "path": "Application/Documentation/CONSOLE_FREE_LAUNCH.md",
+   "bytes": 1459,
+   "sha256": "93dfc051afe280236fb60d4c4245bb5b215aab085500124deae9c84d9e53583c"
+  },
+  {
+   "path": "Application/Documentation/DOCUMENTATION_INDEX.md",
+   "bytes": 2040,
+   "sha256": "dca2bdb201aa597ed4d2772000ab77b67fb9eb748faa6ea74da6e10efbd3a2a1"
+  },
+  {
+   "path": "Application/Documentation/EIDOLITH_PLAYER_WORKSPACES_AND_SELECT_ALL.md",
+   "bytes": 3842,
+   "sha256": "adcd79b051964261fcc8d88ba4d8d9db4c3124e1c8059b0d31177b11f04caea5"
+  },
+  {
+   "path": "Application/Documentation/EIDOLITH_RELIABILITY_0_4.md",
+   "bytes": 13339,
+   "sha256": "c4bcbf128beeac8f5ffcbfe2a09e9ec673534cb33d2ec9e04cda0dd426b7cb34"
+  },
+  {
+   "path": "Application/Documentation/EIDOLITH_SPEED_AND_NAMING_0_3.md",
+   "bytes": 4364,
+   "sha256": "4b51774c4475a9e802d6e0022f160c4a965efa0b99844e3e355f9b65f3bb96d8"
+  },
+  {
+   "path": "Application/Documentation/FIRST_RUN_REQUIREMENTS.md",
+   "bytes": 2862,
+   "sha256": "f66abe04e3ffa68ca59ebfb79ae813ecc221bf3b686bad8701bb116f14c15684"
+  },
+  {
+   "path": "Application/Documentation/HOME_SIDEBAR_AND_MUTED_ASCII.md",
+   "bytes": 1332,
+   "sha256": "5542cfb68150e55b6919c447a64bf8f6f2217a1074617cf9c350cb851f37a475"
+  },
+  {
+   "path": "Application/Documentation/History/ALL_SECTIONS_TEXTURE_UPDATE.md",
+   "bytes": 702,
+   "sha256": "f17c460a879587375f4c34aaec50d5139a2d5016d0b5a6e19a94881be62b4317"
+  },
+  {
+   "path": "Application/Documentation/History/ASCII_BRIGHTNESS_UPDATE.md",
+   "bytes": 446,
+   "sha256": "25dbb9433d66eafeedeeefae249325698cddf99f01cff367397671dfe3e8058d"
+  },
+  {
+   "path": "Application/Documentation/History/ASCII_CONTRAST_FIX.md",
+   "bytes": 1156,
+   "sha256": "ff95216867ec65c0891c1d1121f9ff620ae140e0d35f497e5284b90c24d4af5b"
+  },
+  {
+   "path": "Application/Documentation/History/ASCII_PLATE_REFINEMENT.md",
+   "bytes": 624,
+   "sha256": "a158f7c439126b6e6e159692d42abbcf3579238489bf0065f8c776976763d5c7"
+  },
+  {
+   "path": "Application/Documentation/History/CONSOLE_FREE_RELEASE_CHANGELOG.md",
+   "bytes": 2140,
+   "sha256": "0b547a0b51783abb74c5f9eb99c91775a026b3ee6a0e6bb18b3d0e0ba00fa6dd"
+  },
+  {
+   "path": "Application/Documentation/History/EIDOLITH_TAB_ORDER.md",
+   "bytes": 314,
+   "sha256": "55799844d3d88dc9dfdfcdb36303e156c4eb439e5ab719f1ab208f85c40df071"
+  },
+  {
+   "path": "Application/Documentation/History/EMBER_UNIFICATION_AND_STARTUP_FIX.md",
+   "bytes": 1272,
+   "sha256": "9a0237e73cfc26d82c0653a025adde6fb7bc7242d4ec26c485d1f6b66d064f54"
+  },
+  {
+   "path": "Application/Documentation/History/EXCLUSIVE_STARTUP_HANDOFF_REPAIR.md",
+   "bytes": 3436,
+   "sha256": "21b68c19b7168bb47f970953a1a1901488e36581eb41938aebb5aa303fd7d793"
+  },
+  {
+   "path": "Application/Documentation/History/GRADE_RIGHT_SIDE_CHANGELOG.md",
+   "bytes": 919,
+   "sha256": "ff4c1509f441f107ae31cae9595a0e07704b12b04735fc2be6eb3454eea0d2a7"
+  },
+  {
+   "path": "Application/Documentation/History/HANDOVER.md",
+   "bytes": 2992,
+   "sha256": "c393115502b3a22f18f704d733a1073151d627876beeeffc490744c055dc52b7"
+  },
+  {
+   "path": "Application/Documentation/History/HOME_BACKGROUND_DARKER.md",
+   "bytes": 521,
+   "sha256": "875b5976b96fc29e82c37e5d2760f28152225098c87f2cecfd31ae1867cbbcd0"
+  },
+  {
+   "path": "Application/Documentation/History/MEDIA_REQUIREMENTS_CHANGELOG.md",
+   "bytes": 1795,
+   "sha256": "02f3cd6d45857259de9b14ba11460ae14b45e995d6a501ea70010bb54391827c"
+  },
+  {
+   "path": "Application/Documentation/History/OFFICIAL_BUILD_INFO.md",
+   "bytes": 1345,
+   "sha256": "40dfa615eb626f26e029b0b85825cea41f5ba1c5dece84c927e840f372546108"
+  },
+  {
+   "path": "Application/Documentation/History/OFFICIAL_RELEASE_ORGANISATION.md",
+   "bytes": 1547,
+   "sha256": "5cc1db44ebd16275b1a8cb145558cb80e7b8d606087f325e3fbc673173b5d82f"
+  },
+  {
+   "path": "Application/Documentation/History/OFFICIAL_STYLE_AND_STARTUP_CHANGELOG.md",
+   "bytes": 2552,
+   "sha256": "a2fe43ba9c788f2645bc0f6ee39de8fdc15086e6c78d6200ed9b35dea246e20a"
+  },
+  {
+   "path": "Application/Documentation/History/PASSPHRASE_INTEGRATION.md",
+   "bytes": 1885,
+   "sha256": "89231e8f9c70d7de5506b3eccf3c771651ecac998b4f1f7dbc281150e2f7feb5"
+  },
+  {
+   "path": "Application/Documentation/History/PASSPHRASE_LAYOUT_RETURN_FIX.md",
+   "bytes": 1654,
+   "sha256": "7323cde99b2cb5760e89021631daf4ebe65713655fdf1945044f4c487ca02f93"
+  },
+  {
+   "path": "Application/Documentation/History/PRE_CLEANUP_BUILD_MANIFEST.json",
+   "bytes": 2512,
+   "sha256": "f8e3b79681bbdcf43999c43089aee6ffd98d62c8f246d0e508ac7db552b82d80"
+  },
+  {
+   "path": "Application/Documentation/History/PRE_CLEANUP_FILE_INVENTORY.json",
+   "bytes": 23893,
+   "sha256": "4306efcf61a16e4df45f2a4da1e7d4ebc8abab167a5abfed96aa35e6a4751c1e"
+  },
+  {
+   "path": "Application/Documentation/History/README.md",
+   "bytes": 754,
+   "sha256": "8fba8a3693ee21de18e89ae1534fadeeb9c3486dc2b855c0ae4fadf9400c21c7"
+  },
+  {
+   "path": "Application/Documentation/History/README_MODERNIZATION.md",
+   "bytes": 1380,
+   "sha256": "6f4d8a89fd58fc64098118fbdc061c1e60be266513bc64447868dbe14f1e14be"
+  },
+  {
+   "path": "Application/Documentation/History/READ_ME_FIRST.md",
+   "bytes": 1928,
+   "sha256": "d5595311e1281b0ce9a0f4564f41ad1509e26217f913619f3c581020904aea66"
+  },
+  {
+   "path": "Application/Documentation/History/REFINEMENT_CHANGELOG.md",
+   "bytes": 2660,
+   "sha256": "9808c117f13e274106641da3038f874b0b4b7bad5c3e0f14173944be16f1dc00"
+  },
+  {
+   "path": "Application/Documentation/History/REFINEMENT_REPORT.md",
+   "bytes": 3757,
+   "sha256": "b987aa6d4db223b6e2e6cd17549a60f739581c4132f4081121f2b764ae35579f"
+  },
+  {
+   "path": "Application/Documentation/History/RENDERING_FIX_NOTES.md",
+   "bytes": 1879,
+   "sha256": "5d357ad25e48053561bb600fca48d5c75fadc3ab87fd0722f50c57766a1b42d3"
+  },
+  {
+   "path": "Application/Documentation/History/RUNE_ANIMATION_HANDOVER.md",
+   "bytes": 2859,
+   "sha256": "1d1513d95f4a4b1a731a6387450de972631be68f9135352b74fd83722b066b8f"
+  },
+  {
+   "path": "Application/Documentation/History/RUNE_ASSET_AUDIT.md",
+   "bytes": 1906,
+   "sha256": "facbf21b5a991691002848c780d1bcfc18e2a0764e64c216c94d22c0aaa14d29"
+  },
+  {
+   "path": "Application/Documentation/History/RUNE_BORDER_FIT_FIX.md",
+   "bytes": 2375,
+   "sha256": "21c1887e8ba4b22986951a3710462aa39412c7a8e4919c747008140ceae3cb32"
+  },
+  {
+   "path": "Application/Documentation/History/RUNE_CLIP_PREREVEAL_FIX.md",
+   "bytes": 533,
+   "sha256": "0f3f553a6f643a75be3868534e63fb94b233d32b3ed18c276683253a5f097d16"
+  },
+  {
+   "path": "Application/Documentation/History/RUNE_COMPLETE_REBUILD.md",
+   "bytes": 1839,
+   "sha256": "f11c8abdfcc5b721deb95584d38e1737d4bef831dda2aa0b88b6340cc847ff89"
+  },
+  {
+   "path": "Application/Documentation/History/RUNE_FEATURE_CHANGELOG.md",
+   "bytes": 747,
+   "sha256": "2eab301bdf1f50f32ab5180cd6549246cc6f4d44ecaac74b4ff7cfa1ea789c90"
+  },
+  {
+   "path": "Application/Documentation/History/RUNE_INTERACTION_AND_CLIPPING_FIX.md",
+   "bytes": 2245,
+   "sha256": "b9f010f0c3f869ed0476eaf504b08316db0c3e5aa95e9412711f2b6dee478d4e"
+  },
+  {
+   "path": "Application/Documentation/History/RUNE_LONG_SESSION_AND_SELECTION.md",
+   "bytes": 1405,
+   "sha256": "8e1ee735ada75e0dc6e6db7866abe293467861f7d693bf8c81375a626bf4dfc3"
+  },
+  {
+   "path": "Application/Documentation/History/RUNE_PLAYBACK_FIX.md",
+   "bytes": 1897,
+   "sha256": "ed01ada7c35e8c8ae77714cb58ab51231660a8b41d4b86d5e0bd9323fb269eb7"
+  },
+  {
+   "path": "Application/Documentation/History/RUNE_VISIBILITY_REPAIR.md",
+   "bytes": 1815,
+   "sha256": "650d1bb994e30e0b1aa71f6fc5312a5b830b8c3c823c7b0cbb5d805d167b578a"
+  },
+  {
+   "path": "Application/Documentation/History/STARTUP_CRASH_REPAIR.md",
+   "bytes": 3422,
+   "sha256": "b134cd681b1aa5708e901844f6fbd66e9c41c171e8d3ccfe2173f87487b916b0"
+  },
+  {
+   "path": "Application/Documentation/History/START_HERE.md",
+   "bytes": 2205,
+   "sha256": "7c205f7bbdf265154b8b8bc417ac0f234e667f5129bfe59263953478c727e538"
+  },
+  {
+   "path": "Application/Documentation/History/START_HERE_LINUX.md",
+   "bytes": 2032,
+   "sha256": "e1f6443c94e22a694c6c190416f53d120d89bf71b8f888c5c1a5c0cecdeeed7c"
+  },
+  {
+   "path": "Application/Documentation/History/START_REFINED.md",
+   "bytes": 1185,
+   "sha256": "0833bc0a1f0c71bce093cc5bbdc99a1e21d6dd95e8cfd14976425c8d0f2ec229"
+  },
+  {
+   "path": "Application/Documentation/History/START_TABS.md",
+   "bytes": 2065,
+   "sha256": "13d1a58fc27a0f8fb9c9adcabf0bd09cedc0d2b2b5057a9b9b742d198d5765e5"
+  },
+  {
+   "path": "Application/Documentation/History/TAB_NAVIGATION_CHANGELOG.md",
+   "bytes": 4078,
+   "sha256": "a5e2cf92bc5bc820c5b6e66bb68ba524bc652805191467fb279f72e3471548c7"
+  },
+  {
+   "path": "Application/Documentation/History/TAB_ORDER_UPDATE.md",
+   "bytes": 379,
+   "sha256": "6b39b99272e11daf236713e24047f3b054714326c09a0d1520dc0cdef0a634d4"
+  },
+  {
+   "path": "Application/Documentation/History/THIS_IS_THE_FULL_APPLICATION.md",
+   "bytes": 1123,
+   "sha256": "89e3895dae804edfbbc46c2cb54a1cac6e69515addd8afbf6b70ef15eb08fe66"
+  },
+  {
+   "path": "Application/Documentation/MEDIA_TOOLS_INSTALLER.md",
+   "bytes": 2854,
+   "sha256": "044c5fdd18f17508887bfb1472cebd76205548779e8fe106f1850198100a27d6"
+  },
+  {
+   "path": "Application/Documentation/OFFICIAL_LAUNCHER_REPAIR.md",
+   "bytes": 3554,
+   "sha256": "c16d817a1506042654494bf2bc20d99383561f88f8b5c6a62d5cdef249246d6b"
+  },
+  {
+   "path": "Application/Documentation/OGGCULTIST_2_0_6_INTEGRATION.md",
+   "bytes": 3547,
+   "sha256": "39be0e4a9505d4eb7c9cf2e3fede6246096ef0a83ca6a2e23251e5b647867e20"
+  },
+  {
+   "path": "Application/Documentation/PROJECT_STRUCTURE.md",
+   "bytes": 6705,
+   "sha256": "daf645988263cdd73e1f1e19d07a44758c38791982dd094cac6dbb593e75d28c"
+  },
+  {
+   "path": "Application/Documentation/RUNE_PANEL_EXPANSION.md",
+   "bytes": 1717,
+   "sha256": "c0ba3efc5ab19cc553de0873ecac28ed22a5d91b30cf4f0b219d904d15119c87"
+  },
+  {
+   "path": "Application/Documentation/Reference/EIDOLITH_design_document_v0.1.md",
+   "bytes": 15447,
+   "sha256": "40819425b09ca1695273828a00ab8da3b5b61fc1d81112d1e7759ab9fdd782d2"
+  },
+  {
+   "path": "Application/Documentation/TOUCH_TYPE_GAMES.md",
+   "bytes": 2477,
+   "sha256": "e2aa8a850750cbfd438fd329e72eda0ab12ff2b4f918bc938f6ea1ed24ab4c77"
+  },
+  {
+   "path": "Application/README.md",
+   "bytes": 5704,
+   "sha256": "72d1088f39a1d138af0784b832e9ed8901d8602d2295572fda00e3d9a8d085e2"
+  },
+  {
+   "path": "Application/Runtime/Launch_Marble_Oracle.vbs",
+   "bytes": 568,
+   "sha256": "854ed6de1e50aa36897e2d443a0045a4a58e393b20b2a1e0ceb246d9145197db"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle.bat",
+   "bytes": 84,
+   "sha256": "e92f7f3cf7a66c83313d136780d7bbf11d13554e8960eb11ad38f7452f5e363b"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle.pyw",
+   "bytes": 1071,
+   "sha256": "89bd514e5efd803aa78e955edd4b4d180e68dde77bd58cd416af84735b8182cf"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/INSTALL_LINUX_MINT_MENU.sh",
+   "bytes": 1457,
+   "sha256": "d329d75a5972e58eb771b232179a3259d21b37767f1d08a9409df7b248147aff"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/LINUX LAUNCHER.sh",
+   "bytes": 8264,
+   "sha256": "6d96cf41ab17a944086546c9c2dc5df2f236b595844ba18b9c58c6cb2546e2d9"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Marble_Oracle.pyw",
+   "bytes": 219,
+   "sha256": "96def28d4558702b4ba7dde6fddbf97a9b1ca6b5d781312ad59aef536e59451a"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/CHANGELOG.md",
+   "bytes": 42943,
+   "sha256": "96d8a5feb87047853b3d29cce0594cc44de7272acb41740b9f3205b169c87b2f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/DIAGNOSE_WINDOWS.bat",
+   "bytes": 225,
+   "sha256": "b6e8ff39eb7eb15f33d72d9004c9ca9df454a731158bdbd29553ec47aebd23cd"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/LICENSE",
+   "bytes": 1080,
+   "sha256": "d76093d86926bc40faadd7a9d5baaa22b9915ce56c554f1ec9305c602288edf3"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/Oggcultist.pyw",
+   "bytes": 987,
+   "sha256": "4d1e2103e9009e6c1f72e211578330e9e065b76559de63670985ad42f663175e"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/README.md",
+   "bytes": 6034,
+   "sha256": "eb5ab16eb6617f946580e61cf106999d149bee5d05a8bb89f2e2f63e75a0e3d0"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/README.md",
+   "bytes": 634,
+   "sha256": "e56394543872b191b31dad0e4d62f51215e08ce71ae16599ed8acbadef08ec7b"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/ORIGINAL-USER-APPROVED-REFERENCE.png",
+   "bytes": 518463,
+   "sha256": "39dd3319ead84b9d4ef073ba5e332723d8b2ff87f68bb99845d23802cdc7914d"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/Oggcultist.ico",
+   "bytes": 44907,
+   "sha256": "efaac192d2edbae3b9da76c99938ae04e15cda9fe46f4aa9cb7a5e31635d0d0f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/favicon-16.png",
+   "bytes": 556,
+   "sha256": "30588003614bc8b29ba6a2a278afc0dd70c463cc500cc8324a2c4c72c76d4035"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/favicon-32.png",
+   "bytes": 1273,
+   "sha256": "b336055d99e64798f113952f58ad047e5d32778b709046a8213efb3933208c3c"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/favicon-64.png",
+   "bytes": 2657,
+   "sha256": "76bf5acd3136c6b33fcce9bf14276a01bd473c6bf986bb083f8850a92e39d58a"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/horizontal-lockup.svg",
+   "bytes": 6034,
+   "sha256": "cf295fcf74aa2e32e8c2d292bd6b62a784caa5e8c1d36569584d5b9cb133c098"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-1024.png",
+   "bytes": 42889,
+   "sha256": "fb1c88eeb904bdb88a31f0a9e6d8b19ee5ba2a6ca8fa010435e8789e5b08cd3c"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-128.png",
+   "bytes": 5675,
+   "sha256": "b32d518c706ec0bedfde0a4529f5e59b290609f040fc6187fb00dcf45f190204"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-16.png",
+   "bytes": 711,
+   "sha256": "cf6ec2a2afbeb7cd9c40ac9c3a673bfe68e845051b69efdf85eaec6edfeb0061"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-24.png",
+   "bytes": 1193,
+   "sha256": "b867e871f4b4b3fd194de2dac45df72859753d691dd579755e0c1ffbd212b8ef"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-256.png",
+   "bytes": 10671,
+   "sha256": "d43688868a696abffc6c6dad6653a4bef6daaa99563672215a844ca50f2f95fc"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-32.png",
+   "bytes": 1685,
+   "sha256": "b1f3eb7e20bc349007a40a126d02a58f0ccfd211016e1c85da5dd988cd49a3d6"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-48.png",
+   "bytes": 2272,
+   "sha256": "a02e743c5a4c3d1e67d77367d6f74d68887397729c4eef1de3ae60c2888ee7a5"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-512.png",
+   "bytes": 20997,
+   "sha256": "45d8c9f201648ea33432b49884788f10f09aabc312de4ae764e84ca15ddc4fdd"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/icon-64.png",
+   "bytes": 3020,
+   "sha256": "a62b94d2be59ec127161d4b5fa8f2cca58e30eaabd008d511da4ee0e3608a2cc"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/lockup-black-transparent.png",
+   "bytes": 33849,
+   "sha256": "cf53db901353fd9e876324dd4e7d7b14e976c490dfa8591b9750fd8682a9ba0e"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/lockup-cream-transparent.png",
+   "bytes": 37829,
+   "sha256": "f3c33234a5f89e25cda4b034913e7d9a9e1470caa7fabc0c91f33d29b08b5944"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/preview-dark.png",
+   "bytes": 38161,
+   "sha256": "39f88d8eed847c11feaa5c5210e20b21e44b6588a35dbe5717583992b80d5f70"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/preview-light.png",
+   "bytes": 35831,
+   "sha256": "735e1589396bcc05831ae405cbcded2a037f5ddf518707c7bfd79a3bfce8f062"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/symbol-black-transparent.png",
+   "bytes": 28402,
+   "sha256": "0d7c6675dd9cbea5dc69aaae546d1ed948ca2ba5c1825398db34af2413648182"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/symbol-cream-transparent.png",
+   "bytes": 30443,
+   "sha256": "8a8c56eab622201ae3b7f598ef47ff1a50864a3ba7cc455dcb9458ba3a163d86"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/symbol.svg",
+   "bytes": 2276,
+   "sha256": "7fa68f3e8ad907b637cf528ddc2ee03e1f52a5575e90d262eb94440a32330c5e"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/wordmark-black-transparent.png",
+   "bytes": 18871,
+   "sha256": "f5dae1d35d01ff845e62c3639aba2ea024e114cbb57e43809af0aca59ece27d9"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/wordmark-cream-transparent.png",
+   "bytes": 21843,
+   "sha256": "36bcb271c83129582d625e350eaa849f73041abc75a42121a5684c9a4c9d35c3"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/approved-ogg/wordmark-outlined.svg",
+   "bytes": 3836,
+   "sha256": "0287a788f03285caf4d129012f656df34756ebd2f441d4a6688fe0ac7605d3ea"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/ORIGINAL-USER-APPROVED-REFERENCE.png",
+   "bytes": 518463,
+   "sha256": "39dd3319ead84b9d4ef073ba5e332723d8b2ff87f68bb99845d23802cdc7914d"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/README.md",
+   "bytes": 2268,
+   "sha256": "048ba590bc4089d88ae27ae69ab48340b972ce50a7649250531d09bcfba2554b"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/build_brand.py",
+   "bytes": 1744,
+   "sha256": "7dc79172b2e92dee7767a91bcd0b0550baad6e257f34915e52b0a7950607eb77"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/horizontal-lockup.svg",
+   "bytes": 6034,
+   "sha256": "cf295fcf74aa2e32e8c2d292bd6b62a784caa5e8c1d36569584d5b9cb133c098"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-1024.png",
+   "bytes": 42889,
+   "sha256": "fb1c88eeb904bdb88a31f0a9e6d8b19ee5ba2a6ca8fa010435e8789e5b08cd3c"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-128.png",
+   "bytes": 5675,
+   "sha256": "b32d518c706ec0bedfde0a4529f5e59b290609f040fc6187fb00dcf45f190204"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-16.png",
+   "bytes": 711,
+   "sha256": "cf6ec2a2afbeb7cd9c40ac9c3a673bfe68e845051b69efdf85eaec6edfeb0061"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-24.png",
+   "bytes": 1193,
+   "sha256": "b867e871f4b4b3fd194de2dac45df72859753d691dd579755e0c1ffbd212b8ef"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-256.png",
+   "bytes": 10671,
+   "sha256": "d43688868a696abffc6c6dad6653a4bef6daaa99563672215a844ca50f2f95fc"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-32.png",
+   "bytes": 1685,
+   "sha256": "b1f3eb7e20bc349007a40a126d02a58f0ccfd211016e1c85da5dd988cd49a3d6"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-48.png",
+   "bytes": 2272,
+   "sha256": "a02e743c5a4c3d1e67d77367d6f74d68887397729c4eef1de3ae60c2888ee7a5"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-512.png",
+   "bytes": 20997,
+   "sha256": "45d8c9f201648ea33432b49884788f10f09aabc312de4ae764e84ca15ddc4fdd"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/icon-64.png",
+   "bytes": 3020,
+   "sha256": "a62b94d2be59ec127161d4b5fa8f2cca58e30eaabd008d511da4ee0e3608a2cc"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/symbol-small.svg",
+   "bytes": 2276,
+   "sha256": "7fa68f3e8ad907b637cf528ddc2ee03e1f52a5575e90d262eb94440a32330c5e"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/symbol.svg",
+   "bytes": 2276,
+   "sha256": "7fa68f3e8ad907b637cf528ddc2ee03e1f52a5575e90d262eb94440a32330c5e"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/branding/original-identity/wordmark-outlined.svg",
+   "bytes": 3836,
+   "sha256": "0287a788f03285caf4d129012f656df34756ebd2f441d4a6688fe0ac7605d3ea"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/launch.py",
+   "bytes": 1327,
+   "sha256": "08cbbca7515fb7806a4a92e24b34222203ed79945f298248d473a605d9ec7356"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/__init__.py",
+   "bytes": 106,
+   "sha256": "48c0e4695c3451e24173f60ad1bb9afc0738bb6507416d320acd6258dcab1421"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/__main__.py",
+   "bytes": 129,
+   "sha256": "ed71f910be84aa81a6554dceb47cdaf2a90aa6748abf8d531877c64ec57a9475"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/app.py",
+   "bytes": 380,
+   "sha256": "756d66136cfedccd83ae628779794840db9289ba965ead759cbbaa168760b461"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/artwork.py",
+   "bytes": 404,
+   "sha256": "ce2ca052e5d3dc24c506191d8efb3c5736534fb5e443f4077cc8ab9355d2e0db"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/converter/__init__.py",
+   "bytes": 86,
+   "sha256": "68a124fe69f4395abff6083d2ee03eaa148c8d03c18f8425879ec06ba84cef70"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/converter/artwork.py",
+   "bytes": 35096,
+   "sha256": "517a453c51051f0de21fc9eba4e7d72838601e00a479fb99a71801db732e2731"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/converter/core.py",
+   "bytes": 34826,
+   "sha256": "959c5af02b3cef9d7102fcf2631ff48360e79d8c193b7cae4381b0777e7a9ba3"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/converter/cover_editor.py",
+   "bytes": 20963,
+   "sha256": "1075e53173ee8465f4f41ec1a8e3c010d47207f95120c9c25b3988fd61bbce42"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/converter/musicbrainz.py",
+   "bytes": 6834,
+   "sha256": "eb705f054ee34bd49bc07561608dc51bf117d0ab979314d28cf08bb2e6d8eca1"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/core.py",
+   "bytes": 395,
+   "sha256": "1c1a665cb3c3d19102a26dfc24832d00b44ac44bfd779c8e24baaac53a6ef9cd"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/fonts.py",
+   "bytes": 6318,
+   "sha256": "0517d6235c60ffb4ba84916c33db9ecf05b031161da9149e74424d8b12562f7c"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/__init__.py",
+   "bytes": 146,
+   "sha256": "ebb01856c6145f99f4ac933aabd66b86297393c8081a1f5db0dd92dce7baa039"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/animation.py",
+   "bytes": 12216,
+   "sha256": "ecf60955fb5825b38082d256ae0105c8ff6c04b9c9c3f3945b9773dbe04cc371"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/app.py",
+   "bytes": 34090,
+   "sha256": "38914647d3b53e888952940c3e8f334a9cc9059dbeaa48045a5c52a1f04eee62"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/art_view.py",
+   "bytes": 24434,
+   "sha256": "8cc8aaabf941bd54797faaeb218c687910da7ecb476c85945e0ee6abd28999d9"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/brand.py",
+   "bytes": 3074,
+   "sha256": "e7c117cd01d4e7c22d7502be79350a183be39f054d60d6f7777bd1e3b211d353"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/collection_pages.py",
+   "bytes": 12931,
+   "sha256": "e746a02885a2e8af2992c4e859228946e1bb30e07f9c16c958c8b51e65d0108f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/converter_view.py",
+   "bytes": 31592,
+   "sha256": "886f91bf5b9695fc5169f09e3701947cd1950065ec4038707fbc41d10a53fcc9"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/design_system.py",
+   "bytes": 5414,
+   "sha256": "78dcca2d264896e2c6c0c00dbd2120f34e97947a0cd5e5ff5867961da9fcdc5f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/dialogs.py",
+   "bytes": 6768,
+   "sha256": "f00594c277ece5ba145ce47d9013507cb8e79c07efa056800a219c1b0499c965"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/icons.py",
+   "bytes": 5236,
+   "sha256": "85d2406c32d8ef9f01b42c93f56ef5c88a63121cdca32877031820f3f9e93036"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/line_icons.py",
+   "bytes": 6607,
+   "sha256": "898c60abf3728dd2485fcd24c519f02454343698188a405d9cf6fed08100da0f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/media_keys.py",
+   "bytes": 19288,
+   "sha256": "86e298080a6a8c3e77010e23ea56bf69186079d398a1b37955f962bae453e0c2"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/native_folders.py",
+   "bytes": 8573,
+   "sha256": "68c658d5909363b2475611e98846f9834c3dd0c342070586e140015e9b66fd93"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/now_playing.py",
+   "bytes": 14157,
+   "sha256": "32b07722d7703cfbec1a25594ddedbdabc14438d14e884c73f4af911681dd53d"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/player_view.py",
+   "bytes": 22239,
+   "sha256": "63bf300b1d914cae101642a1ac39c2bd05505972768e7fb5a354ab3ab99aa46d"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/selection.py",
+   "bytes": 2163,
+   "sha256": "37534a508d5997d026cb876275b596f47be63c9aae2f6b0fbc1b1030d1642ee2"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/settings_view.py",
+   "bytes": 14451,
+   "sha256": "26a2daa03aa2fafd1ac9325cd4b1735987d1483756b7abe1c6f1a209b0bb6791"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/sliders.py",
+   "bytes": 19377,
+   "sha256": "63eb11b873e4b825560ea897a3909362d67be0fa8f6c214d9e25343c30b8f97a"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/textures.py",
+   "bytes": 12744,
+   "sha256": "7085eecedb90b1ae4961676ef9d9cf62f3034c24f8583c0e2630271bb31428c1"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/theme.py",
+   "bytes": 35452,
+   "sha256": "89a8333cdb4c93e9a352fa6729755dd06f48436cc99e5b4381f44d790eab4af8"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/widgets.py",
+   "bytes": 9905,
+   "sha256": "9df8b1b7cbe77ccff257ddad535473d528021a1179f65dc69fe2699b7ae66d38"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/window_frame.py",
+   "bytes": 3085,
+   "sha256": "6cbe536e28141e4f5e2b7d276269c84697f05c520f2ffcc953741360ce4ab27d"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/metadata/__init__.py",
+   "bytes": 358,
+   "sha256": "a2e139a947aab88a65f01ac5fb078dfa7c7883e5400f4a5fe10c0653e599fcb5"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/metadata/tags.py",
+   "bytes": 13590,
+   "sha256": "a72c1e37231bafd97b74ecc811661b9e1d791c2a74cfc6aff59ee62604249af5"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/musicbrainz.py",
+   "bytes": 416,
+   "sha256": "e5dc15bcadc54a207e8f0142127876dd30f3c41ecc79a62ba7774b21f2d55a5c"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/paths.py",
+   "bytes": 7309,
+   "sha256": "9e473b2bd5b5e43a34f1e73a3037cde75c6dffd1838ce846d4654aa2c023b181"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/pillow_tk_compat.py",
+   "bytes": 3091,
+   "sha256": "58804c22cdc4843099f3ca68c2fb9160acf8043424bef267dd5b21549c38c9f5"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/player/__init__.py",
+   "bytes": 732,
+   "sha256": "5437e5745262828d7a9271006830ebeb5ac755a8d826ccd4537e2b49bb9720e0"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/player/library.py",
+   "bytes": 4617,
+   "sha256": "0adb81d76cc7e27ffce8f68bbd4253f16ac29eaa2f985092b3ca88fe3beed31c"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/player/order.py",
+   "bytes": 8342,
+   "sha256": "b2fb893fd314c4c462ec7c9ac517cefff45cfb806ae5939cfd07322c94839161"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/player/playlists.py",
+   "bytes": 4647,
+   "sha256": "41507c21faebf3f5ba9bc646b1b6c975fbb8e957eeba8203ee04738f25616247"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/player/stream.py",
+   "bytes": 24504,
+   "sha256": "9d797bba3b2f7ea442bd649f57c107016fe594271f738431601f1243b08c754d"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/player/transport.py",
+   "bytes": 15093,
+   "sha256": "82bd97878487475d48660688aea12489a033e9788b1cffed2295660130ce384e"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/brand_symbol.png",
+   "bytes": 30443,
+   "sha256": "8a8c56eab622201ae3b7f598ef47ff1a50864a3ba7cc455dcb9458ba3a163d86"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/brand_wordmark.png",
+   "bytes": 21843,
+   "sha256": "36bcb271c83129582d625e350eaa849f73041abc75a42121a5684c9a4c9d35c3"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/fonts/NOTO_SOURCE_NOTICE.md",
+   "bytes": 578,
+   "sha256": "38d9ee9909a274d971b1b839738688befed83e13e987a4f935c2af707acb0801"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/fonts/OFL_UBERATA_CLEAR.txt",
+   "bytes": 4490,
+   "sha256": "d797d9e364b97a724ce8a9f504c69da5080e11869438f4d8507fba5ed6d77c47"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/fonts/README.md",
+   "bytes": 892,
+   "sha256": "5c9bc3be8fd634160a38f75569aa8cf3f951f6d0e0c2533c418e3eff47675182"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/fonts/Uberata-Clear.ttf",
+   "bytes": 575724,
+   "sha256": "248df02a4e0c52c541456ac19f29a2ccc50ff0b12428982a378d1576a5097482"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/icon-16.png",
+   "bytes": 711,
+   "sha256": "cf6ec2a2afbeb7cd9c40ac9c3a673bfe68e845051b69efdf85eaec6edfeb0061"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/icon-32.png",
+   "bytes": 1685,
+   "sha256": "b1f3eb7e20bc349007a40a126d02a58f0ccfd211016e1c85da5dd988cd49a3d6"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/icon-48.png",
+   "bytes": 2272,
+   "sha256": "a02e743c5a4c3d1e67d77367d6f74d68887397729c4eef1de3ae60c2888ee7a5"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/icon.ico",
+   "bytes": 44907,
+   "sha256": "efaac192d2edbae3b9da76c99938ae04e15cda9fe46f4aa9cb7a5e31635d0d0f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/resources/icon.png",
+   "bytes": 10671,
+   "sha256": "d43688868a696abffc6c6dad6653a4bef6daaa99563672215a844ca50f2f95fc"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/selection.py",
+   "bytes": 398,
+   "sha256": "ec8060ebc11682478304a05eda0b1ff6c1387962ec2276f857a7e0ea50827e90"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/services/__init__.py",
+   "bytes": 80,
+   "sha256": "d0cfdbdec643269ca7c1cbca94d1234dbdd5dcb29b099d20c7ed3cf0b1dc9cf1"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/services/ffmpeg_setup.py",
+   "bytes": 11640,
+   "sha256": "4f366993167deacf5ed8d7e1b7ad6376d6d2463b07e0d70343cd1311b6f693d9"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/services/tools.py",
+   "bytes": 4565,
+   "sha256": "1f897b6bda189ce73e58d0900193742444976a9fcc07efdbb60dd4b895506582"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/services/windows_launcher.py",
+   "bytes": 4891,
+   "sha256": "537c25d0ec1030cd03d4cd72d81eb046d9513612322c3a7cda2c07dd0ffc96a8"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/startup.py",
+   "bytes": 13659,
+   "sha256": "b05470c2298a312ba4b6e2548e1d7ce5d14d1c351a37ec2c3aa2404c681cb65c"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/suite_bridge.py",
+   "bytes": 3691,
+   "sha256": "21c7b1a03aa53f45d83305fd8fc13dd28262700af12cca1a4ad1059d69041902"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/windows_launcher.py",
+   "bytes": 429,
+   "sha256": "6827afc79068206a972f3a335bc3a10a0eab017dbbf3138e13ed399c55e1712f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/packaging/PORTABLE_README.txt",
+   "bytes": 1064,
+   "sha256": "73179ab1df9e8af9d0d2fc1de0155741e000b13e56287dbfd8fa6bed8ceb2ba4"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/packaging/build.py",
+   "bytes": 5171,
+   "sha256": "77f6904ca31bf0deb977b1daf13aae72c16f25ac0df2e42a88941aaf3b625e44"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/packaging/entry.py",
+   "bytes": 278,
+   "sha256": "4185ac36dbc5d76c9750390dcefd50dc548c74309fa9e41a07aefef51a99ae69"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/packaging/oggcultist.spec",
+   "bytes": 2969,
+   "sha256": "c060df8d481a9e102e4e1d28ac7321d477155dd04e8307840c2ef205a3d4d98f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/packaging/requirements-build.txt",
+   "bytes": 161,
+   "sha256": "553c403f9ad8a3b16bd2310d7a7de5584281e53989d4b6cb6dd4869036a777c2"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/packaging/source_release.py",
+   "bytes": 6511,
+   "sha256": "14fabe672573b48ebced82c6447003681da6752f3d25eb157025b721ee5d9c16"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/packaging/windows/build_windows.bat",
+   "bytes": 895,
+   "sha256": "083318d866e0d944baee852a437750ed9328ef20a0e2446f13238bee29f366dc"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/packaging/windows/version_info.txt",
+   "bytes": 941,
+   "sha256": "848b30aa1fcfecd62f82c3e948f7bfbfc26ae7d28d3a08ae8eb089af834149f6"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/pyproject.toml",
+   "bytes": 767,
+   "sha256": "c65e6b97642f0769a9a7ba4a3e8f54526e75ac440c8b9bcd236e222dbfcc6b07"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/requirements-dev.txt",
+   "bytes": 202,
+   "sha256": "72dd7f4a8578fbdccdc450bde6e92346c31628f7f7fa74d8ebc57f45c11eb582"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/requirements.txt",
+   "bytes": 119,
+   "sha256": "b1cf1880a8fb26df91a5f6b0d5612fdd12ef21543b4e3f6d6ce514af4a32a4e7"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/setup_ffmpeg.py",
+   "bytes": 468,
+   "sha256": "ea7ee08fbbd919e533e502d8994c74cf4a7f0221b3ccbee41107c39ddc98ceed"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/suite_integration/README.md",
+   "bytes": 2469,
+   "sha256": "79efc5aea007701a74f0aea5ecf4395a005ad0063ad549c963d78a4fc8863390"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/suite_integration/manifest.json",
+   "bytes": 1521,
+   "sha256": "bae515d60aea9a710a8fa7a73d5436553b582fad8cd67cc8dedaacc483bebfff"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_audit.py",
+   "bytes": 22971,
+   "sha256": "6f7137fa33ac64be40a66d268fc6d7be24ea60176853bc75d9266ad4bdc8a421"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_core.py",
+   "bytes": 9612,
+   "sha256": "ca5ba175ce73a34924387b229a32bffbd953fc8b647ac32900264924901e3188"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_ffmpeg_setup.py",
+   "bytes": 4698,
+   "sha256": "af6fa4f20169111aaa6c846c38bde0156b32ce0bd8a04c7dd4ff1f85a7446980"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_ffplay_launch_selection.py",
+   "bytes": 7318,
+   "sha256": "6ee7c2fa7257b46733772e7e0ae03a1c5bf4647973aab96988b976119428343d"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_filename_fallback.py",
+   "bytes": 5342,
+   "sha256": "e621c1411610101f705b80c7f6aefd6b5a2d2ede912aacf85c16fa6bbd8ebb5b"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_followup.py",
+   "bytes": 11432,
+   "sha256": "573b7029a0d78130e4c443fca3812d2632520b20ac95e3b142eadbaa4c0067f5"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_input_stream_diagnostics.py",
+   "bytes": 3527,
+   "sha256": "85752e180f4ef4f1837ded0fb5c0ee0d9058e43d3d1b4ff1dd2ceba0fa1d9145"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_music_player.py",
+   "bytes": 7147,
+   "sha256": "e7366d6bdbab904de7b7f693ab8f40f9a5413ffad6aada2eac81bd6d0d25aa22"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_player_first_startup.py",
+   "bytes": 4405,
+   "sha256": "11245c98ce019d0afe95c4b151f6f38313864b117e5cea4c6d0ceddc9a27f8de"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_suite_bridge.py",
+   "bytes": 1499,
+   "sha256": "6aa7c61dfec9492ffe221ab8c1ca9c2a37269472e486b7af4a33de36cb721148"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_upgrade.py",
+   "bytes": 3524,
+   "sha256": "e7ece641dc5b48d98d002bb262a50ed5e27742294ac792a73e8673585bb0a3a5"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v12.py",
+   "bytes": 4044,
+   "sha256": "fa1c8fa1cf27d6772af7f5858972ace889d7eb40cfd9e52935cf77feb45c5d8e"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v12_audit.py",
+   "bytes": 7509,
+   "sha256": "8e8430bf1d90e3687e65f1a5a134a1ec773365210b53783906da1266580fb4b1"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v13.py",
+   "bytes": 5194,
+   "sha256": "bfa8c80a62340eeb1822bc9f5a10e83432078eb161bb26467c77675afe34f8bb"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v13_audit.py",
+   "bytes": 9292,
+   "sha256": "4d76b02e5a6462820cfec2d72b64d140b59acc7c9bbb606143e68cbb21f45894"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v14.py",
+   "bytes": 2277,
+   "sha256": "8a0ee9fe3fea1ea8e7c369b04bc7a93ab0bef58921fa91071899710d3a5f109c"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v14_audit.py",
+   "bytes": 6804,
+   "sha256": "2bad17dfe25342912ce2820f21f5aacf16f2328688dd36330038a0d934da3e51"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v15.py",
+   "bytes": 4532,
+   "sha256": "8ff24c014d79d2820b3878c52e7ac2af3243e059d81c073b7869470a18e81ec6"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v17.py",
+   "bytes": 43609,
+   "sha256": "9a2b4d5f870ce8bbefe0801f874e133ae5af14c5f2e52d51ccc70506652a69af"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v172_playback.py",
+   "bytes": 12295,
+   "sha256": "2423ac77f937f0adbefa750c6d20a528deb923fa4d43087bffdc5189ed738fdc"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v174_modes.py",
+   "bytes": 7168,
+   "sha256": "d4c603d3f1d9cc6aa133a7546bf4960aad1469d5b396368fc9337e924d91c0f1"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v181_stream.py",
+   "bytes": 6066,
+   "sha256": "4bf39f769482d4a66b88bf54aecfaf1afc0cf5a8961b379972859f01aaec4c8f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v182_media.py",
+   "bytes": 7797,
+   "sha256": "88c169677b578ff91a468a4f4fa54e934af598f03ca6e9204e07739f93ff4b80"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v183_lifecycle.py",
+   "bytes": 5186,
+   "sha256": "7d5206263afac172cd34e3e286bb52b1fa8e7ec8caacca86e86c106ab8c8a487"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v183_window_frame.py",
+   "bytes": 2420,
+   "sha256": "3745b4f71c8c7ae19499e1ebe00aef5621f2fff9a4a3027c2a5ca248ba5454a2"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v189_motion.py",
+   "bytes": 6386,
+   "sha256": "cbac0a1a3debd5a5537cbb27a525deefa6704e24fe56a55bad67ccc0f61bd285"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v18_cover_editor.py",
+   "bytes": 10095,
+   "sha256": "f96ee7f254b310219c28263b73528bb25e1602b849070f6e55abe589aa6e7bdb"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v190_look.py",
+   "bytes": 6774,
+   "sha256": "ae623a8721663ee75c591663c12df386768791ae1b06c9fed9fe73a0782e259f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v194_windows_launch_release.py",
+   "bytes": 2825,
+   "sha256": "97a082f18b550fc89d7db4c23a3d0f78815f8bafd5d21bc14537d0f863405998"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v196_bevel.py",
+   "bytes": 1168,
+   "sha256": "7f246235752f18444014404bad6d2882f737b680b39d63d82bc0c6cb659a5562"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v198_sidebar.py",
+   "bytes": 3241,
+   "sha256": "78a8564431db53d887594575f385cccb92168bee03d4004af163806b6c523a98"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v199_redesign.py",
+   "bytes": 4475,
+   "sha256": "6a608136c8ce29187ebde34f3a80b06ce238318e80a07655ca510d0c04ddc4c7"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v200_ember.py",
+   "bytes": 23580,
+   "sha256": "69cf34ef44b644fee3754f9073025c38ffbb3c0de24ea80e6d7fef53bc01a001"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v204_uberata_native_folders.py",
+   "bytes": 4525,
+   "sha256": "d303683a5be9f7ef864c67b14224462265ad791b613ad8824491526f51682b1a"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v205_bundled_uberata.py",
+   "bytes": 2748,
+   "sha256": "2a85cc2c2bda68ac7b642c4dfbad77949b1af50e88439d7b23dbb2b2417c3344"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_v206_branding.py",
+   "bytes": 2188,
+   "sha256": "378db7e7565b993d06f5e3aabdf319204e2a87bedd338adebb71e8fda8e6f57f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_windows_bootstrap.py",
+   "bytes": 3890,
+   "sha256": "8c802c31da2344a087040d337582785f29e349c1d1bfd61056442771405cdb8e"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_windows_conversion.py",
+   "bytes": 3915,
+   "sha256": "fdc0f77beac74385ba56f4a16307b0158fc489df6bdc70ca677d4c1c7501c5cb"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/tests/test_windows_startup.py",
+   "bytes": 3670,
+   "sha256": "5fb2e99228eeb9a1927fe4d9ba61c7b1e949b22105fc64719d95114169f234b3"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/VERSION.txt",
+   "bytes": 132,
+   "sha256": "9ab6eb2fd55c87511a516a2db6fd68c6cb9ae3ee9327cb1998a1a68fcff9ef1f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/WINDOWS LAUNCHER.bat",
+   "bytes": 6520,
+   "sha256": "88ac8318555b9dc68df5b6f55f84903c57e3ac75ed09b2b6aabe61f8be537612"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/crt_barrel_filter.py",
+   "bytes": 10845,
+   "sha256": "7a029bba126c0404ef0942f6288ef2ac856b7261f81492ee803b79f10aef2789"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/crt_barrel_no_feedback.py",
+   "bytes": 8723,
+   "sha256": "788aa96cb80515d34f90672e4f3d6cc7d864f2a5ec8b8ed375b54bbfd1e8dfa9"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/bezel.zip",
+   "bytes": 1394336,
+   "sha256": "b1314bb9a932014c7f3e28bd56178f77a2d14724f2cbc4eba01ff4a2c1b1942c"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/bezel_shape_rows.json",
+   "bytes": 10576,
+   "sha256": "db6b49d041f4d0850f9ed396e2e1a143707418aa3dc357f155377d68880d5efd"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/crt_v2/aperture_mask.png",
+   "bytes": 9979,
+   "sha256": "fcce42d5da8b7d74a85129e9383d1006ff4861d516a83d541c7c5a4988e29540"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/crt_v2/frame.png",
+   "bytes": 2186999,
+   "sha256": "c05ec499c057957b12e714e1dbc466f9beaeaf3053b3b592d063412ae2b027eb"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/crt_v2/layout.json",
+   "bytes": 12760,
+   "sha256": "106795db5d5fb51cc226e47b2bf566bc336fa8cae796f8f7d0fa5a27d9d0216a"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/crt_v2/outer_mask.png",
+   "bytes": 10059,
+   "sha256": "ab800f787ec0d6e12e8021a46d8bdb5e1ab7e1904ceb2d312f34c92852bd2050"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/crt_v2/shape_rows.json",
+   "bytes": 12066,
+   "sha256": "f528d13c775c56d15d57914bd28b411ecc090a40ddfcf52151dbedac84e7091b"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/eff_large.txt",
+   "bytes": 108800,
+   "sha256": "addd35536511597a02fa0a9ff1e5284677b8883b83e986e43f15a3db996b903e"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/eff_large_CREDITS.txt",
+   "bytes": 504,
+   "sha256": "9c52c707aee7bfdf7eafd6fa05d71338afdc8a1de563a4f6e9f11790f64f0867"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/latin_voices.zip",
+   "bytes": 5535134,
+   "sha256": "4503c3aeffc07117015034a14bf45e2e3f7cc8fa5f2d08bc638f8772115953d2"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/latin_voices_CREDITS.txt",
+   "bytes": 2276,
+   "sha256": "139cade79496b96a9f6ac6a318f35b0ef37d8faece5aa04fd98f204178ec51e0"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/marble_archive.zip",
+   "bytes": 738630,
+   "sha256": "7ff0848bc51a0d4d43152c701122a87d3268a4ded2fffe51ff75455bd9ecc788"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_0.png",
+   "bytes": 22069,
+   "sha256": "9dd4d2cf66aaed38d727bba80da6b8d0de50c724d9fb8d0033ebfb74faef3aa0"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_1.png",
+   "bytes": 15280,
+   "sha256": "85a78f09936480106ade30cb97d6ef6d84083eba9643f27df6f740a2e549d7a1"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_2.png",
+   "bytes": 23715,
+   "sha256": "b668e9297ee8c31dba321ece8bbf62c40dc99706016adb9da11e60821eef8591"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_3.png",
+   "bytes": 20970,
+   "sha256": "e913f80ececb0852544d9bf8c9ccbbe72980bc7fbbbe514bfa7982283538511a"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_4.png",
+   "bytes": 20146,
+   "sha256": "e338ed1a606bfc650800c6b394dccbdbd4c15bbc0eadffaaf1dd268c36668ca5"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_5.png",
+   "bytes": 23015,
+   "sha256": "b835d957edec41067b187078646c86934ad17fecc717a3560cccc6958247fe87"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_6.png",
+   "bytes": 19272,
+   "sha256": "cd7bc6ee73c545eb7393f16e7a0fa1e38be0eb8d9dcab5f101c67db38b12af0f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_7.png",
+   "bytes": 17680,
+   "sha256": "0bab604d1a29ee573ab851005b3d4637159e2ea886d9dabd5741375b33f5a011"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_8.png",
+   "bytes": 21861,
+   "sha256": "ad6607da163feca3674a473619e39eaba3788dbc656f68d4051c068c52a6223e"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/digit_9.png",
+   "bytes": 21284,
+   "sha256": "7560eaab63e210498e771aa7513304b5cd59e2a9c5a51eb498857649899a1756"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/nixie_layers/nixie_shell_base.png",
+   "bytes": 76714,
+   "sha256": "f9ffd7d5d2ef2be6476c8d7ce347d9b03114b4e3eeb9f7275db712b236152fea"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/oggcultist_texture/SOURCE_MANIFEST.json",
+   "bytes": 1484,
+   "sha256": "ec339e12736ef28601cadeaacc9ed6f2db1e023984f25af5d89cdc2855053313"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/oggcultist_texture/accent_soft.png",
+   "bytes": 40206,
+   "sha256": "df068b3bba4ed24e705b131211f8a8535d9d1172c9e3b9055ac0d07bfc7c4f98"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/oggcultist_texture/card.png",
+   "bytes": 38735,
+   "sha256": "e967522de73ba83db441ba39ca4c4861ebe9b57f933d70cad6f23dda28801870"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/oggcultist_texture/control.png",
+   "bytes": 38757,
+   "sha256": "16ec3e023a10c5bdf1f615aeef67deeef550dca10f02b91952e48d5d886f308a"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/oggcultist_texture/page.png",
+   "bytes": 40350,
+   "sha256": "90afc61ae8a092f7437ee923c5603b531caa1ad73ba839eb1e6ecb5cd9b5a254"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/oggcultist_texture/side.png",
+   "bytes": 41426,
+   "sha256": "a64a09d049eeb9a2a4ce31ce42c4cb3182d834c6dffc29e0439e0a3b9639f1ca"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/oggcultist_texture/sunken.png",
+   "bytes": 40245,
+   "sha256": "35c3954ee2ee60a1b2b8d850a14a71275f0e1bf5b072af3285133d8fe4179a34"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/oggcultist_texture/sunken_alt.png",
+   "bytes": 38549,
+   "sha256": "4127ac6122a703f79633f8e7b1da74d4c80a5a81646467bdd4ed9ca83b1ae7ed"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/photo_bezel_locked.zip",
+   "bytes": 6520800,
+   "sha256": "da962b4f535a4f4a93fdbfd20dcfdfe0bffa6048def61ce6b788b8f751ca677a"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/rune_asset_manifest.json",
+   "bytes": 5716,
+   "sha256": "d146e13a5a20b9d121bbb0eebf6eb396a1932ec98d282dda0154c0c39cbe349b"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/rune_consistent_flips.zip",
+   "bytes": 66150565,
+   "sha256": "ec362ddd04277db8eef9542599a08ed8b533b640d300f6fbbfe468248f142aea"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/rune_flip_strips.zip",
+   "bytes": 6722883,
+   "sha256": "16ffebbaa9317145cb17968461db32b55597fef0424856b5cd555f16b052d21c"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/rune_native_frames.zip",
+   "bytes": 6958943,
+   "sha256": "f559b46540ac7f7025d753e5a485e941271ec7aacc500d5e812419ae11b68997"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/runes.zip",
+   "bytes": 818716,
+   "sha256": "f4cb02bed47d6b85b8b4288d61cdc4019849756153a8f7d1ba2fbe800106e3d7"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/data/tarot_cards.zip",
+   "bytes": 5669018,
+   "sha256": "a086f1a7bd6f638284e0e36fe345c8b1a67d3ea6791d8dce6823f8258cbcb50d"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/fonts/NOTO_SOURCE_NOTICE.md",
+   "bytes": 578,
+   "sha256": "38d9ee9909a274d971b1b839738688befed83e13e987a4f935c2af707acb0801"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/fonts/OFL_UBERATA_CLEAR.txt",
+   "bytes": 4490,
+   "sha256": "d797d9e364b97a724ce8a9f504c69da5080e11869438f4d8507fba5ed6d77c47"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/fonts/Uberata-Clear.ttf",
+   "bytes": 575724,
+   "sha256": "248df02a4e0c52c541456ac19f29a2ccc50ff0b12428982a378d1576a5097482"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/layered_nixie_adapter.py",
+   "bytes": 1943,
+   "sha256": "18e9c4a59fccf5824a528c8d9407e3eeb4e0a94b2eb4b383bb479e82d116e018"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/marble_oracle.ico",
+   "bytes": 163604,
+   "sha256": "0af44265099205fb88ef860668a7dab6a8e1fff75f4b6a45131b6ae718f87697"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/marble_oracle.png",
+   "bytes": 114397,
+   "sha256": "cc31889d56df9c6f90e0072cfa5708227118f73f8c9cea2a39804caaf43ee2f9"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/marble_oracle.py",
+   "bytes": 192420,
+   "sha256": "8812ccf7425732860fe64986e206f7bd879c1b66b62d3dcba92c3423e2f2aaca"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/marble_oracle_window.ico",
+   "bytes": 34494,
+   "sha256": "eb512ab981df3a8794d3fe855a0d7fc53488a17beea49e709bb3165dbce9cd0c"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/marble_passphrase_tab.py",
+   "bytes": 9038,
+   "sha256": "47508ec4dc01f3b54008d6bcad240b3ed219d686fcd2ec01029c997242a703e4"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/marble_uberata.py",
+   "bytes": 1940,
+   "sha256": "0ded232df1033e5b2900309e41dcfeaef4e3d73a523a54a627894121abd132ba"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/marketdata.py",
+   "bytes": 5633,
+   "sha256": "8541e3b6a9af76403d86b1a1cd6c4b3195a4fd3dea080ae26a7d94842076e2f8"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oggcultist_design_system.py",
+   "bytes": 5414,
+   "sha256": "78dcca2d264896e2c6c0c00dbd2120f34e97947a0cd5e5ff5867961da9fcdc5f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_ascii.py",
+   "bytes": 17375,
+   "sha256": "b66522a577afd2afdfe4e88ba0f9105e1adc929ee4be1b871b2756fe859be7a7"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_ascii_bitmap.py",
+   "bytes": 3826,
+   "sha256": "a9e465973ddfd2dd7636a86e68d3f306a01344450b4f21f9650e692eb0de03a2"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_asset_recovery.py",
+   "bytes": 4361,
+   "sha256": "7953df45396ae7c5a83787a927c69f6d56fae2979679bc14137daacb7ec92c5e"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_assets.py",
+   "bytes": 10861,
+   "sha256": "f502289639a472a04b57b8dcd65a4b49f04c975b56c4978fc8bccf0d976060d7"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_audio.py",
+   "bytes": 17261,
+   "sha256": "3a0a2e8b890b6037990ff1beea567c01b7446f265aaebcbdffec4db4133338db"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_audio_scope.py",
+   "bytes": 5526,
+   "sha256": "59e32962b11323e99a0eee3c04a721ac5cd200ad789c094389312fff72219a12"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_bootstrap.py",
+   "bytes": 6443,
+   "sha256": "ca662d5af80b0a12805a168013141dd649bc51871b5c948c4359f3c418bd8dc0"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_chrome.py",
+   "bytes": 64033,
+   "sha256": "2d2e5f60ae0c7a459921928185dbcbee4cc304ba42803466e51a7feec8ff6423"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_crt_v2.py",
+   "bytes": 21974,
+   "sha256": "b6477b8602b9e1fe535f7044c62c0cc5f64f63a683d92adae71b16d323b08d5f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_dicekey.py",
+   "bytes": 11380,
+   "sha256": "79bb790e274de4b78d192e3797f381c769893a5e942744948bf3ecdd10f18b43"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith.py",
+   "bytes": 57220,
+   "sha256": "95bd0b1f7b43e6a748f3eae647a1b81930e90bc09b833229c350150c02fb6875"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_core.py",
+   "bytes": 12102,
+   "sha256": "f70a5bbc3df4a600447b678ec06087d1209124f83425bfb7f1a54e1090c6e604"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_jobs.py",
+   "bytes": 40672,
+   "sha256": "9a9154f9804302ae6b045742543d5d364de79443622cecd4fc753ccb3cfb5168"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_player.py",
+   "bytes": 19976,
+   "sha256": "68df7d388ff8435d54222fcd0622a217432f81d9684cbef91c1ac40a62b78873"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_feeds.py",
+   "bytes": 4091,
+   "sha256": "52d6d30e229393b0e0be629c9a619227beabffdca71c4e71dffd101f8d5dd203"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_glass.py",
+   "bytes": 6497,
+   "sha256": "36087b5e1f4ce3513e000c6eff07930960d59a1d77eb22d23678464e585c7c3d"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_latin.py",
+   "bytes": 27204,
+   "sha256": "f3cc26c4cd40cb86930409520d9eb27c033f617b747aa4b7d2c91a436d289793"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_media.py",
+   "bytes": 15245,
+   "sha256": "d184d847dd776d4bb7fcecf7ee648ffafc131d555df7c9b4e028c3b590185c82"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_nixie.py",
+   "bytes": 15463,
+   "sha256": "a0345172b73b7afc9ff76800455bc5763fb7a1e6af44e89a9b3232c3dc501785"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_ogg_tab.py",
+   "bytes": 6000,
+   "sha256": "dbfe79f134cfcaa38cde234cc684fceaee2ca6000fc06ab45332752abd56b6e3"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_ogg_texture.py",
+   "bytes": 3618,
+   "sha256": "b5376a33bc4fdf5ee18d134d3c43680a8f70d8c373b56b5f08795938ae8f378c"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_photo_bezel.py",
+   "bytes": 49548,
+   "sha256": "619428b1bf81a31dd731fdab503023060760f6955ec9b269509e8dd7a6c945c3"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_pixel_crt.py",
+   "bytes": 12765,
+   "sha256": "3fcd2a4309a89373c813e70d99531056e98abb0c7333894cd9f174b3ca7aa96d"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_runes.py",
+   "bytes": 10810,
+   "sha256": "9edd0598a91b77962a801f408bc48848980fb5c76c84642d359eea70b2a8d80f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_sententiae.py",
+   "bytes": 15691,
+   "sha256": "84d5d527895fb62c0a55087b139e3561d735c29cc0d15be57ad9139df61a545e"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_skin.py",
+   "bytes": 23064,
+   "sha256": "ece4ea19c904c4095f106973e7282e1d5d86d8566507f9adc0dafcf45d934950"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_sysmetrics.py",
+   "bytes": 8284,
+   "sha256": "505d34f544cbc5892692f53b0be0c4ee3257688f07d60e7417c3f5cda3d062bd"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_touch_type.py",
+   "bytes": 28170,
+   "sha256": "deaa1f46887a995627e9e9c3d6dc1348fe3453c928f5ced94ae7ead39ce27779"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_train.py",
+   "bytes": 18042,
+   "sha256": "4a243ddeeb3d077fef1426eff3c929979c1acb79f45838f93074d2a3c4d5ed03"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_vhs.py",
+   "bytes": 8558,
+   "sha256": "1eaa0093300040194f61d464bc06fde88ee0c97995380ec36a936bf18b6ea360"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_window_shape.py",
+   "bytes": 4236,
+   "sha256": "09e834c983549747dfa92ffed0476035ec798f7fc866ff3a55fc96e5e0222e5b"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_wire.py",
+   "bytes": 51421,
+   "sha256": "4faf4e4d36941be37b7d29cda2890efee3e844a36d95d493dbacf3dc0f7cd8e3"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/quotes.txt",
+   "bytes": 27166,
+   "sha256": "bd0d96c10967f152b13362eda086a6e0a28d2fa8b6c6ddc9c6b07b840be28455"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/requirements-audio.txt",
+   "bytes": 115,
+   "sha256": "f65bb40c34c51fdfd99fb7e1f6b9cf677e9cd13f9b045bf21bbdc0b79602d962"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/requirements-crt.txt",
+   "bytes": 157,
+   "sha256": "dc739230331d62104b3f889c3c8266e079a4466e02ed24faa81f1640535ba9d4"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/test_rune_border_fit.py",
+   "bytes": 4331,
+   "sha256": "55bf748bc7fc311515ec9a85d2d51df5b9258f755b08b05903b5f9596922e335"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/test_rune_native_assets.py",
+   "bytes": 1493,
+   "sha256": "f8c16a1ac7b6eb761d249849fd9cc34b66ab77978c18743914f0260a596eecb8"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_Linux.sh",
+   "bytes": 622,
+   "sha256": "52140a75b7be10a4a2b17a12de741ffcbe3a767bc7159167cb35cbfe0b158c6e"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_Linux_Original_CRT.sh",
+   "bytes": 416,
+   "sha256": "ed06c548020bf7b3686e225a5924bb2c230b7614c0933c3b00d503fb011a57d3"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_ORIGINAL_CRT.bat",
+   "bytes": 113,
+   "sha256": "a310331d68b025e6eaa8e0041de43014e58226b0660d68ef1f777870dfaa0920"
+  },
+  {
+   "path": "Application/Runtime/install_linux_desktop.sh",
+   "bytes": 1650,
+   "sha256": "6b92820d63ff56a0e1545c18e42382b84a0d6ad9ce1b52daa44ebcb8b32fc0ae"
+  },
+  {
+   "path": "Application/Runtime/launch_suite.pyw",
+   "bytes": 36628,
+   "sha256": "cc439a4d00505cbd4b4753ccd6581c0685edafda47f50c97817b90c7b63dc455"
+  },
+  {
+   "path": "Application/Tests/README.md",
+   "bytes": 2086,
+   "sha256": "d08c4f7aab6b3d42adbe334453650b0ae9104e29999ad8f7f26977d3ab52904c"
+  },
+  {
+   "path": "Application/Tests/TAB_LAYOUT_BEZEL.png",
+   "bytes": 1355017,
+   "sha256": "726c11506872ab15fca67680ccbe90e1a4814dc115ec8bf269661445e4a2ef96"
+  },
+  {
+   "path": "Application/Tests/TAB_LAYOUT_DEFAULT.png",
+   "bytes": 524942,
+   "sha256": "f7fba99ce3dbb34f9c9ade5b767340d7246fd313a172a121512b18f3f0b12ab4"
+  },
+  {
+   "path": "Application/Tests/TAB_LAYOUT_PREVIEW.png",
+   "bytes": 1182829,
+   "sha256": "c46fca664edcf94d5b9a71aa43f2f509e114776620699143c8d065da3bd7956c"
+  },
+  {
+   "path": "Application/Tests/TAB_OGGCULTIST_BEZEL.png",
+   "bytes": 860135,
+   "sha256": "f85b2eea65f7b6aeb8c05b8c6b94bc5442fb4a237abde7cf4daef1b39517b63f"
+  },
+  {
+   "path": "Application/Tests/TAB_OGGCULTIST_DEFAULT.png",
+   "bytes": 375407,
+   "sha256": "29e69fc42c1c823eed37948973d4a8b49fc2bf39354d4749995b22990e7c20f9"
+  },
+  {
+   "path": "Application/Tests/TOUCH_TYPE_PREVIEW.png",
+   "bytes": 672888,
+   "sha256": "c457bfca2102e02b168a0268a4dfddf725eb2f028e9a85c39ec1294011ceffa3"
+  },
+  {
+   "path": "Application/Tests/TOUCH_TYPE_SMALL.png",
+   "bytes": 428795,
+   "sha256": "e412f95580034164f7e939b1eca7b626f41e993e99cbb5c630cf174a2bb6afb3"
+  },
+  {
+   "path": "Application/Tests/test_actual_mode.py",
+   "bytes": 1584,
+   "sha256": "8fd45a7567cabec204f8706ee3c134e2048c97fd57011da3153320af5066b6ab"
+  },
+  {
+   "path": "Application/Tests/test_ascii_visibility.py",
+   "bytes": 2610,
+   "sha256": "212f4d8bd1256fdd1e1ce68a2bdfdbef08baa0687e5908803455bcc82e37fc39"
+  },
+  {
+   "path": "Application/Tests/test_console_free_launch.py",
+   "bytes": 3001,
+   "sha256": "42e9ef73cf3ba3d88bdd5731beb2cedf23a3b9100c9f6662b8b1b47a0cdd66ea"
+  },
+  {
+   "path": "Application/Tests/test_eidolith_naming_regression.py",
+   "bytes": 3839,
+   "sha256": "f4f4d73ac3c1516d22b3037d12d9a4d561aab6ca46f5bb6097867ff19841604e"
+  },
+  {
+   "path": "Application/Tests/test_eidolith_queue_reliability.py",
+   "bytes": 20005,
+   "sha256": "c32ec607a15833cec3047a27f7e541b95bd30ac1dec36e814d18a5529b04ab16"
+  },
+  {
+   "path": "Application/Tests/test_eidolith_speed_naming.py",
+   "bytes": 4849,
+   "sha256": "bffad4e35023c065458bdb15e61b0aaf79920f5cb9539677605411dc8d4fda8d"
+  },
+  {
+   "path": "Application/Tests/test_eidolith_workspaces.py",
+   "bytes": 5605,
+   "sha256": "07b9d505a9ea7a0c2d8d045e1cc40dd9d7a1d7418f351b0d2bd881e0fc68be9c"
+  },
+  {
+   "path": "Application/Tests/test_exclusive_handoff.py",
+   "bytes": 5077,
+   "sha256": "c2a053f35722f66bfe9d14391319dcf2724d185d092622f3956accbbf652e61e"
+  },
+  {
+   "path": "Application/Tests/test_home_sidebar_and_muted_ascii.py",
+   "bytes": 2209,
+   "sha256": "55b61f7fba416559b829c3e7c156e1db65e37641326b5d349be2c498a6f3d0ef"
+  },
+  {
+   "path": "Application/Tests/test_launch_gate.py",
+   "bytes": 5879,
+   "sha256": "671f1a1287d4290f84b3f0f1c12a75ef4059c19d5df10bc1a8dca69b9fe22705"
+  },
+  {
+   "path": "Application/Tests/test_media_setup.py",
+   "bytes": 6371,
+   "sha256": "75333611d9c24c0918d49bebff1fea7229d2a6fe2b1ceedc4087540bcbafd323"
+  },
+  {
+   "path": "Application/Tests/test_ogg206_embedded.py",
+   "bytes": 1841,
+   "sha256": "83e6d8670dbff2613fe2e25c91d14d3cf5e20efe7fbb61415d2cdc3fec02a316"
+  },
+  {
+   "path": "Application/Tests/test_refinement.py",
+   "bytes": 1942,
+   "sha256": "41273b342d90f6e13ce714bfd58d937c32df687892d5de79d8c39dea6b8fddf1"
+  },
+  {
+   "path": "Application/Tests/test_rune_click_and_art.py",
+   "bytes": 3593,
+   "sha256": "8e6fe9ecb1c9164161946a9e2624a103904c954d3fbc251ec5a59be55c785197"
+  },
+  {
+   "path": "Application/Tests/test_rune_consistency.py",
+   "bytes": 1747,
+   "sha256": "f728cf9ce945f0218a2726f5cc1004ce563827c21faab373d3dfbe733344f167"
+  },
+  {
+   "path": "Application/Tests/test_rune_long_session.py",
+   "bytes": 3162,
+   "sha256": "c1d6e04b0a100b9b99457ed0928b951130ee084b55184f223bbb02d15ec585af"
+  },
+  {
+   "path": "Application/Tests/test_rune_panel_scale.py",
+   "bytes": 2692,
+   "sha256": "99b45c3921a0f929ce85896d3dfcad37eaf4e3cfe0328e9be4c025517ec46b1d"
+  },
+  {
+   "path": "Application/Tests/test_source_ogg_texture.py",
+   "bytes": 2984,
+   "sha256": "d9bb16d474707dc9ba485811a9d1d7c47a79360a26821ce814c514fc800dccf6"
+  },
+  {
+   "path": "Application/Tests/test_tab_layout.py",
+   "bytes": 4715,
+   "sha256": "c63b62dac1d7431fb5d36da3c7b7d39d0e730fab73526ed777ffca0a9ea99982"
+  },
+  {
+   "path": "Application/Tests/test_touch_type.py",
+   "bytes": 5546,
+   "sha256": "cc27bbe59c02145a377a4c085cd3d652b3ba21dbc2593a13c1bae5439e1ff82e"
+  },
+  {
+   "path": "Application/Tools/Rune-24-New-Stones.png",
+   "bytes": 245353,
+   "sha256": "79f1f683354aa84e3b158ca7a051e8a24f4a01cae8c860d539748c5b5c7a2426"
+  },
+  {
+   "path": "Application/Tools/Rune-Flip-Preview.gif",
+   "bytes": 49533,
+   "sha256": "6d724407b57407e3dfd7d5002e0ff2bbebd4b51160105405497fffab5bb686b5"
+  },
+  {
+   "path": "Application/Tools/export_actual_oggcultist_textures.py",
+   "bytes": 2024,
+   "sha256": "ae5acd3563f4c246726be2b447606d42eea03710ae2a554c602b6d33156e32a3"
+  },
+  {
+   "path": "Application/Tools/new_rune_blank_256.png",
+   "bytes": 93183,
+   "sha256": "0836b73f086f871b687110014c6bc53fc7cd21ccfec45cc82cd55b12569e038e"
+  },
+  {
+   "path": "Application/Tools/regenerate_runes.py",
+   "bytes": 6686,
+   "sha256": "2b55557023b3e7fa415c63abe2a60ad6682164648c7afdcbfff2e9c2e166d709"
+  },
+  {
+   "path": "Application/Tools/verify_release.py",
+   "bytes": 3423,
+   "sha256": "41d5e8b1041098fcbf4a3c10171f14ce0a048b9d3b32e60fdbc3e3f298d8a6d4"
+  },
+  {
+   "path": "START MARBLE ORACLE - LINUX.sh",
+   "bytes": 2764,
+   "sha256": "713cd5549905fcb423500bb1a28ffac7743c130e85abe2a7678f74d941dcd41f"
+  },
+  {
+   "path": "START MARBLE ORACLE - WINDOWS.vbs",
+   "bytes": 1503,
+   "sha256": "69f0a3c6a50fcb2b6ada63888be29ece27ca81c9e7e911261543733f1f343b2d"
+  }
+ ]
 }

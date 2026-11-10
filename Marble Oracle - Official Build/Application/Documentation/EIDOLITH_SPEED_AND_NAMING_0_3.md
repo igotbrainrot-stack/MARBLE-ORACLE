@@ -42,7 +42,7 @@ A **Title override** can rename a whole selected batch to the correct show/movie
 - It blocks unsupported data streams or multi-video layouts to avoid silent loss.
 - Encoder support and exact container/track compatibility depend on local FFmpeg.
 - The player remains a basic embedded preview, not full libmpv HDR playback.
-- Queued jobs are not yet persisted across application restarts.
+- Queued jobs are not yet persisted across application restarts. *(Superseded in 0.4: see `EIDOLITH_RELIABILITY_0_4.md`.)*
 
 ## Testing
 

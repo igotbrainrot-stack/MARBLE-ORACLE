@@ -1,63 +1,79 @@
 {
-  "release": "Marble Oracle — EIDOLITH 0.3 Conservative Cleanup",
-  "release_date": "2026-11-10",
-  "source_baseline": {
-    "filename": "Marble-Oracle-OFFICIAL-EIDOLITH-0.3-Faster-Conversion-Standard-Naming-FULL-Windows-Linux.zip",
-    "sha256": "df9f71512120d913f94b2e9736b5824cabc8e6f6ea07ac31928e40b355f9620a",
-    "extracted_file_count": 355,
-    "extracted_total_bytes": 114645316
-  },
-  "platform_targets": [
-    "Windows 11",
-    "Linux Mint"
-  ],
-  "native_windows_verified": false,
-  "physical_linux_mint_verified": false,
-  "test_environment": "Linux/Xvfb, system FFmpeg/FFprobe",
-  "top_level": [
-    "START MARBLE ORACLE - WINDOWS.vbs",
-    "START MARBLE ORACLE - LINUX.sh",
-    "Application"
-  ],
-  "tabs": [
-    "HOME",
-    "OGGCULTIST",
-    "EIDOLITH",
-    "PASSPHRASE",
-    "TOUCH TYPE"
-  ],
-  "runtime_entry": "Application/Runtime/launch_suite.pyw",
-  "core_application": "Application/Runtime/Marble_Oracle_App/marble_oracle.py",
-  "media_features": [
-    "FFmpeg/FFprobe video conversion and probing",
-    "EIDOLITH preview player",
-    "SVT-AV1 CPU profiles",
-    "optional NVIDIA NVENC when compatible",
-    "TV/movie file naming and queue"
-  ],
-  "bundled_font": "Uberata Clear",
-  "file_count_including_manifests": 363,
-  "inventory_file_count_excluding_self_referential_reports": 359,
-  "python_source_count": 163,
-  "regression": {
-    "baseline_pass": 9,
-    "baseline_total": 9,
-    "postcleanup_pass": 19,
-    "postcleanup_total": 19
-  },
-  "migration_summary": {
-    "historical_docs_relocated": 40,
-    "prior_manifests_archived": 2,
-    "docs_rune_preview_copies_removed": 2,
-    "runtime_edit": "Linux .desktop Comment text only"
-  },
-  "documentation": [
-    "Application/README.md",
-    "Application/Documentation/DOCUMENTATION_INDEX.md",
-    "Application/Documentation/AUDIT_REPORT.md",
-    "Application/Documentation/VERIFICATION_REPORT.md",
-    "Application/Documentation/PROJECT_STRUCTURE.md"
-  ],
-  "asset_preservation": "All original runtime media archives, fonts, Oggcultist branding, art and source modules preserved unchanged.",
-  "hash_notes": "FILE_INVENTORY.json excludes itself, BUILD_MANIFEST.json and AUDIT/VERIFICATION_REPORT.md to avoid self-referential hashes."
+ "release": "Marble Oracle — EIDOLITH 0.4 Conversion Reliability",
+ "release_date": "2026-11-10",
+ "source_baseline": {
+  "filename": "Marble-Oracle-OFFICIAL-Audited-Cleaned-EIDOLITH-0.3-FULL-Windows-Linux.zip",
+  "sha256": "5b87d515188b9fa1722cb8bb18f9f598717178621d6d0e79e0eb716ee25319a9"
+ },
+ "platform_targets": [
+  "Windows 11",
+  "Linux Mint"
+ ],
+ "native_windows_verified": false,
+ "physical_linux_mint_verified": false,
+ "test_environment": "Ubuntu 24.04 container, Xvfb, Python 3.12.3 + Tk 8.6, FFmpeg 6.1.1 (libx264/libx265/libsvtav1 1.7.0), no GPU",
+ "top_level": [
+  "START MARBLE ORACLE - WINDOWS.vbs",
+  "START MARBLE ORACLE - LINUX.sh",
+  "Application"
+ ],
+ "tabs": [
+  "HOME",
+  "OGGCULTIST",
+  "EIDOLITH",
+  "PASSPHRASE",
+  "TOUCH TYPE"
+ ],
+ "runtime_entry": "Application/Runtime/launch_suite.pyw",
+ "core_application": "Application/Runtime/Marble_Oracle_App/marble_oracle.py",
+ "media_features": [
+  "FFmpeg/FFprobe video conversion and probing",
+  "EIDOLITH preview player",
+  "SVT-AV1 CPU profiles",
+  "optional NVIDIA NVENC when compatible",
+  "TV/movie file naming and queue",
+  "Persisted fail-and-continue queue with per-job logs"
+ ],
+ "bundled_font": "Uberata Clear",
+ "file_count_including_manifests": 367,
+ "inventory_file_count_excluding_self_referential_reports": 363,
+ "python_source_count": 166,
+ "regression": {
+  "baseline_0_3_pass": 21,
+  "baseline_0_3_total": 21,
+  "eidolith_0_4_pass": 23,
+  "eidolith_0_4_total": 23,
+  "queue_reliability_checks": "54/54 (x4)",
+  "previous_0_3_record": {
+   "baseline_pass": 9,
+   "baseline_total": 9,
+   "postcleanup_pass": 19,
+   "postcleanup_total": 19
+  }
+ },
+ "migration_summary": {
+  "historical_docs_relocated": 40,
+  "prior_manifests_archived": 2,
+  "docs_rune_preview_copies_removed": 2,
+  "runtime_edit": "Linux .desktop Comment text only"
+ },
+ "documentation": [
+  "Application/README.md",
+  "Application/Documentation/DOCUMENTATION_INDEX.md",
+  "Application/Documentation/AUDIT_REPORT.md",
+  "Application/Documentation/VERIFICATION_REPORT.md",
+  "Application/Documentation/PROJECT_STRUCTURE.md",
+  "Application/Documentation/EIDOLITH_RELIABILITY_0_4.md"
+ ],
+ "asset_preservation": "All original runtime media archives, fonts, Oggcultist branding, art and source modules preserved unchanged.",
+ "hash_notes": "FILE_INVENTORY.json excludes itself, BUILD_MANIFEST.json and AUDIT/VERIFICATION_REPORT.md to avoid self-referential hashes.",
+ "nvidia_hardware_verified": false,
+ "eidolith_0_4_changes": [
+  "oracle_eidolith_jobs.py queue engine (fail-and-continue, stop vs cancel, explicit retry)",
+  "per-job FFmpeg logs, diagnostics export with folder redaction",
+  "progress panel: job n of m, %, elapsed, speed, ETA, last activity, indeterminate when unknown",
+  "cover art / subtitle / attachment / data stream plan with verification",
+  "persisted queue, interrupted-job reconciliation, owned-partial cleanup",
+  "spaced-name filename parser fix (Mr. Robot case)"
+ ]
 }
