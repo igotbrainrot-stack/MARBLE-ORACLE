@@ -333,6 +333,23 @@ def section_cancel(m, out):
     check('3 START with only cancelled jobs explains RETRY', 'RETRY FAILED' in r.start())
     check('3 RETRY is explicit and re-queues', r.retry() == 1 and slow['status'] == 'queued')
 
+    # Removing jobs: the converting job is protected, everything else goes.
+    r = runner(out)
+    busy = add(r, m['long'], out, 'High fidelity')
+    for _ in range(3):
+        add(r, m['plain'], out, 'Fast CPU H.264')
+    r.start()
+    while busy['status'] != 'converting':
+        time.sleep(0.05)
+    removed, kept_active = r.remove(None)
+    check('3 CLEAR ALL removes waiting jobs but not the converting one',
+          removed == 3 and kept_active and r.jobs == [busy] and busy['status'] == 'converting')
+    r.stop_queue()
+    r.wait(60)
+    removed, kept_active = r.remove({busy['id']})
+    check('3 finished job removable once stopped', removed == 1 and not kept_active and r.jobs == [])
+    check('3 removal leaves no partial files', no_partials(out))
+
 
 def section_restart(m, out):
     if not sys.platform.startswith('linux'):
@@ -467,6 +484,39 @@ def section_panel(m, out):
     clip = root.clipboard_get()
     check('5 diagnostics copied without local folder paths', 'EIDOLITH 0.4 diagnostic report' in clip
           and str(out) not in clip and str(m['robot'].parent) not in clip and '<source folder>' in clip)
+    # Queued jobs can be removed (selected, several at once) or all cleared.
+    panel.queue_list.selection_clear(0, 'end')
+    panel.profile.set('Fast CPU H.264')
+    panel._set_nav('CONVERT')
+    panel.convert_list.selection_clear(0, 'end')
+    panel.convert_list.selection_set(0, 1)
+    panel.queue_selected()
+    panel.convert_list.selection_clear(0, 'end')
+    panel.convert_list.selection_set(0, 1)
+    panel.queue_selected()
+    pump(0.1)
+    waiting = [i for i, j in enumerate(panel.queue_items) if j['status'] == 'queued']
+    total = len(panel.queue_items)
+    panel.queue_list.selection_clear(0, 'end')
+    panel.queue_list.selection_set(waiting[0])
+    panel.queue_list.selection_set(waiting[2])
+    panel.remove_selected_jobs()
+    pump(0.05)
+    check('5 REMOVE SELECTED removes several queued jobs', len(panel.queue_items) == total - 2
+          and panel.queue_list.size() == total - 2, panel.status_var.get())
+    panel.queue_list.selection_clear(0, 'end')
+    panel.queue_list.selection_set(0)
+    panel.queue_list.focus_force()
+    pump(0.1)
+    panel.queue_list.event_generate('<Delete>', when='tail')
+    pump(0.05)
+    check('5 Delete key removes the selected job', len(panel.queue_items) == total - 3)
+    panel.clear_all()
+    pump(0.05)
+    saved = json.loads((Path(STATE) / 'eidolith_queue.json').read_text(encoding='utf-8'))
+    check('5 CLEAR ALL empties the queue and the saved queue', panel.queue_items == [] and saved.get('jobs') == []
+          and panel.queue_list.size() == 0)
+    check('5 remove/clear never touch sources', all(Path(p).exists() for p in (m['robot'], m['raw'], m['long'])))
     panel.resolution.set('720p')
     panel.profile.set('Lossless remux')
     panel._set_nav('CONVERT')

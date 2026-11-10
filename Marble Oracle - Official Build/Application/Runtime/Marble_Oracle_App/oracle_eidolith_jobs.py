@@ -555,6 +555,23 @@ class QueueRunner:
         self.emit('refresh')
         return removed
 
+    def remove(self, ids=None) -> tuple:
+        """Remove jobs (all when ids is None) except the one converting now.
+
+        Returns (removed, kept_active). Only list entries are removed:
+        sources, finished outputs and logs on disk are untouched.
+        """
+        with self.lock:
+            active = self.current
+            before = len(self.jobs)
+            self.jobs[:] = [j for j in self.jobs
+                            if j is active or (ids is not None and j['id'] not in ids)]
+            removed = before - len(self.jobs)
+            kept_active = active is not None and (ids is None or active['id'] in ids)
+        self.save()
+        self.emit('refresh')
+        return removed, kept_active
+
     def position(self, job):
         """(1-based index, total) of a job within the current list."""
         with self.lock:

@@ -421,13 +421,14 @@ class EidolithPanel(tk.Frame):
         res_menu['menu'].config(font=(FAMILY, 10), bg=C['control'], fg=C['text'])
         res_menu.pack(fill='x', pady=(4, 0))
         self._label(row2, 'Scale down only, keeping aspect ratio. From 1080p, 720p encodes about 2–3× faster (more for grainy video).',
-                    10, 'text_3').pack(anchor='w', pady=(4, 0))
+                    10, 'text_3', wraplength=430, justify='left').pack(anchor='w', pady=(4, 0))
         tk.Checkbutton(row2, text='SLIM OUTPUT: video + main audio track only', variable=self.slim_output,
                        command=self._save_state, anchor='w', font=(FAMILY, 10, 'bold'), bg=C['raised'],
                        fg=C['text_2'], selectcolor=C['control'], activebackground=C['raised'],
                        activeforeground=C['text'], highlightthickness=0, bd=0).pack(anchor='w', fill='x', pady=(8, 0))
         self._label(row2, 'Drops extra audio tracks, subtitles, cover art, fonts, chapters and metadata. '
-                          'Every drop is listed in the job log.', 10, 'text_3').pack(anchor='w', pady=(2, 0))
+                          'Every drop is listed in the job log.', 10, 'text_3',
+                    wraplength=430, justify='left').pack(anchor='w', pady=(2, 0))
 
         row3 = ogl_frame(box, bg=C['raised'])
         row3.pack(fill='x', padx=pad, pady=(0, 8))
@@ -483,6 +484,7 @@ class EidolithPanel(tk.Frame):
         self._button(tools, 'CANCEL CURRENT', self.cancel_current).pack(side='left', padx=(7, 0))
         self._button(tools, 'RETRY FAILED', self.retry_failed).pack(side='left', padx=(7, 0))
         self._button(tools, 'CLEAR FINISHED', self.clear_finished).pack(side='left', padx=(7, 0))
+        self._button(tools, 'CLEAR ALL', self.clear_all).pack(side='left', padx=(7, 0))
 
         # Current job: index/total, state, a real progress bar (or an
         # indeterminate sweep when duration is unknown), timings and the
@@ -504,12 +506,15 @@ class EidolithPanel(tk.Frame):
         self.queue_list = tk.Listbox(box, activestyle='none', bg=C['canvas'], fg=C['text'], bd=0,
                                      highlightthickness=1, highlightbackground=C['control_line'],
                                      selectbackground=C['hover'], selectforeground=C['text_bright'],
-                                     exportselection=False, font=(FAMILY, 11), height=8)
+                                     exportselection=False, selectmode='extended', font=(FAMILY, 11), height=8)
         self.queue_list.pack(fill='both', expand=True, padx=12, pady=(12, 6))
         self.queue_list.bind('<<ListboxSelect>>', lambda e: self._update_progress_panel())
+        self.queue_list.bind('<Delete>', lambda e: self.remove_selected_jobs())
+        self.queue_list.bind('<BackSpace>', lambda e: self.remove_selected_jobs())
         logtools = ogl_frame(box, bg=C['raised'])
         logtools.pack(fill='x', padx=12, pady=(0, 10))
-        self._button(logtools, 'OPEN LOG', self.open_job_log).pack(side='left')
+        self._button(logtools, 'REMOVE SELECTED', self.remove_selected_jobs).pack(side='left')
+        self._button(logtools, 'OPEN LOG', self.open_job_log).pack(side='left', padx=(7, 0))
         self._button(logtools, 'COPY DIAGNOSTICS', self.copy_diagnostics).pack(side='left', padx=(7, 0))
         self._button(logtools, 'LOG FOLDER', self.open_log_folder).pack(side='left', padx=(7, 0))
         self._button(logtools, 'RETRY SELECTED', self.retry_selected).pack(side='left', padx=(7, 0))
@@ -575,13 +580,40 @@ class EidolithPanel(tk.Frame):
         self._set_status(f'{count} failed/cancelled/interrupted job(s) returned to queue. Press START QUEUE to run them.'
                          if count else 'No failed, cancelled or interrupted jobs to retry.')
 
+    def _selected_jobs(self):
+        jobs = list(self.queue_items)
+        return [jobs[i] for i in self.queue_list.curselection() if i < len(jobs)]
+
     def retry_selected(self):
-        job = self._selected_job()
-        if not job or job['status'] not in RETRYABLE:
-            self._set_status('Select a failed, cancelled or interrupted job to retry it.')
+        ids = {j['id'] for j in self._selected_jobs() if j['status'] in RETRYABLE}
+        if not ids:
+            self._set_status('Select failed, cancelled or interrupted jobs to retry them.')
             return
-        self.runner.retry(ids={job['id']})
-        self._set_status(f'Job {job["id"]} returned to queue. Press START QUEUE to run it.')
+        self.runner.retry(ids=ids)
+        self._set_status(f'{len(ids)} job(s) returned to queue. Press START QUEUE to run them.')
+
+    def _removal_status(self, removed, kept_active):
+        note = ' The job converting now stays; use CANCEL CURRENT or STOP QUEUE to end it.' if kept_active else ''
+        self._set_status(f'Removed {removed} job(s) from the queue. Source files and finished outputs are untouched.' + note)
+
+    def remove_selected_jobs(self):
+        selected = self._selected_jobs()
+        if not selected:
+            self._set_status('Select one or more jobs to remove (Ctrl/Shift-click selects several).')
+            return
+        removed, kept_active = self.runner.remove({j['id'] for j in selected})
+        self.queue_list.selection_clear(0, 'end')
+        self._refresh_queue()
+        self._removal_status(removed, kept_active)
+
+    def clear_all(self):
+        if not self.queue_items:
+            self._set_status('The queue is already empty.')
+            return
+        removed, kept_active = self.runner.remove(None)
+        self.queue_list.selection_clear(0, 'end')
+        self._refresh_queue()
+        self._removal_status(removed, kept_active)
 
     def clear_finished(self):
         removed = self.runner.clear_finished()
