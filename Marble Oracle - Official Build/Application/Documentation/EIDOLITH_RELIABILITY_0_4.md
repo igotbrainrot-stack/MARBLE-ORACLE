@@ -132,6 +132,13 @@ Measured on a 60 s 1080p synthetic source (lossless 5.1 main audio, AC3 commenta
 
 **Fixed:** AUDIO = opus failed on `5.1(side)` audio (most DVD/Blu-ray AC3/DTS) with “Invalid channel layout … mapping family”. Layouts Opus does not accept are now remapped by channel count (e.g. 5.1(side) → 5.1) and reported.
 
+## 2c. Removing jobs (added after user report)
+
+Before this change, only CLEAR FINISHED existed, so queued jobs could not be removed, and the saved queue brought them back on every launch.
+- **REMOVE SELECTED** works on several jobs at once (Ctrl/Shift-click), and the Delete key does the same.
+- **CLEAR ALL** empties the queue.
+- Both leave the converting job alone, update the saved queue immediately, and never touch files on disk.
+
 ## 3. Tests and results
 
 Environment: Ubuntu 24.04 container, Xvfb, Python 3.12.3 (system, Tk 8.6, Pillow 10.2, mutagen 1.48),
@@ -149,7 +156,7 @@ python3 Application/Tests/test_eidolith_naming_regression.py                # 14
 |---|---|
 | Baseline 0.3, full suite (same environment) | 21/21 tests pass. `verify_release.py` fails only after the tests rewrite `TAB_OGGCULTIST_DEFAULT.png` (D11); it passes on a fresh extract |
 | 0.4 branch, full suite | **23/23 tests pass** (the 21 existing tests plus 2 new EIDOLITH tests) |
-| `test_eidolith_queue_reliability.py` | **72/72** including resolution, short-name, slim-output and Opus-layout checks (54/54 before that addition, repeated 4× with no flakes) |
+| `test_eidolith_queue_reliability.py` | **79/79** including resolution, short-name, slim-output, Opus-layout and job-removal checks (54/54 before that addition, repeated 4× with no flakes) |
 | `verify_release.py` on the packaged 0.4 tree | PASS (inventory regenerated) |
 | Offline launch: `START MARBLE ORACLE - LINUX.sh`, no network namespace, Xvfb, Python 3.12 | Requirements window and main “Marble_Oracle CRT V2 - Integrated” window appear; no download attempted |
 
