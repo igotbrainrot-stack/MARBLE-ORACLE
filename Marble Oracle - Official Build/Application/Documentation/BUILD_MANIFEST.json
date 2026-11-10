@@ -43,42 +43,49 @@
   "baseline_0_3_total": 21,
   "eidolith_0_4_pass": 24,
   "eidolith_0_4_total": 24,
-  "queue_reliability_checks": "83/83",
+  "queue_reliability_checks": "90/90",
   "previous_0_3_record": {
    "baseline_0_3_pass": 21,
    "baseline_0_3_total": 21,
-   "eidolith_0_4_pass": 23,
-   "eidolith_0_4_total": 23,
-   "queue_reliability_checks": "79/79",
+   "eidolith_0_4_pass": 24,
+   "eidolith_0_4_total": 24,
+   "queue_reliability_checks": "83/83",
    "previous_0_3_record": {
     "baseline_0_3_pass": 21,
     "baseline_0_3_total": 21,
     "eidolith_0_4_pass": 23,
     "eidolith_0_4_total": 23,
-    "queue_reliability_checks": "72/72",
+    "queue_reliability_checks": "79/79",
     "previous_0_3_record": {
      "baseline_0_3_pass": 21,
      "baseline_0_3_total": 21,
      "eidolith_0_4_pass": 23,
      "eidolith_0_4_total": 23,
-     "queue_reliability_checks": "62/62",
+     "queue_reliability_checks": "72/72",
      "previous_0_3_record": {
       "baseline_0_3_pass": 21,
       "baseline_0_3_total": 21,
       "eidolith_0_4_pass": 23,
       "eidolith_0_4_total": 23,
-      "queue_reliability_checks": "61/61",
+      "queue_reliability_checks": "62/62",
       "previous_0_3_record": {
        "baseline_0_3_pass": 21,
        "baseline_0_3_total": 21,
        "eidolith_0_4_pass": 23,
        "eidolith_0_4_total": 23,
-       "queue_reliability_checks": "54/54 (x4)",
+       "queue_reliability_checks": "61/61",
        "previous_0_3_record": {
-        "baseline_pass": 9,
-        "baseline_total": 9,
-        "postcleanup_pass": 19,
-        "postcleanup_total": 19
+        "baseline_0_3_pass": 21,
+        "baseline_0_3_total": 21,
+        "eidolith_0_4_pass": 23,
+        "eidolith_0_4_total": 23,
+        "queue_reliability_checks": "54/54 (x4)",
+        "previous_0_3_record": {
+         "baseline_pass": 9,
+         "baseline_total": 9,
+         "postcleanup_pass": 19,
+         "postcleanup_total": 19
+        }
        }
       }
      }
@@ -115,6 +122,7 @@
   "short output names by default; episode title and format tag opt-in",
   "SLIM OUTPUT (video + main audio) default; Opus 5.1(side) fix",
   "REMOVE SELECTED / CLEAR ALL queue removal",
-  "0.4.5 audit fixes: rotation, movie year, folder title, deinterlace, disk space, fetch caps, clipboard clear, default profile, .bat launcher"
+  "0.4.5 audit fixes: rotation, movie year, folder title, deinterlace, disk space, fetch caps, clipboard clear, default profile, .bat launcher",
+  "0.4.6: slim keep-English-subtitles / prefer-English-audio options, skip already converted"
  ]
 }

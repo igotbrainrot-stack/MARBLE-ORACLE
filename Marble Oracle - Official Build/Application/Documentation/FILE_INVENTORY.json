@@ -9,7 +9,7 @@
   "Application/Documentation/VERIFICATION_REPORT.md"
  ],
  "inventory_file_count": 365,
- "inventory_total_bytes": 114496428,
+ "inventory_total_bytes": 114506760,
  "files": [
   {
    "path": "Application/.gitignore",
@@ -43,8 +43,8 @@
   },
   {
    "path": "Application/Documentation/EIDOLITH_RELIABILITY_0_4.md",
-   "bytes": 18595,
-   "sha256": "95e018534efaefd4c54463162d7053218b34a8d83997425c45f589b7ece711da"
+   "bytes": 19430,
+   "sha256": "748f9a7f9f23cf4315348427d415769efd156eb7b7298b5ba090c0ff9a70aba9"
   },
   {
    "path": "Application/Documentation/EIDOLITH_SPEED_AND_NAMING_0_3.md",
@@ -313,8 +313,8 @@
   },
   {
    "path": "Application/README.md",
-   "bytes": 7971,
-   "sha256": "9b0e4063f38008132b183e4d5048ab557b74ad0ad5790c358bda2f84090838d5"
+   "bytes": 8421,
+   "sha256": "b2ca50eacccdb34b57ae2119cc1c1245bede0042957b636fa935291013257edb"
   },
   {
    "path": "Application/Runtime/Launch_Marble_Oracle.vbs",
@@ -1488,8 +1488,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith.py",
-   "bytes": 62382,
-   "sha256": "37bf873111d171218c7c9e41865a27545dc8ad94b319b4dab30b78f39ce65197"
+   "bytes": 64969,
+   "sha256": "e9308ab35fe31bbdcad5fabff27b414e003285c8c05534341806ce0f90222218"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_core.py",
@@ -1498,8 +1498,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_jobs.py",
-   "bytes": 48141,
-   "sha256": "0c0a1bc6851ee09a0dcc773e4932fdae0edfc2cc9d3ca929dac5d292ce50bf7e"
+   "bytes": 50941,
+   "sha256": "46ca021a81f1311cdc9a8f6a3117a25188fcdb509bb76c73d8a883b187795230"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_player.py",
@@ -1713,13 +1713,13 @@
   },
   {
    "path": "Application/Tests/test_eidolith_queue_reliability.py",
-   "bytes": 31742,
-   "sha256": "9373b7ca20c863eb6437a3d897c053c61c9077a5db7cd8ac44dd40eb83ff84a6"
+   "bytes": 35268,
+   "sha256": "925dd6a724626b4d8a8354c08a08997cb280c61c74aff35a92553368b7fa8041"
   },
   {
    "path": "Application/Tests/test_eidolith_speed_naming.py",
-   "bytes": 5001,
-   "sha256": "da12437a2b99fc0e1f1ec85c7e52bb376a08cba016864c403464d3f1f43618dd"
+   "bytes": 5135,
+   "sha256": "8ff4d5036ec8c33af099ae812cbc83b30e192b63755a6420bd1b5c01fba6f696"
   },
   {
    "path": "Application/Tests/test_eidolith_workspaces.py",

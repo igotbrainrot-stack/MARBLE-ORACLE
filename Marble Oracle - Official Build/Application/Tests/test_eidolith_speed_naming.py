@@ -100,6 +100,8 @@ with tempfile.TemporaryDirectory(prefix='eidolith_standard_') as folder:
     # Check collision-safe naming on queueing a second job.
     panel._set_nav('CONVERT')
     panel.convert_list.selection_set(0)
+    # 0.4.6 skips already converted files by default; this checks the collision-safe ' (2)' path.
+    panel.skip_converted.set(False)
     panel.queue_selected()
     assert panel.queue_items[1]['dst'] != job['dst']
     assert Path(panel.queue_items[1]['dst']).name.endswith(' (2).mp4')
