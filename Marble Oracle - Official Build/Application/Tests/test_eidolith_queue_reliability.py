@@ -98,6 +98,23 @@ def make_media(folder: Path) -> dict:
     ff('-f', 'lavfi', '-i', 'testsrc2=size=1920x1080:rate=24:duration=3', '-i', str(png), '-map', '0', '-map', '1',
        '-c:v:0', 'libx264', '-preset', 'ultrafast', '-c:v:1', 'copy', '-disposition:v:1', 'attached_pic',
        str(m['cover1080']))
+    rich = folder / 'rich.mkv'
+    side = folder / 'side51.ac3'
+    ff('-f', 'lavfi', '-i', 'anoisesrc=d=3', '-af', 'aformat=channel_layouts=5.1(side)', '-c:a', 'ac3', str(side))
+    font = folder / 'font.ttf'
+    font.write_bytes(b'\x00\x01\x00\x00' + os.urandom(4000))
+    meta = folder / 'meta.txt'
+    meta.write_text(';FFMETADATA1\ntitle=Release title\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=0\nEND=1500\ntitle=A\n'
+                    '[CHAPTER]\nTIMEBASE=1/1000\nSTART=1500\nEND=3000\ntitle=B\n', encoding='utf-8')
+    jpg = folder / 'art.jpg'
+    ff('-f', 'lavfi', '-i', 'color=blue:size=300x300:d=1', '-frames:v', '1', str(jpg))
+    ff('-i', str(m['plain']), '-i', str(side), '-i', str(srt), '-i', str(meta),
+       '-map', '0:v', '-map', '0:a', '-map', '1:a', '-map', '2', '-map_metadata', '3', '-map_chapters', '3', '-c', 'copy',
+       '-metadata:s:a:0', 'language=jpn', '-metadata:s:a:1', 'language=eng',
+       '-disposition:a:0', '0', '-disposition:a:1', 'default', '-disposition:s:0', 'forced',
+       '-attach', str(jpg), '-metadata:s:t:0', 'mimetype=image/jpeg', '-metadata:s:t:0', 'filename=cover.jpg',
+       '-attach', str(font), '-metadata:s:t:1', 'mimetype=font/ttf', '-metadata:s:t:1', 'filename=font.ttf', str(rich))
+    m['rich'] = rich
     m['robot'] = folder / 'Mr. Robot (2015) - S01E01 - eps1.0_hellofriend.mov (1080p BluRay x265 RCVR).mkv'
     shutil.copy2(m['subs_cover_mkv'], m['robot'])
     return m
@@ -238,6 +255,49 @@ def section_resolution(m, out):
     check('6 scaled size verified in report', any('VERIFIED video: av1 1280x536' in x for x in scope['report']))
 
 
+def probe_all(path):
+    out = subprocess.run([FFPROBE, '-v', 'error', '-show_streams', '-show_chapters', '-show_format', '-of', 'json',
+                          str(path)], capture_output=True, text=True, check=True).stdout
+    return json.loads(out)
+
+
+def section_slim(m, out):
+    r = runner(out)
+    slim = add(r, m['rich'], out, 'Faster CPU AV1', 'copy', '720p')
+    slim['slim'] = True
+    opus = add(r, m['rich'], out, 'Fast CPU H.264', 'opus')
+    opus['slim'] = True
+    full = add(r, m['rich'], out, 'Faster CPU AV1', 'copy', '720p')
+    r.start()
+    r.wait(600)
+    for job in (slim, opus, full):
+        check(f'7 rich source -> {job["profile"]} slim={job["slim"]} audio={job["audio_mode"]} completed',
+              job['status'] == 'completed', job['error'])
+    if slim['status'] == 'completed':
+        info = probe_all(slim['dst'])
+        kinds = [s['codec_type'] for s in info['streams']]
+        check('7 slim keeps exactly video + one audio', kinds == ['video', 'audio'], kinds)
+        check('7 slim keeps the DEFAULT audio track (eng), not the first (jpn)',
+              info['streams'][1].get('tags', {}).get('language') == 'eng')
+        check('7 slim drops chapters and title metadata', not info.get('chapters')
+              and 'title' not in {k.lower() for k in info['format'].get('tags', {})})
+        drops = ' | '.join(x for x in slim['report'] if x.startswith('DROP'))
+        check('7 slim lists every drop (audio, forced subs, fonts, cover, chapters)',
+              all(k in drops for k in ('DROP audio: 1 extra', 'FORCED', 'font.ttf', 'cover art', 'chapters')), drops)
+    if opus['status'] == 'completed':
+        a = [s for s in probe_all(opus['dst'])['streams'] if s['codec_type'] == 'audio']
+        check('7 5.1(side) audio converts to Opus 5.1 (0.3 failed here)', len(a) == 1 and a[0]['codec_name'] == 'opus'
+              and a[0].get('channel_layout') == '5.1' and any('5.1(side) -> 5.1' in x for x in opus['report']))
+    if full['status'] == 'completed':
+        info = probe_all(full['dst'])
+        check('7 slim off keeps both audio, subtitles, chapters and cover',
+              sum(s['codec_type'] == 'audio' for s in info['streams']) == 2
+              and any(s['codec_type'] == 'subtitle' for s in info['streams']) and len(info.get('chapters', [])) == 2
+              and any(s.get('disposition', {}).get('attached_pic') for s in info['streams']))
+    check('7 slim output is smaller than full output', all(j['status'] == 'completed' for j in (slim, full))
+          and os.path.getsize(slim['dst']) < os.path.getsize(full['dst']))
+
+
 def section_cancel(m, out):
     r = runner(out)
     slow = add(r, m['long'], out, 'High fidelity')
@@ -376,9 +436,10 @@ def section_panel(m, out):
     statuses = [j['status'] for j in panel.queue_items]
     check('5 panel queue completed both jobs', statuses == ['completed', 'completed'], statuses)
     robot_out = panel.queue_items[0]['dst']
-    check('5 Mr. Robot job keeps subtitles and cover in MP4',
-          sum(s['codec_type'] == 'subtitle' for s in streams(robot_out)) == 1
-          and sum(bool(s.get('disposition', {}).get('attached_pic')) for s in streams(robot_out)) == 1)
+    check('5 SLIM OUTPUT is on by default: subtitles and cover dropped',
+          panel.slim_output.get() and sum(s['codec_type'] == 'subtitle' for s in streams(robot_out)) == 0
+          and sum(bool(s.get('disposition', {}).get('attached_pic')) for s in streams(robot_out)) == 0
+          and sum(s['codec_type'] == 'audio' for s in streams(robot_out)) == 1)
     # Determinate progress with a long CPU AV1 encode, then stop from the GUI.
     panel._set_nav('CONVERT')
     panel.convert_list.selection_clear(0, 'end')
@@ -448,7 +509,8 @@ def main():
         before = {p: sha(p) for p in src.iterdir()}
         for n, (name, fn) in enumerate((('batch', section_batch), ('tracks', section_tracks),
                                         ('cancel', section_cancel), ('restart', section_restart),
-                                        ('panel', section_panel), ('resolution', section_resolution)), 1):
+                                        ('panel', section_panel), ('resolution', section_resolution),
+                                        ('slim', section_slim)), 1):
             out = tmp / f'out{n}-{name}'
             out.mkdir()
             fn(m, out)

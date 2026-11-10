@@ -51,6 +51,8 @@ TEXT_SUBS = {'subrip', 'srt', 'ass', 'ssa', 'webvtt', 'mov_text', 'text'}
 STYLED_SUBS = {'ass', 'ssa'}
 MP4_BAD_AUDIO = {'truehd', 'mlp', 'wmav1', 'wmav2', 'wmapro', 'cook', 'ra_144', 'ra_288',
                  'sipr', 'atrac3', 'vorbis', 'comfortnoise'}
+OPUS_LAYOUTS = {'mono', 'stereo', '3.0', 'quad', '5.0', '5.1', '6.1', '7.1'}
+OPUS_BY_CHANNELS = {1: 'mono', 2: 'stereo', 3: '3.0', 4: 'quad', 5: '5.0', 6: '5.1', 7: '6.1', 8: '7.1'}
 IMAGE_CODECS = {'png': ('png', 'image/png'), 'mjpeg': ('jpg', 'image/jpeg'),
                 'bmp': ('bmp', 'image/bmp'), 'gif': ('gif', 'image/gif'),
                 'webp': ('webp', 'image/webp')}
@@ -99,7 +101,29 @@ def classify(streams) -> dict:
 
 
 def _codecs(items):
-    return ', '.join(str(s.get('codec_name') or s.get('codec_tag_string') or 'unknown') for s in items)
+    names = []
+    for s in items:
+        name = s.get('codec_name')
+        if not name or name == 'unknown':
+            tags = s.get('tags') or {}
+            name = tags.get('filename') or tags.get('mimetype') or 'unknown'
+        names.append(str(name))
+    return ', '.join(names)
+
+
+def _describe_audio(items):
+    parts = []
+    for a in items:
+        tags = a.get('tags') or {}
+        bits = [str(a.get('codec_name') or '?')]
+        if tags.get('language'):
+            bits.append(tags['language'])
+        if a.get('channels'):
+            bits.append(f'{a["channels"]}ch')
+        if tags.get('title'):
+            bits.append(f'"{tags["title"]}"')
+        parts.append(' '.join(bits))
+    return ', '.join(parts)
 
 
 def _is_10bit(pix_fmt: str) -> bool:
@@ -108,7 +132,8 @@ def _is_10bit(pix_fmt: str) -> bool:
 
 
 # ---------------------------------------------------------- stream plan
-def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolution: str = 'Original') -> dict:
+def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolution: str = 'Original',
+                 slim: bool = False) -> dict:
     """Decide exactly which tracks are kept, converted or dropped.
 
     Raises PlanError (before anything is written) when the profile cannot
@@ -146,6 +171,31 @@ def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolu
     report.append(f'KEEP video: {video.get("codec_name", "?")} {video.get("width", "?")}x{video.get("height", "?")} '
                   f'{video.get("pix_fmt", "")} -> {target}')
 
+    audio_map = '0:a'
+    meta_args = ['-map_metadata', '0', '-map_chapters', '0']
+    if slim:
+        # SLIM OUTPUT: main video + one audio track; everything else dropped
+        # and listed, so nothing disappears unreported.
+        if len(groups['audio']) > 1:
+            keep = next((a for a in groups['audio'] if (a.get('disposition') or {}).get('default')),
+                        groups['audio'][0])
+            others = [a for a in groups['audio'] if a is not keep]
+            report.append(f'DROP audio: {len(others)} extra track(s) [{_describe_audio(others)}] (slim output)')
+            audio_map = f'0:a:{groups["audio"].index(keep)}'
+            groups['audio'] = [keep]
+        for kind, label in (('subtitle', 'subtitles'), ('attachment', 'attachments/fonts'), ('cover', 'cover art')):
+            if groups[kind]:
+                forced = sum(bool((x.get('disposition') or {}).get('forced')) for x in groups[kind])
+                report.append(f'DROP {label}: {len(groups[kind])} [{_codecs(groups[kind])}] (slim output)'
+                              + (f'; includes {forced} FORCED track(s) for foreign-language dialogue' if forced else ''))
+                groups[kind] = []
+        meta_args = ['-map_metadata', '-1', '-map_chapters', '-1']
+        lang = ((groups['audio'][0].get('tags') or {}).get('language') if groups['audio'] else None)
+        if lang:
+            meta_args += ['-metadata:s:a:0', f'language={lang}']
+        report.append('DROP chapters and title/tag metadata (slim output)'
+                      + (f'; audio language "{lang}" kept' if lang else ''))
+
     if groups['audio']:
         if container == 'mp4' and audio_mode == 'copy' and not copy_all:
             bad = [a for a in groups['audio'] if str(a.get('codec_name')) in MP4_BAD_AUDIO
@@ -153,10 +203,21 @@ def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolu
             if bad:
                 raise PlanError(f'MP4 cannot hold copied {_codecs(bad)} audio. Choose an MKV profile '
                                 'or set AUDIO to opus. Source unchanged.')
-        maps += ['-map', '0:a']
+        maps += ['-map', audio_map]
         expected['audio'] = len(groups['audio'])
         how = 'copied' if audio_mode == 'copy' or copy_all else 'converted to Opus 128k'
-        report.append(f'KEEP audio: {len(groups["audio"])} track(s) [{_codecs(groups["audio"])}] {how}')
+        if audio_mode == 'opus' and not copy_all:
+            # libopus only accepts its own channel layouts; DVD/Blu-ray AC3/DTS
+            # are usually '5.1(side)', which made every Opus job fail in 0.3.
+            for n, a in enumerate(groups['audio']):
+                layout = str(a.get('channel_layout') or '')
+                if layout in OPUS_LAYOUTS:
+                    continue
+                target = OPUS_BY_CHANNELS.get(int(a.get('channels') or 0), '7.1')
+                extra += [f'-filter:a:{n}', f'aformat=channel_layouts={target}']
+                report.append(f'CONVERT audio layout: track {n + 1} {layout or str(a.get("channels")) + "ch"} '
+                              f'-> {target} (required by Opus)')
+        report.append(f'KEEP audio: {len(groups["audio"])} track(s) [{_describe_audio(groups["audio"])}] {how}')
 
     if groups['subtitle']:
         maps += ['-map', '0:s']
@@ -233,7 +294,7 @@ def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolu
             # Applies to the main video only; copied cover art is untouched.
             codec_args += ['-filter:v:0', f'scale={scale[0]}:{scale[1]}:flags=lanczos']
     return dict(maps=maps, codec_args=codec_args, extra=extra, covers=covers, attach=attach,
-                expected=expected, report=report, container=container, scale=scale)
+                expected=expected, report=report, container=container, scale=scale, meta_args=meta_args)
 
 
 def build_command(ffmpeg: str, src: str, dst: str, plan: dict) -> list:
@@ -243,7 +304,7 @@ def build_command(ffmpeg: str, src: str, dst: str, plan: dict) -> list:
         cmd += ['-attach', item['temp_path'],
                 f'-metadata:s:t:{item["t_index"]}', f'mimetype={item["mime"]}',
                 f'-metadata:s:t:{item["t_index"]}', f'filename={item["filename"]}']
-    cmd += plan['maps'] + ['-map_metadata', '0', '-map_chapters', '0']
+    cmd += plan['maps'] + plan.get('meta_args', ['-map_metadata', '0', '-map_chapters', '0'])
     cmd += plan['codec_args'] + plan['extra']
     cmd.append(dst)
     return cmd
@@ -396,13 +457,13 @@ def reconcile_jobs(jobs: list) -> list:
     return messages
 
 
-PERSIST_KEYS = ('id', 'src', 'dst', 'profile', 'audio_mode', 'resolution', 'status', 'progress', 'percent', 'duration',
+PERSIST_KEYS = ('id', 'src', 'dst', 'profile', 'audio_mode', 'resolution', 'slim', 'status', 'progress', 'percent', 'duration',
                 'created_at', 'started_at', 'finished_at', 'error', 'log_path', 'temp_path', 'cover_temps',
                 'stale_partials', 'pid', 'report', 'attempts')
 
 
-def new_job(job_id, src, dst, profile, audio_mode='copy', resolution='Original') -> dict:
-    return dict(id=job_id, src=src, dst=dst, profile=profile, audio_mode=audio_mode, resolution=resolution,
+def new_job(job_id, src, dst, profile, audio_mode='copy', resolution='Original', slim=False) -> dict:
+    return dict(id=job_id, src=src, dst=dst, profile=profile, audio_mode=audio_mode, resolution=resolution, slim=bool(slim),
                 status='queued', progress='', percent=None, duration=0.0,
                 created_at=time.time(), started_at=None, finished_at=None,
                 last_activity=None, last_advance=None, out_seconds=0.0, speed=0.0,
@@ -645,7 +706,7 @@ class QueueRunner:
             self._log(log, f'SOURCE: {job["src"]}')
             self._log(log, f'OUTPUT: {job["dst"]}')
             self._log(log, f'PROFILE: {job["profile"]} · audio {job.get("audio_mode", "copy")} · '
-                           f'resolution {job.get("resolution", "Original")}')
+                           f'resolution {job.get("resolution", "Original")} · slim {"on" if job.get("slim") else "off"}')
             if job.get('log_path'):
                 self.emit('log', f'LOG FILE: {job["log_path"]}')
             self._set(job, 'probing', 'probing source tracks')
@@ -661,7 +722,8 @@ class QueueRunner:
                 raise FileExistsError('Output name already exists; originals and existing outputs are never overwritten')
             info = probe(self.ffprobe, job['src'])
             job['duration'] = max(0.0, float(info.get('format', {}).get('duration', 0) or 0))
-            plan = plan_streams(info, job['profile'], job.get('audio_mode', 'copy'), job.get('resolution', 'Original'))
+            plan = plan_streams(info, job['profile'], job.get('audio_mode', 'copy'), job.get('resolution', 'Original'),
+                                bool(job.get('slim')))
             job['report'] = list(plan['report'])
             for line in plan['report']:
                 self._log(log, 'PLAN ' + line)

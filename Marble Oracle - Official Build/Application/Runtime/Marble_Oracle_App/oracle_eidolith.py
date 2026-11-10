@@ -78,6 +78,7 @@ class EidolithPanel(tk.Frame):
         # Short names by default: 'Mr. Robot (2015) - S01E01.mkv'.
         self.name_episode_title = tk.BooleanVar(value=bool(self.state.get('name_episode_title', False)))
         self.name_format_tag = tk.BooleanVar(value=bool(self.state.get('name_format_tag', False)))
+        self.slim_output = tk.BooleanVar(value=bool(self.state.get('slim_output', True)))
         self.resolution = tk.StringVar(value=saved_res if saved_res in RESOLUTIONS else 'Original')
         self.active_nav = tk.StringVar(value='PLAYER')
         self.status_var = tk.StringVar(value='Ready. Import a local video file to inspect or convert.')
@@ -421,6 +422,12 @@ class EidolithPanel(tk.Frame):
         res_menu.pack(fill='x', pady=(4, 0))
         self._label(row2, 'Scale down only, keeping aspect ratio. From 1080p, 720p encodes about 2–3× faster (more for grainy video).',
                     10, 'text_3').pack(anchor='w', pady=(4, 0))
+        tk.Checkbutton(row2, text='SLIM OUTPUT: video + main audio track only', variable=self.slim_output,
+                       command=self._save_state, anchor='w', font=(FAMILY, 10, 'bold'), bg=C['raised'],
+                       fg=C['text_2'], selectcolor=C['control'], activebackground=C['raised'],
+                       activeforeground=C['text'], highlightthickness=0, bd=0).pack(anchor='w', fill='x', pady=(8, 0))
+        self._label(row2, 'Drops extra audio tracks, subtitles, cover art, fonts, chapters and metadata. '
+                          'Every drop is listed in the job log.', 10, 'text_3').pack(anchor='w', pady=(2, 0))
 
         row3 = ogl_frame(box, bg=C['raised'])
         row3.pack(fill='x', padx=pad, pady=(0, 8))
@@ -667,6 +674,7 @@ class EidolithPanel(tk.Frame):
             'resolution': self.resolution.get(),
             'name_episode_title': bool(self.name_episode_title.get()),
             'name_format_tag': bool(self.name_format_tag.get()),
+            'slim_output': bool(self.slim_output.get()),
             'rename_mode': self.rename_mode.get(),
             'title_override': self.title_override.get(),
             'season_override': self.season_override.get(),
@@ -907,7 +915,7 @@ class EidolithPanel(tk.Frame):
                                          episode=self.episode_override.get() if single else '')
             self.queue_seq = max(self.queue_seq, self.runner.next_id())
             self.runner.add(new_job(self.queue_seq, src, dst, profile_name, self.audio_mode.get(),
-                                    self.resolution.get()))
+                                    self.resolution.get(), self.slim_output.get()))
             self.queue_seq += 1
         self._refresh_queue()
         self._set_nav('QUEUE')
