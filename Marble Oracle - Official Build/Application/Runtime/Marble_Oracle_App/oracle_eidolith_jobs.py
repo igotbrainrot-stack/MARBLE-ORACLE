@@ -38,7 +38,7 @@ import uuid
 from oracle_eidolith_core import (PROFILES, RESOLUTIONS, encoding_args, fit_resolution, profile_support,
                                   progress_seconds, seconds_label, safe_piece)
 
-ENGINE_VERSION = '0.4.5'
+ENGINE_VERSION = '0.4.6'
 NOWIN = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 
 ACTIVE = ('probing', 'converting', 'validating')
@@ -150,8 +150,20 @@ def _is_10bit(pix_fmt: str) -> bool:
 
 
 # ---------------------------------------------------------- stream plan
+ENGLISH = {'eng', 'en', 'english'}
+
+
+def _lang(stream) -> str:
+    return str((stream.get('tags') or {}).get('language') or '').strip().lower()
+
+
+def _is_commentary(stream) -> bool:
+    title = str((stream.get('tags') or {}).get('title') or '').lower()
+    return 'comment' in title or bool((stream.get('disposition') or {}).get('comment'))
+
+
 def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolution: str = 'Original',
-                 slim: bool = False) -> dict:
+                 slim: bool = False, slim_subs: bool = False, slim_english_audio: bool = False) -> dict:
     """Decide exactly which tracks are kept, converted or dropped.
 
     Raises PlanError (before anything is written) when the profile cannot
@@ -199,6 +211,7 @@ def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolu
                   f'{video.get("pix_fmt", "")} -> {target}')
 
     audio_map = '0:a'
+    sub_maps = ['-map', '0:s']
     meta_args = ['-map_metadata', '0', '-map_chapters', '0']
     if slim:
         # SLIM OUTPUT: main video + one audio track; everything else dropped
@@ -206,11 +219,40 @@ def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolu
         if len(groups['audio']) > 1:
             keep = next((a for a in groups['audio'] if (a.get('disposition') or {}).get('default')),
                         groups['audio'][0])
+            if slim_english_audio:
+                english = [a for a in groups['audio'] if _lang(a) in ENGLISH]
+                pick = next((a for a in english if not _is_commentary(a)), None)
+                if pick is not None:
+                    keep = pick
+                else:
+                    report.append('NOTE no English audio track found; keeping the source default track')
             others = [a for a in groups['audio'] if a is not keep]
             report.append(f'DROP audio: {len(others)} extra track(s) [{_describe_audio(others)}] (slim output)')
             audio_map = f'0:a:{groups["audio"].index(keep)}'
             groups['audio'] = [keep]
+        if slim_subs and groups['subtitle']:
+            # Keep English subtitles (and untagged ones, whose language is unknown).
+            all_subs = groups['subtitle']
+            kept = [s for s in all_subs if _lang(s) in ENGLISH or _lang(s) in ('', 'und')]
+            if container == 'mp4':
+                bitmap = [s for s in kept if str(s.get('codec_name')) not in TEXT_SUBS]
+                if bitmap:
+                    report.append(f'DROP subtitles: {len(bitmap)} picture-based [{_codecs(bitmap)}] cannot go in MP4 '
+                                  '(use an MKV profile to keep them)')
+                    kept = [s for s in kept if s not in bitmap]
+            dropped = [s for s in all_subs if s not in kept]
+            if dropped:
+                forced = sum(bool((x.get('disposition') or {}).get('forced')) for x in dropped)
+                report.append(f'DROP subtitles: {len(dropped)} non-English/unsupported [{_codecs(dropped)}] (slim output)'
+                              + (f'; includes {forced} FORCED track(s)' if forced else ''))
+            if kept and len(kept) != len(all_subs):
+                sub_maps = [x for s in kept for x in ('-map', f'0:s:{all_subs.index(s)}')]
+            groups['subtitle'] = kept
+            if kept and any(str(s.get('codec_name')) in STYLED_SUBS for s in kept) and groups['attachment']:
+                report.append('NOTE styled subtitles kept without their fonts; players use a default font')
         for kind, label in (('subtitle', 'subtitles'), ('attachment', 'attachments/fonts'), ('cover', 'cover art')):
+            if kind == 'subtitle' and slim_subs:
+                continue
             if groups[kind]:
                 forced = sum(bool((x.get('disposition') or {}).get('forced')) for x in groups[kind])
                 report.append(f'DROP {label}: {len(groups[kind])} [{_codecs(groups[kind])}] (slim output)'
@@ -220,6 +262,9 @@ def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolu
         lang = ((groups['audio'][0].get('tags') or {}).get('language') if groups['audio'] else None)
         if lang:
             meta_args += ['-metadata:s:a:0', f'language={lang}']
+        for n, sub in enumerate(groups['subtitle']):       # kept subtitles keep their language label
+            if _lang(sub) not in ('', 'und'):
+                meta_args += [f'-metadata:s:s:{n}', f'language={_lang(sub)}']
         report.append('DROP chapters and title/tag metadata (slim output)'
                       + (f'; audio language "{lang}" kept' if lang else ''))
 
@@ -247,7 +292,7 @@ def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolu
         report.append(f'KEEP audio: {len(groups["audio"])} track(s) [{_describe_audio(groups["audio"])}] {how}')
 
     if groups['subtitle']:
-        maps += ['-map', '0:s']
+        maps += sub_maps
         expected['subtitle'] = len(groups['subtitle'])
         if container == 'mkv':
             extra += ['-c:s', 'copy']
@@ -489,13 +534,15 @@ def reconcile_jobs(jobs: list) -> list:
     return messages
 
 
-PERSIST_KEYS = ('id', 'src', 'dst', 'profile', 'audio_mode', 'resolution', 'slim', 'status', 'progress', 'percent', 'duration',
+PERSIST_KEYS = ('id', 'src', 'dst', 'profile', 'audio_mode', 'resolution', 'slim', 'slim_subs', 'slim_eng_audio', 'status', 'progress', 'percent', 'duration',
                 'created_at', 'started_at', 'finished_at', 'error', 'log_path', 'temp_path', 'cover_temps',
                 'stale_partials', 'pid', 'report', 'attempts')
 
 
-def new_job(job_id, src, dst, profile, audio_mode='copy', resolution='Original', slim=False) -> dict:
+def new_job(job_id, src, dst, profile, audio_mode='copy', resolution='Original', slim=False,
+            slim_subs=False, slim_eng_audio=False) -> dict:
     return dict(id=job_id, src=src, dst=dst, profile=profile, audio_mode=audio_mode, resolution=resolution, slim=bool(slim),
+                slim_subs=bool(slim_subs), slim_eng_audio=bool(slim_eng_audio),
                 status='queued', progress='', percent=None, duration=0.0,
                 created_at=time.time(), started_at=None, finished_at=None,
                 last_activity=None, last_advance=None, out_seconds=0.0, speed=0.0,
@@ -772,7 +819,7 @@ class QueueRunner:
             info = probe(self.ffprobe, job['src'])
             job['duration'] = max(0.0, float(info.get('format', {}).get('duration', 0) or 0))
             plan = plan_streams(info, job['profile'], job.get('audio_mode', 'copy'), job.get('resolution', 'Original'),
-                                bool(job.get('slim')))
+                                bool(job.get('slim')), bool(job.get('slim_subs')), bool(job.get('slim_eng_audio')))
             job['report'] = list(plan['report'])
             for line in plan['report']:
                 self._log(log, 'PLAN ' + line)

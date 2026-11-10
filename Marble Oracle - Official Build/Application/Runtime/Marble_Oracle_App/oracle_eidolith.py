@@ -28,7 +28,7 @@ from oracle_eidolith_core import (PROFILES, PROFILE_ORDER, DEFAULT_PROFILE, LEGA
 from oracle_eidolith_jobs import (QueueRunner, new_job, diagnostics_report, ACTIVE, RETRYABLE)
 
 APP_NAME = "EIDOLITH"
-APP_VERSION = "0.4.5"
+APP_VERSION = "0.4.6"
 QUEUE_STATE = 'eidolith_queue.json'
 STALL_NOTICE_SECONDS = 30
 
@@ -80,6 +80,9 @@ class EidolithPanel(tk.Frame):
         self.name_episode_title = tk.BooleanVar(value=bool(self.state.get('name_episode_title', False)))
         self.name_format_tag = tk.BooleanVar(value=bool(self.state.get('name_format_tag', False)))
         self.slim_output = tk.BooleanVar(value=bool(self.state.get('slim_output', True)))
+        self.slim_subs = tk.BooleanVar(value=bool(self.state.get('slim_subs', False)))
+        self.slim_eng_audio = tk.BooleanVar(value=bool(self.state.get('slim_eng_audio', False)))
+        self.skip_converted = tk.BooleanVar(value=bool(self.state.get('skip_converted', True)))
         self.resolution = tk.StringVar(value=saved_res if saved_res in RESOLUTIONS else 'Original')
         self.active_nav = tk.StringVar(value='PLAYER')
         self.status_var = tk.StringVar(value='Ready. Import a local video file to inspect or convert.')
@@ -430,6 +433,13 @@ class EidolithPanel(tk.Frame):
         self._label(row2, 'Drops extra audio tracks, subtitles, cover art, fonts, chapters and metadata. '
                           'Every drop is listed in the job log.', 10, 'text_3',
                     wraplength=430, justify='left').pack(anchor='w', pady=(2, 0))
+        for text, variable in (('Slim: keep English subtitles', self.slim_subs),
+                               ('Slim: prefer English audio over the default track', self.slim_eng_audio),
+                               ('Skip files already converted to this folder', self.skip_converted)):
+            tk.Checkbutton(row2, text=text, variable=variable, command=self._save_state, anchor='w',
+                           font=(FAMILY, 10), bg=C['raised'], fg=C['text_2'], selectcolor=C['control'],
+                           activebackground=C['raised'], activeforeground=C['text'],
+                           highlightthickness=0, bd=0).pack(anchor='w', fill='x')
 
         row3 = ogl_frame(box, bg=C['raised'])
         row3.pack(fill='x', padx=pad, pady=(0, 8))
@@ -708,6 +718,9 @@ class EidolithPanel(tk.Frame):
             'name_episode_title': bool(self.name_episode_title.get()),
             'name_format_tag': bool(self.name_format_tag.get()),
             'slim_output': bool(self.slim_output.get()),
+            'slim_subs': bool(self.slim_subs.get()),
+            'slim_eng_audio': bool(self.slim_eng_audio.get()),
+            'skip_converted': bool(self.skip_converted.get()),
             'rename_mode': self.rename_mode.get(),
             'title_override': self.title_override.get(),
             'season_override': self.season_override.get(),
@@ -917,6 +930,16 @@ class EidolithPanel(tk.Frame):
         original_base, ext = os.path.splitext(name)
         path = os.path.join(dest_dir, name)
         n = 2
+        if self.skip_converted.get():
+            # Already converted (output exists) or already in the queue from this same source.
+            first = os.path.normcase(os.path.abspath(path))
+            same_source = os.path.normcase(os.path.abspath(src))
+            if os.path.isfile(path) and first != same_source:
+                return None
+            if any(os.path.normcase(os.path.abspath(j['dst'])) == first
+                   and os.path.normcase(os.path.abspath(j['src'])) == same_source
+                   and j['status'] in ('queued',) + ACTIVE for j in self.queue_items):
+                return None
         taken = {os.path.normcase(os.path.abspath(j['dst'])) for j in self.queue_items}
         taken.add(os.path.normcase(os.path.abspath(src)))
         while os.path.exists(path) or os.path.normcase(os.path.abspath(path)) in taken:
@@ -940,20 +963,36 @@ class EidolithPanel(tk.Frame):
                              'Choose an encoding profile, or set RESOLUTION to Original.')
             return
         single = len(files) == 1
+        queued, skipped = 0, []
         for src in files:
             dst = self._make_output_path(src, profile_name,
                                          name_mode=self.rename_mode.get(),
                                          title=self.title_override.get(),
                                          season=self.season_override.get() if single else '',
                                          episode=self.episode_override.get() if single else '')
+            if dst is None:
+                skipped.append(os.path.basename(src))
+                continue
             self.queue_seq = max(self.queue_seq, self.runner.next_id())
             self.runner.add(new_job(self.queue_seq, src, dst, profile_name, self.audio_mode.get(),
-                                    self.resolution.get(), self.slim_output.get()))
+                                    self.resolution.get(), self.slim_output.get(),
+                                    self.slim_subs.get(), self.slim_eng_audio.get()))
             self.queue_seq += 1
+            queued += 1
         self._refresh_queue()
+        note = ''
+        if skipped:
+            note = f' Skipped {len(skipped)} already converted or already queued.'
+            self._append_log(f'Skipped {len(skipped)} file(s) already converted or queued: ' + ', '.join(skipped[:8])
+                             + (' …' if len(skipped) > 8 else '')
+                             + '. Untick "Skip files already converted" to convert them again.')
+        if not queued:
+            self._set_status('Nothing queued.' + note + ' Untick "Skip files already converted" to convert again.')
+            self._save_state()
+            return
         self._set_nav('QUEUE')
         running = self.runner.running()
-        self._set_status(f'Queued {len(files)} file(s) with standard names. '
+        self._set_status(f'Queued {queued} file(s) with standard names.' + note + ' '
                          + ('They will run after the current jobs.' if running else 'Press START QUEUE to begin.'))
         self._save_state()
 

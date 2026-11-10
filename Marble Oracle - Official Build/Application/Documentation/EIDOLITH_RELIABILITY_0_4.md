@@ -161,6 +161,12 @@ Not changed:
 - **Licensing:** terms for the text-to-speech Latin voice clips are unchecked, and no source/licence note was found for the tarot, rune and bezel artwork.
 - **Slim output and foreign-language video:** SLIM OUTPUT keeps the source's default audio track and drops subtitles, including for foreign-language video.
 
+## 2e. Slim options and skip-converted (0.4.6)
+
+- **Slim: keep English subtitles** keeps subtitle tracks tagged English, and untagged ones (language unknown), with their language label. Other languages are dropped and reported. In MP4, picture-based subtitles are dropped with a note instead of blocking the job.
+- **Slim: prefer English audio** picks the first English track that is not a commentary; if there is none, the source default track is kept and the plan says so.
+- **Skip files already converted** (default on): queuing skips a file when its first-choice output name already exists in the output folder, or the same source is already queued for it. The skipped names are listed in the conversion log. A different file that maps to the same short name is also skipped, and is listed there.
+
 ## 3. Tests and results
 
 Environment: Ubuntu 24.04 container, Xvfb, Python 3.12.3 (system, Tk 8.6, Pillow 10.2, mutagen 1.48),
@@ -178,7 +184,7 @@ python3 Application/Tests/test_eidolith_naming_regression.py                # 14
 |---|---|
 | Baseline 0.3, full suite (same environment) | 21/21 tests pass. `verify_release.py` fails only after the tests rewrite `TAB_OGGCULTIST_DEFAULT.png` (D11); it passes on a fresh extract |
 | 0.4 branch, full suite | **23/23 tests pass** (the 21 existing tests plus 2 new EIDOLITH tests) |
-| `test_eidolith_queue_reliability.py` | **83/83** including resolution, short-name, slim-output, Opus-layout, job-removal and audit-fix checks; `test_audit_fixes.py` added (suite is now 24 tests) (54/54 before that addition, repeated 4× with no flakes) |
+| `test_eidolith_queue_reliability.py` | **90/90** (83/83 before the 0.4.6 options) including resolution, short-name, slim-output, Opus-layout, job-removal and audit-fix checks; `test_audit_fixes.py` added (suite is now 24 tests) (54/54 before that addition, repeated 4× with no flakes) |
 | `verify_release.py` on the packaged 0.4 tree | PASS (inventory regenerated) |
 | Offline launch: `START MARBLE ORACLE - LINUX.sh`, no network namespace, Xvfb, Python 3.12 | Requirements window and main “Marble_Oracle CRT V2 - Integrated” window appear; no download attempted |
 

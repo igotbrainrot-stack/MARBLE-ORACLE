@@ -116,6 +116,14 @@ def make_media(folder: Path) -> dict:
        '-attach', str(jpg), '-metadata:s:t:0', 'mimetype=image/jpeg', '-metadata:s:t:0', 'filename=cover.jpg',
        '-attach', str(font), '-metadata:s:t:1', 'mimetype=font/ttf', '-metadata:s:t:1', 'filename=font.ttf', str(rich))
     m['rich'] = rich
+    fre = folder / 'fre.srt'
+    fre.write_text('1\n00:00:00,500 --> 00:00:02,000\nBonjour\n', encoding='utf-8')
+    m['dub'] = folder / 'dubbed.mkv'
+    ff('-i', str(m['plain']), '-i', str(m['plain']), '-i', str(m['plain']), '-i', str(srt), '-i', str(fre),
+       '-map', '0:v', '-map', '0:a', '-map', '1:a', '-map', '2:a', '-map', '3', '-map', '4', '-c', 'copy', '-c:s', 'srt',
+       '-metadata:s:a:0', 'language=jpn', '-metadata:s:a:1', 'language=eng', '-metadata:s:a:1', 'title=Commentary',
+       '-metadata:s:a:2', 'language=eng', '-metadata:s:s:0', 'language=eng', '-metadata:s:s:1', 'language=fre',
+       '-disposition:a:0', 'default', '-disposition:a:1', '0', '-disposition:a:2', '0', str(m['dub']))
     base1080 = folder / 'base1080.mp4'
     ff('-f', 'lavfi', '-i', 'testsrc2=size=1920x1080:rate=30:duration=2', '-c:v', 'libx264', '-preset', 'ultrafast',
        str(base1080))
@@ -304,6 +312,34 @@ def section_slim(m, out):
               sum(s['codec_type'] == 'audio' for s in info['streams']) == 2
               and any(s['codec_type'] == 'subtitle' for s in info['streams']) and len(info.get('chapters', [])) == 2
               and any(s.get('disposition', {}).get('attached_pic') for s in info['streams']))
+    r = runner(out)
+    both = add(r, m['dub'], out, 'Fast CPU H.264')
+    both.update(slim=True, slim_subs=True, slim_eng_audio=True)
+    plain_slim = add(r, m['dub'], out, 'Faster CPU AV1')
+    plain_slim.update(slim=True)
+    no_eng = add(r, m['plain'], out, 'Fast CPU H.264')
+    no_eng.update(slim=True, slim_subs=True, slim_eng_audio=True)
+    r.start()
+    r.wait(600)
+    if both['status'] == 'completed':
+        st = probe_all(both['dst'])['streams']
+        aud = [s for s in st if s['codec_type'] == 'audio']
+        subs = [s for s in st if s['codec_type'] == 'subtitle']
+        check('7 prefer English audio: picks the English track that is not commentary',
+              len(aud) == 1 and aud[0].get('tags', {}).get('language') == 'eng'
+              and 'Commentary' not in str(aud[0].get('tags', {})), aud and aud[0].get('tags'))
+        check('7 keep English subtitles: English kept (mov_text in MP4), French dropped and reported',
+              len(subs) == 1 and subs[0]['codec_name'] == 'mov_text' and subs[0].get('tags', {}).get('language') == 'eng'
+              and any('non-English' in x for x in both['report']), [s.get('tags') for s in subs])
+    else:
+        check('7 slim + English options completed', False, both['error'])
+    if plain_slim['status'] == 'completed':
+        st = probe_all(plain_slim['dst'])['streams']
+        check('7 options off: slim still keeps the default (jpn) track and no subtitles',
+              [s.get('tags', {}).get('language') for s in st if s['codec_type'] == 'audio'] == ['jpn']
+              and not any(s['codec_type'] == 'subtitle' for s in st))
+    check('7 English options on a source without those tracks still completes', no_eng['status'] == 'completed',
+          no_eng['error'])
     check('7 slim output is smaller than full output', all(j['status'] == 'completed' for j in (slim, full))
           and os.path.getsize(slim['dst']) < os.path.getsize(full['dst']))
 
@@ -522,13 +558,33 @@ def section_panel(m, out):
     clip = root.clipboard_get()
     check('5 diagnostics copied without local folder paths', f'EIDOLITH {ENGINE_VERSION} diagnostic report' in clip
           and str(out) not in clip and str(m['robot'].parent) not in clip and '<source folder>' in clip)
-    # Queued jobs can be removed (selected, several at once) or all cleared.
+    # Already converted files are skipped by default instead of producing ' (2)' copies.
     panel.queue_list.selection_clear(0, 'end')
     panel.profile.set('Fast CPU H.264')
     panel._set_nav('CONVERT')
     panel.convert_list.selection_clear(0, 'end')
     panel.convert_list.selection_set(0, 1)
+    before_skip = len(panel.queue_items)
     panel.queue_selected()
+    pump(0.05)
+    check('5 already converted files are skipped by default', panel.skip_converted.get()
+          and len(panel.queue_items) == before_skip
+          and 'Skipped 2 file(s) already converted' in panel.log_text.get('1.0', 'end'))
+    panel.skip_converted.set(False)
+    # Queued jobs can be removed (selected, several at once) or all cleared.
+    panel.convert_list.selection_clear(0, 'end')
+    panel.convert_list.selection_set(0, 1)
+    panel.queue_selected()
+    pump(0.05)
+    check('5 skip off: converting again makes a (2) copy', len(panel.queue_items) == before_skip + 2
+          and panel.queue_items[-2]['dst'].endswith(' (2).mp4'), panel.queue_items[-1]['dst'])
+    panel.skip_converted.set(True)
+    panel.convert_list.selection_clear(0, 'end')
+    panel.convert_list.selection_set(0, 1)
+    panel.queue_selected()
+    pump(0.05)
+    check('5 files already waiting in the queue are not queued twice', len(panel.queue_items) == before_skip + 2)
+    panel.skip_converted.set(False)
     panel.convert_list.selection_clear(0, 'end')
     panel.convert_list.selection_set(0, 1)
     panel.queue_selected()
