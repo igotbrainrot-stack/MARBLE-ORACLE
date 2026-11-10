@@ -8,8 +8,8 @@
   "Application/Documentation/FILE_INVENTORY.json",
   "Application/Documentation/VERIFICATION_REPORT.md"
  ],
- "inventory_file_count": 365,
- "inventory_total_bytes": 114506760,
+ "inventory_file_count": 366,
+ "inventory_total_bytes": 114526013,
  "files": [
   {
    "path": "Application/.gitignore",
@@ -33,8 +33,8 @@
   },
   {
    "path": "Application/Documentation/DOCUMENTATION_INDEX.md",
-   "bytes": 2040,
-   "sha256": "dca2bdb201aa597ed4d2772000ab77b67fb9eb748faa6ea74da6e10efbd3a2a1"
+   "bytes": 2162,
+   "sha256": "ddff33afb759aa232ec7484b42b885180b4a27da3f214880d716468bc3d31710"
   },
   {
    "path": "Application/Documentation/EIDOLITH_PLAYER_WORKSPACES_AND_SELECT_ALL.md",
@@ -43,13 +43,18 @@
   },
   {
    "path": "Application/Documentation/EIDOLITH_RELIABILITY_0_4.md",
-   "bytes": 19430,
-   "sha256": "748f9a7f9f23cf4315348427d415769efd156eb7b7298b5ba090c0ff9a70aba9"
+   "bytes": 19439,
+   "sha256": "48b43f4e0023de3082204a764a319fe3c8e7a3f4ffcb8bbc082887b3f0510ba0"
   },
   {
    "path": "Application/Documentation/EIDOLITH_SPEED_AND_NAMING_0_3.md",
    "bytes": 4364,
    "sha256": "4b51774c4475a9e802d6e0022f160c4a965efa0b99844e3e355f9b65f3bb96d8"
+  },
+  {
+   "path": "Application/Documentation/EIDOLITH_SPEED_RESEARCH_0_4_7.md",
+   "bytes": 5968,
+   "sha256": "d89cc75565b0fd9de04852ae79c59b3c1ccb27bf7ea669ea4b56bf09fd1091da"
   },
   {
    "path": "Application/Documentation/FIRST_RUN_REQUIREMENTS.md",
@@ -313,8 +318,8 @@
   },
   {
    "path": "Application/README.md",
-   "bytes": 8421,
-   "sha256": "b2ca50eacccdb34b57ae2119cc1c1245bede0042957b636fa935291013257edb"
+   "bytes": 9030,
+   "sha256": "1a0d8fcc98a02d2f6142df6468ccc12924feb899b0ac027e189a3bd9a9670010"
   },
   {
    "path": "Application/Runtime/Launch_Marble_Oracle.vbs",
@@ -1488,18 +1493,18 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith.py",
-   "bytes": 64969,
-   "sha256": "e9308ab35fe31bbdcad5fabff27b414e003285c8c05534341806ce0f90222218"
+   "bytes": 66610,
+   "sha256": "595154a907eb34a5e422732262e67c71c972956a0fecfcda5ae8e7b6211ad299"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_core.py",
-   "bytes": 16462,
-   "sha256": "85735d47c0edbd6a973814f416dc68e680b9e2f73fb41437382fdc20416983b9"
+   "bytes": 17636,
+   "sha256": "3dcbbd4e4b7a278420503723d138ef01dce9e3740fc406c95d4103c710c6d2bd"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_jobs.py",
-   "bytes": 50941,
-   "sha256": "46ca021a81f1311cdc9a8f6a3117a25188fcdb509bb76c73d8a883b187795230"
+   "bytes": 56113,
+   "sha256": "24f21865e872b29ee2d920b180134e567fb0c2601bc92209460556c376f632c3"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_player.py",
@@ -1713,8 +1718,8 @@
   },
   {
    "path": "Application/Tests/test_eidolith_queue_reliability.py",
-   "bytes": 35268,
-   "sha256": "925dd6a724626b4d8a8354c08a08997cb280c61c74aff35a92553368b7fa8041"
+   "bytes": 39826,
+   "sha256": "f5cacbb3f632088203725be34d87625446cff20dcfb8bf7269a6f7e5ef369fea"
   },
   {
    "path": "Application/Tests/test_eidolith_speed_naming.py",
