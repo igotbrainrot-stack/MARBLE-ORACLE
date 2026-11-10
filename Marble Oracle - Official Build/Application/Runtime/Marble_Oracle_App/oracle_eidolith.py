@@ -75,6 +75,9 @@ class EidolithPanel(tk.Frame):
         self.episode_override = tk.StringVar(value=self.state.get('episode_override') or '')
         self.audio_mode = tk.StringVar(value=self.state.get('audio_mode') or 'copy')
         saved_res = self.state.get('resolution')
+        # Short names by default: 'Mr. Robot (2015) - S01E01.mkv'.
+        self.name_episode_title = tk.BooleanVar(value=bool(self.state.get('name_episode_title', False)))
+        self.name_format_tag = tk.BooleanVar(value=bool(self.state.get('name_format_tag', False)))
         self.resolution = tk.StringVar(value=saved_res if saved_res in RESOLUTIONS else 'Original')
         self.active_nav = tk.StringVar(value='PLAYER')
         self.status_var = tk.StringVar(value='Ready. Import a local video file to inspect or convert.')
@@ -101,7 +104,7 @@ class EidolithPanel(tk.Frame):
                              'Nothing starts until you press START QUEUE.')
         self._schedule_ui_queue()
         for var in (self.profile, self.rename_mode, self.title_override, self.season_override, self.episode_override,
-                    self.resolution):
+                    self.resolution, self.name_episode_title, self.name_format_tag):
             var.trace_add('write', lambda *_: self._update_name_preview())
         self.profile.trace_add('write', lambda *_: self._update_profile_desc())
         self.after_idle(self._probe_selected)
@@ -448,6 +451,12 @@ class EidolithPanel(tk.Frame):
             self._label(item, label, 10, 'text_3').pack(anchor='w')
             self._entry(item, variable).pack(fill='x', pady=(2, 0))
         self._label(naming, 'Season/episode overrides apply to one selected file only.', 10, 'text_3').pack(anchor='w', pady=(3, 2))
+        for text, variable in (('Add episode title', self.name_episode_title),
+                               ('Add format tag, e.g. [AV1 720p]', self.name_format_tag)):
+            tk.Checkbutton(naming, text=text, variable=variable, command=self._save_state, anchor='w',
+                           font=(FAMILY, 10), bg=C['raised'], fg=C['text_2'], selectcolor=C['control'],
+                           activebackground=C['raised'], activeforeground=C['text'],
+                           highlightthickness=0, bd=0).pack(anchor='w', fill='x')
         self.name_preview = self._label(naming, 'OUTPUT: Select a source file to preview its name.', 10, 'text_3')
         self.name_preview.pack(anchor='w', fill='x', pady=(0, 2))
         self._update_name_preview()
@@ -656,6 +665,8 @@ class EidolithPanel(tk.Frame):
             'profile': self.profile.get(),
             'audio_mode': self.audio_mode.get(),
             'resolution': self.resolution.get(),
+            'name_episode_title': bool(self.name_episode_title.get()),
+            'name_format_tag': bool(self.name_format_tag.get()),
             'rename_mode': self.rename_mode.get(),
             'title_override': self.title_override.get(),
             'season_override': self.season_override.get(),
@@ -851,7 +862,7 @@ class EidolithPanel(tk.Frame):
                                self.title_override.get(),
                                self.season_override.get() if single else '',
                                self.episode_override.get() if single else '',
-                               self.resolution.get())
+                               self.resolution.get(), self.name_episode_title.get(), self.name_format_tag.get())
         except (ValueError, KeyError):
             name = '(invalid profile/name)'
         self.name_preview.configure(text='OUTPUT: ' + name, wraplength=440)
@@ -861,7 +872,7 @@ class EidolithPanel(tk.Frame):
         os.makedirs(dest_dir, exist_ok=True)
         self.output_dir = dest_dir
         name = output_name(src, profile_name, name_mode or self.rename_mode.get(), title, season, episode,
-                           self.resolution.get())
+                           self.resolution.get(), self.name_episode_title.get(), self.name_format_tag.get())
         original_base, ext = os.path.splitext(name)
         path = os.path.join(dest_dir, name)
         n = 2

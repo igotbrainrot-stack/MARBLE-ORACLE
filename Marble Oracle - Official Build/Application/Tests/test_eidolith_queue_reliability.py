@@ -346,8 +346,8 @@ def section_panel(m, out):
     panel.queue_selected()
     pump(0.1)
     names = [Path(j['dst']).name for j in panel.queue_items]
-    check('5 Mr. Robot output name is recognisable',
-          names[0] == 'Mr. Robot (2015) - S01E01 - eps1.0_hellofriend.mov [H264].mp4', names[0])
+    check('5 default output name is short (show, year, SxxEyy)',
+          names[0] == 'Mr. Robot (2015) - S01E01.mp4', names[0])
     check('5 queue saved to state', (Path(STATE) / 'eidolith_queue.json').is_file())
     assert panel.shutdown()
     root.destroy()
@@ -417,8 +417,15 @@ def section_panel(m, out):
           and 'cannot resize' in panel.status_var.get())
     panel.profile.set('Fast CPU H.264')
     pump(0.1)
-    check('5 name preview shows the 720p tag', '[H264 720p].mp4' in panel.name_preview.cget('text'),
+    check('5 name preview is short by default', panel.name_preview.cget('text').endswith('Mr. Robot (2015) - S01E01.mp4'),
           panel.name_preview.cget('text'))
+    panel.name_format_tag.set(True)
+    panel.name_episode_title.set(True)
+    pump(0.1)
+    check('5 opt-in episode title + 720p tag', panel.name_preview.cget('text').endswith(
+          'Mr. Robot (2015) - S01E01 - eps1.0_hellofriend.mov [H264 720p].mp4'), panel.name_preview.cget('text'))
+    panel.name_format_tag.set(False)
+    panel.name_episode_title.set(False)
     check('5 log folder under state dir', Path(panel.log_dir).is_dir() and Path(panel.log_dir).parent == Path(STATE))
     assert panel.shutdown()
     root.destroy()

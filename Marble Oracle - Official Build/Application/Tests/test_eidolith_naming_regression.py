@@ -72,6 +72,13 @@ def main():
         'Mr. Robot (2015) - S01E01 - eps1.0_hellofriend.mov [AV1 720p].mkv'
     assert output_name(src, 'Fast AV1 (preset 8)') == 'Mr. Robot (2015) - S01E01 - eps1.0_hellofriend.mov [AV1].mkv'
     assert output_name(src, 'Lossless remux', resolution='720p').endswith('[Remux].mkv')
+    # Short form (the panel's default): no episode title, no format tag.
+    short = dict(episode_title=False, format_tag=False)
+    assert output_name(src, 'Fast AV1 (preset 8)', resolution='720p', **short) == 'Mr. Robot (2015) - S01E01.mkv'
+    assert output_name('Dune.Part.Two.2024.2160p.BluRay.x265.mkv', 'Fast CPU H.264', **short) == 'Dune Part Two (2024).mp4'
+    assert output_name('my_home_movie.mp4', 'Fast CPU H.264', **short) == 'my_home_movie.mp4'
+    assert output_name(src, 'Faster CPU AV1', episode_title=False) == 'Mr. Robot (2015) - S01E01 [AV1].mkv'
+    assert output_name(src, 'Faster CPU AV1', format_tag=False) == 'Mr. Robot (2015) - S01E01 - eps1.0_hellofriend.mov.mkv'
     if failures:
         raise SystemExit('NAMING FAILURES:\n' + '\n'.join(failures))
     print(f'EIDOLITH naming regression: {len(CASES)} cases + parser/safety/resolution checks PASSED')

@@ -72,6 +72,9 @@ with tempfile.TemporaryDirectory(prefix='eidolith_standard_') as folder:
     panel.convert_list.selection_set(0)
     panel.rename_mode.set(NAME_MODES[0])
     panel.profile.set('Fast CPU H.264')
+    # 0.4 defaults to short names; opt in to the full form this test checks.
+    panel.name_episode_title.set(True)
+    panel.name_format_tag.set(True)
     panel.output_var.set(str(Path(folder) / 'Encoded'))
     panel.queue_selected()
     root.update_idletasks()

@@ -129,7 +129,7 @@ def parse_media_name(path: str) -> dict:
 
 
 def standard_stem(src: str, mode: str='Auto (TV / movie)', title_override: str='',
-                  season_override: str='', episode_override: str='') -> str:
+                  season_override: str='', episode_override: str='', episode_title: bool = True) -> str:
     info = parse_media_name(src)
     original = safe_piece(Path(src).stem, 'Untitled')
     if mode == 'Keep source name':
@@ -145,7 +145,7 @@ def standard_stem(src: str, mode: str='Auto (TV / movie)', title_override: str='
             number = f'S{int(sea):02d}E{int(epi):02d}'
             if info.get('extra_episode') and not episode_override.strip():
                 number += f'E{info["extra_episode"]:02d}'
-            detail = info.get('episode_title', '')
+            detail = info.get('episode_title', '') if episode_title else ''
             return f'{title} - {number}' + (f' - {detail}' if detail else '')
         # No episode info: don't fabricate S01E01.
         return title if title_override.strip() else original
@@ -178,13 +178,20 @@ def fit_resolution(width, height, resolution='Original'):
 
 
 def output_name(src, profile_name, mode='Auto (TV / movie)', title_override='', season_override='',
-                episode_override='', resolution='Original'):
-    stem = standard_stem(src, mode, title_override, season_override, episode_override)
+                episode_override='', resolution='Original', episode_title=True, format_tag=True):
+    """Standard output filename.
+
+    episode_title / format_tag add ' - <episode title>' and ' [AV1 720p]'.
+    Both default to True for API compatibility; the EIDOLITH panel turns
+    them off by default so names read 'Show (2015) - S01E01.mkv'.
+    """
+    stem = safe_piece(standard_stem(src, mode, title_override, season_override, episode_override, episode_title))
+    ext = PROFILES[profile_name]['container']
+    if not format_tag:
+        return f'{stem}.{ext}'
     codec = SUFFIXES.get(profile_name, 'Encoded')
     if RESOLUTIONS.get(resolution or 'Original') and PROFILES[profile_name]['codec'] != 'copy':
         codec = f'{codec} {resolution}'
-    ext = PROFILES[profile_name]['container']
-    stem = safe_piece(stem)
     return f'{stem} [{codec}].{ext}'
 
 
