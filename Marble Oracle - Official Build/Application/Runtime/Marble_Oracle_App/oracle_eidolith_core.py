@@ -1,0 +1,200 @@
+"""UI-independent EIDOLITH encoding policy, progress parsing and safe names.
+
+Only local paths and FFmpeg commands are used. Conversions never rename or
+modify the input. Ambiguous episode naming defaults to recognisable source.
+"""
+from __future__ import annotations
+
+import os
+import re
+import subprocess
+from pathlib import Path
+
+PROFILES = {
+    'High fidelity': dict(container='mkv', codec='libsvtav1', crf=24, preset='4', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 24 · preset 4 · very slow, maximum detail'),
+    'Balanced archive (default)': dict(container='mkv', codec='libsvtav1', crf=28, preset='5', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 28 · preset 5 · slow, smaller archives'),
+    'Space saver': dict(container='mkv', codec='libsvtav1', crf=34, preset='6', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 34 · preset 6 · smaller, more visible loss possible'),
+    'Faster CPU AV1': dict(container='mkv', codec='libsvtav1', crf=30, preset='10', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 30 · preset 10 · faster, less compression efficiency'),
+    'NVIDIA AV1 (fast)': dict(container='mkv', codec='av1_nvenc', cq=30, preset='p4', pix_fmt='p010le', desc='Hardware AV1 10-bit · NVIDIA NVENC · much faster when supported'),
+    'NVIDIA HEVC (fast)': dict(container='mkv', codec='hevc_nvenc', cq=27, preset='p4', pix_fmt='yuv420p', desc='Hardware HEVC · NVIDIA NVENC · fast, broad device support'),
+    'NVIDIA H.264 (fastest compatibility)': dict(container='mp4', codec='h264_nvenc', cq=23, preset='p4', pix_fmt='yuv420p', desc='Hardware AVC · NVIDIA NVENC · fast, widest device support'),
+    'Fast CPU H.264': dict(container='mp4', codec='libx264', crf=23, preset='veryfast', pix_fmt='yuv420p', desc='CPU H.264 · CRF 23 · veryfast preset · good speed'),
+    'Broad device compatibility': dict(container='mkv', codec='libx265', crf=25, preset='medium', pix_fmt='yuv420p', desc='CPU HEVC / x265 · CRF 25 · medium'),
+    'Legacy compatibility': dict(container='mp4', codec='libx264', crf=21, preset='medium', pix_fmt='yuv420p', desc='CPU H.264 / x264 · CRF 21 · medium'),
+    'Lossless remux': dict(container='mkv', codec='copy', desc='Stream copy · no re-encode · fast if streams are compatible'),
+}
+PROFILE_ORDER = tuple(PROFILES)
+SUFFIXES = {
+    'High fidelity': 'AV1', 'Balanced archive (default)': 'AV1', 'Space saver': 'AV1',
+    'Faster CPU AV1': 'AV1', 'NVIDIA AV1 (fast)': 'AV1',
+    'NVIDIA HEVC (fast)': 'HEVC', 'NVIDIA H.264 (fastest compatibility)': 'H264',
+    'Fast CPU H.264': 'H264', 'Broad device compatibility': 'HEVC',
+    'Legacy compatibility': 'H264', 'Lossless remux': 'Remux',
+}
+NAME_MODES = ('Auto (TV / movie)', 'TV episode', 'Movie', 'Keep source name')
+INVALID = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
+EPISODE = re.compile(
+    r'(?i)(?<![a-z0-9])(?:s(?P<s>\d{1,2})[. _-]*e(?P<e>\d{1,3})(?:[. _-]*e(?P<e2>\d{1,3}))?'
+    r'|(?P<sx>\d{1,2})[xX](?P<ex>\d{1,3})'
+    r'|season[. _-]*(?P<ss>\d{1,2})[. _-]*(?:episode|ep)[. _-]*(?P<ee>\d{1,3}))(?![a-z0-9])')
+YEAR = re.compile(r'(?<!\d)(?:19\d{2}|20\d{2})(?!\d)')
+RELEASE = re.compile(r'(?i)(?:\b(?:2160p|1080p|720p|480p|4k|8k|bluray|brrip|web[ ._-]?dl|webrip|hdtv|hdrip|dvdrip|remux|proper|repack|x264|x265|h264|h265|hevc|av1|aac|dts|atmos|ddp5|ddp|hdr10|hdr|dv|10bit|8bit)\b|\b\d+(?:[.]\d+)?ch\b)')
+RESERVED = {"con", "prn", "aux", "nul"} | {f'com{i}' for i in range(1,10)} | {f'lpt{i}' for i in range(1,10)}
+
+
+def safe_piece(value: str, fallback: str = 'Untitled') -> str:
+    value = INVALID.sub('', str(value or ''))
+    value = re.sub(r'\s+', ' ', value).strip(' ._-')
+    if not value:
+        value = fallback
+    if value.lower() in RESERVED:
+        value = '_' + value
+    return value[:112].rstrip(' .') or fallback
+
+
+def clean_words(value: str) -> str:
+    value = re.sub(r'\[[^\]]+\]|\{[^}]+\}', ' ', value)
+    value = RELEASE.split(value, maxsplit=1)[0]
+    value = re.sub(r'[._]+', ' ', value)
+    value = re.sub(r'\s*[-–—]\s*', ' - ', value)
+    return safe_piece(value)
+
+
+def parse_media_name(path: str) -> dict:
+    raw = Path(path).stem
+    match = EPISODE.search(raw)
+    if match:
+        season = match.group('s') or match.group('sx') or match.group('ss')
+        episode = match.group('e') or match.group('ex') or match.group('ee')
+        last_episode = match.group('e2')
+        title = clean_words(raw[:match.start()])
+        tail = clean_words(raw[match.end():])
+        if tail == 'Untitled':
+            tail = ''
+        if re.fullmatch(r'(?i)(?:19|20)\d{2}', tail):
+            tail = ''
+        return dict(kind='TV', title=title, season=int(season), episode=int(episode),
+                    extra_episode=int(last_episode) if last_episode else None, episode_title=tail, year=None)
+    years = list(YEAR.finditer(raw))
+    if years:
+        match = years[0]
+        return dict(kind='Movie', title=clean_words(raw[:match.start()]), year=int(match.group()),
+                    season=None, episode=None, extra_episode=None, episode_title='')
+    return dict(kind='Unknown', title=clean_words(raw), year=None,
+                season=None, episode=None, extra_episode=None, episode_title='')
+
+
+def standard_stem(src: str, mode: str='Auto (TV / movie)', title_override: str='',
+                  season_override: str='', episode_override: str='') -> str:
+    info = parse_media_name(src)
+    original = safe_piece(Path(src).stem, 'Untitled')
+    if mode == 'Keep source name':
+        return original
+    title = safe_piece(title_override, info['title']) if title_override.strip() else info['title']
+    if mode == 'Movie' or (mode == 'Auto (TV / movie)' and info['kind'] == 'Movie'):
+        year = info.get('year')
+        return f'{title} ({year})' if year else title
+    if mode == 'TV episode' or (mode == 'Auto (TV / movie)' and info['kind'] == 'TV'):
+        sea = season_override.strip() or str(info.get('season') or '')
+        epi = episode_override.strip() or str(info.get('episode') or '')
+        if sea.isdigit() and epi.isdigit() and int(sea) <= 999 and int(epi) <= 9999:
+            number = f'S{int(sea):02d}E{int(epi):02d}'
+            if info.get('extra_episode') and not episode_override.strip():
+                number += f'E{info["extra_episode"]:02d}'
+            detail = info.get('episode_title', '')
+            return f'{title} - {number}' + (f' - {detail}' if detail else '')
+        # No episode info: don't fabricate S01E01.
+        return title if title_override.strip() else original
+    return original if info['kind'] == 'Unknown' and not title_override.strip() else title
+
+
+def output_name(src, profile_name, mode='Auto (TV / movie)', title_override='', season_override='', episode_override=''):
+    stem = standard_stem(src, mode, title_override, season_override, episode_override)
+    codec = SUFFIXES.get(profile_name, 'Encoded')
+    ext = PROFILES[profile_name]['container']
+    stem = safe_piece(stem)
+    return f'{stem} [{codec}].{ext}'
+
+
+def encoding_args(profile_name: str, audio_mode='copy') -> list:
+    profile = PROFILES[profile_name]
+    codec = profile['codec']
+    if codec == 'copy':
+        return ['-c', 'copy']
+    args = ['-c:v', codec]
+    if 'crf' in profile:
+        args.extend(('-crf', str(profile['crf'])))
+    if 'cq' in profile:
+        args.extend(('-rc', 'vbr', '-cq', str(profile['cq']), '-b:v', '0'))
+    if profile.get('preset'):
+        args.extend(('-preset', str(profile['preset'])))
+    if profile.get('pix_fmt'):
+        args.extend(('-pix_fmt', profile['pix_fmt']))
+    args.extend(('-c:a', 'libopus', '-b:a', '128k') if audio_mode == 'opus' else ('-c:a', 'copy'))
+    args.extend(('-c:s', 'copy'))
+    return args
+
+
+def detect_encoders(ffmpeg: str, timeout=8) -> set[str]:
+    if not ffmpeg:
+        return set()
+    try:
+        run = subprocess.run([ffmpeg, '-hide_banner', '-encoders'],
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             text=True, timeout=timeout, check=True,
+                             creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+    except (OSError, subprocess.SubprocessError):
+        return set()
+    return {m.group(1) for line in run.stdout.splitlines()
+            if (m := re.match(r'^\s*[VAS][.A-Z]{5}\s+(\S+)', line))}
+
+
+def profile_support(name: str, installed: set[str]) -> tuple[bool, str]:
+    codec = PROFILES[name]['codec']
+    if codec == 'copy':
+        return True, ''
+    if not installed:
+        return False, 'FFmpeg encoder capabilities unavailable'
+    if codec not in installed:
+        return False, f'FFmpeg does not contain {codec}'
+    if name.startswith('NVIDIA'):
+        return True, 'Requires a compatible NVIDIA GPU and driver; FFmpeg listing alone is insufficient'
+    return True, ''
+
+
+def progress_seconds(data: dict) -> float:
+    try:
+        if data.get('out_time') and data['out_time'] != 'N/A':
+            parts = data['out_time'].split(':')
+            if len(parts) == 3:
+                return max(0.0, int(parts[0])*3600 + int(parts[1])*60 + float(parts[2]))
+        if data.get('out_time_us'):
+            return max(0.0, int(data['out_time_us']) / 1_000_000)
+    except (TypeError, ValueError, OverflowError):
+        pass
+    return 0.0
+
+
+def seconds_label(value: float) -> str:
+    if value is None or value < 0 or value != value:
+        return '?'
+    sec = int(round(value))
+    return f'{sec//3600:d}:{(sec%3600)//60:02d}:{sec%60:02d}'
+
+
+def progress_label(data: dict, duration: float=0) -> str:
+    elapsed = progress_seconds(data)
+    speed_text = str(data.get('speed', '')).strip()
+    try:
+        speed = float(speed_text.rstrip('x'))
+    except (TypeError, ValueError):
+        speed = 0.0
+    if duration > 0:
+        fraction = min(1.0, elapsed/duration)
+        eta = seconds_label(max(0.0, duration - elapsed)/speed) if speed > 0 else 'estimating'
+        result = f'{fraction:.0%} · {seconds_label(elapsed)}/{seconds_label(duration)} · ETA {eta}'
+    else:
+        result = seconds_label(elapsed)
+    if speed > 0:
+        result += f' · {speed:.2f}x'
+    return result

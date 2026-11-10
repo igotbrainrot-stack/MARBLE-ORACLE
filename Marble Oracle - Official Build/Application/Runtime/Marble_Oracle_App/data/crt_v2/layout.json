@@ -1,0 +1,608 @@
+{
+  "project": "MARBLE_ORACLE",
+  "layout_id": "approved-crt-v2-2026-10-25",
+  "status": "second_pass_native_pixel_measured_and_screenshot_affine_cross_checked",
+  "reference_images": {
+    "production_reference": "APPROVED_CRT_BASE.png",
+    "annotated_overview": "APPROVED_CRT_REFERENCE.png",
+    "source_sha256": "340702b4ff747fd9f4a0241256f4d76ed9c8f315edff5e9ea28c38be2ff02282"
+  },
+  "source_canvas_px": [
+    1448,
+    1086
+  ],
+  "coordinate_system": "top_left_inclusive_x0y0_exclusive_x1y1",
+  "notes": [
+    "Pixel coordinates are measured from the approved 1448x1086 image; refine with alpha masks in runtime, do not reuse Flush hitboxes.",
+    "The actual glass edge is curved and cannot be specified by rectangle alone.",
+    "Photograph contains pre-lit numerals/traces/telemetry, which must be made into neutral static inlays before dynamic layers are composited.",
+    "Pass 7: four compact 48x84 native-pixel Nixie capsules centered in the existing bay; digit electrodes rendered with 68% internal width and 61% internal height. The previous tall baked glass is cleared from frame.png / frame.zip."
+  ],
+  "scaling": {
+    "frame_policy": "uniform_scale_only",
+    "x": "window_left+(source_x*scale)",
+    "y": "window_top+(source_y*scale)",
+    "prefer_integer_aligned_pixels": true,
+    "hit_test": "same frame transform and aperture mask as drawing"
+  },
+  "masks": {
+    "crt_aperture": "CRT_APERTURE_ALPHA_DRAFT.png",
+    "outer_silhouette": "OUTER_SILHOUETTE_ALPHA_DRAFT.png",
+    "status": "DRAFT from visual luminance segmentation; refine against optical glass and Windows region tests"
+  },
+  "modules": [
+    {
+      "id": "crt_aperture",
+      "rect_px": [
+        369,
+        223,
+        1077,
+        817
+      ],
+      "kind": "curved_mask",
+      "mask_file": "CRT_APERTURE_ALPHA_DRAFT.png",
+      "notes": "Organic black-glass aperture; bounding box only, clip to pixel mask."
+    },
+    {
+      "id": "nixie_bay",
+      "rect_px": [
+        39,
+        156,
+        288,
+        335
+      ],
+      "kind": "housing",
+      "fixed_label": "24HR HH:MM",
+      "dynamic_content": "4 tube digit sprites, screen-clock local HHMM"
+    },
+    {
+      "id": "nixie_tube_0",
+      "rect_px": [
+        62,
+        197,
+        110,
+        281
+      ],
+      "kind": "digit_sprite",
+      "clock_index": 0
+    },
+    {
+      "id": "nixie_tube_1",
+      "rect_px": [
+        114,
+        197,
+        162,
+        281
+      ],
+      "kind": "digit_sprite",
+      "clock_index": 1
+    },
+    {
+      "id": "nixie_tube_2",
+      "rect_px": [
+        168,
+        197,
+        216,
+        281
+      ],
+      "kind": "digit_sprite",
+      "clock_index": 2
+    },
+    {
+      "id": "nixie_tube_3",
+      "rect_px": [
+        220,
+        197,
+        268,
+        281
+      ],
+      "kind": "digit_sprite",
+      "clock_index": 3
+    },
+    {
+      "id": "audio_waveform",
+      "rect_px": [
+        53,
+        347,
+        277,
+        482
+      ],
+      "kind": "glass_display",
+      "audio_mode": "WASAPI_default_output_only",
+      "notes": "Replace photographed green trace with neutral black/green glass BEFORE drawing moving wave."
+    },
+    {
+      "id": "speaker_grille",
+      "rect_px": [
+        46,
+        491,
+        284,
+        689
+      ],
+      "kind": "passive_hardware",
+      "notes": "Mesh stays photographic; cone beneath. No pseudo-speaker strobe."
+    },
+    {
+      "id": "volume_panel",
+      "rect_px": [
+        44,
+        695,
+        282,
+        891
+      ],
+      "kind": "hardware_controls"
+    },
+    {
+      "id": "volume_knob",
+      "rect_px": [
+        90,
+        764,
+        190,
+        864
+      ],
+      "kind": "rotating_control",
+      "center_px": [
+        134,
+        819
+      ],
+      "radius_px": 53,
+      "values": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "volume_lamps",
+      "rect_px": [
+        225,
+        725,
+        271,
+        877
+      ],
+      "kind": "segmented_lamps",
+      "centers_px": [
+        [
+          248,
+          751
+        ],
+        [
+          248,
+          779
+        ],
+        [
+          248,
+          807
+        ],
+        [
+          248,
+          835
+        ],
+        [
+          248,
+          863
+        ]
+      ],
+      "count": 5
+    },
+    {
+      "id": "lower_speaker_vent",
+      "rect_px": [
+        43,
+        898,
+        288,
+        993
+      ],
+      "kind": "passive_hardware"
+    },
+    {
+      "id": "telemetry_panel",
+      "rect_px": [
+        1161,
+        154,
+        1395,
+        443
+      ],
+      "kind": "glass_display",
+      "fields": [
+        "cpu_temperature_C",
+        "cpu_usage_pct",
+        "gpu_temperature_C",
+        "gpu_usage_pct"
+      ]
+    },
+    {
+      "id": "telemetry_cpu",
+      "rect_px": [
+        1208,
+        181,
+        1344,
+        296
+      ],
+      "kind": "numeric_telemetry",
+      "notes": "No horizontal usage bar, direct live text only"
+    },
+    {
+      "id": "telemetry_gpu",
+      "rect_px": [
+        1208,
+        300,
+        1344,
+        418
+      ],
+      "kind": "numeric_telemetry",
+      "notes": "No horizontal usage bar, direct live text only"
+    },
+    {
+      "id": "cpu_vertical_meter",
+      "rect_px": [
+        1183,
+        180,
+        1211,
+        415
+      ],
+      "kind": "meter",
+      "orientation": "bottom_to_top",
+      "data": "cpu_usage_pct",
+      "alignment_note": "V2 Pass 9: shift live CPU segments +7 native pixels to centre the illuminated strip in the hardware; GPU remains unchanged."
+    },
+    {
+      "id": "gpu_vertical_meter",
+      "rect_px": [
+        1353,
+        180,
+        1382,
+        415
+      ],
+      "kind": "meter",
+      "orientation": "bottom_to_top",
+      "data": "gpu_usage_pct"
+    },
+    {
+      "id": "button_GRID",
+      "rect_px": [
+        1168,
+        462,
+        1404,
+        507
+      ],
+      "kind": "button",
+      "label": "GRID",
+      "action": "GRADE",
+      "actuator_center_px": [
+        1379,
+        484
+      ],
+      "actuator_bounds_px": [
+        1358,
+        464,
+        1402,
+        505
+      ],
+      "alignment_source": "image-verified physical lens geometry; named bulb photometric centroids <= 1.5px"
+    },
+    {
+      "id": "button_CAST",
+      "rect_px": [
+        1168,
+        509,
+        1404,
+        554
+      ],
+      "kind": "button",
+      "label": "CAST",
+      "action": "WIRE",
+      "actuator_center_px": [
+        1379,
+        531
+      ],
+      "actuator_bounds_px": [
+        1358,
+        511,
+        1402,
+        552
+      ],
+      "alignment_source": "image-verified physical lens geometry; named bulb photometric centroids <= 1.5px"
+    },
+    {
+      "id": "button_LINGUA",
+      "rect_px": [
+        1168,
+        556,
+        1404,
+        601
+      ],
+      "kind": "button",
+      "label": "LINGUA",
+      "action": "TONGUE",
+      "actuator_center_px": [
+        1379,
+        578
+      ],
+      "actuator_bounds_px": [
+        1358,
+        558,
+        1402,
+        599
+      ],
+      "alignment_source": "image-verified physical lens geometry; named bulb photometric centroids <= 1.5px"
+    },
+    {
+      "id": "button_DEAL",
+      "rect_px": [
+        1168,
+        603,
+        1404,
+        648
+      ],
+      "kind": "button",
+      "label": "DEAL",
+      "action": "CUT",
+      "actuator_center_px": [
+        1379,
+        625
+      ],
+      "actuator_bounds_px": [
+        1358,
+        605,
+        1402,
+        646
+      ],
+      "alignment_source": "image-verified physical lens geometry; named bulb photometric centroids <= 1.5px"
+    },
+    {
+      "id": "button_PSWRD",
+      "rect_px": [
+        1168,
+        650,
+        1404,
+        695
+      ],
+      "kind": "button",
+      "label": "PSWRD",
+      "action": "PASS",
+      "actuator_center_px": [
+        1379,
+        672
+      ],
+      "actuator_bounds_px": [
+        1358,
+        652,
+        1402,
+        693
+      ],
+      "alignment_source": "image-verified physical lens geometry; named bulb photometric centroids <= 1.5px"
+    },
+    {
+      "id": "button_BLANK_1",
+      "rect_px": [
+        1168,
+        697,
+        1404,
+        742
+      ],
+      "kind": "button",
+      "label": "",
+      "action": null,
+      "actuator_center_px": [
+        1379,
+        719
+      ],
+      "actuator_bounds_px": [
+        1358,
+        699,
+        1402,
+        740
+      ],
+      "alignment_source": "image-verified physical lens geometry; named bulb photometric centroids <= 1.5px"
+    },
+    {
+      "id": "button_BLANK_2",
+      "rect_px": [
+        1168,
+        744,
+        1404,
+        789
+      ],
+      "kind": "button",
+      "label": "",
+      "action": null,
+      "actuator_center_px": [
+        1379,
+        766
+      ],
+      "actuator_bounds_px": [
+        1358,
+        746,
+        1402,
+        787
+      ],
+      "alignment_source": "image-verified physical lens geometry; named bulb photometric centroids <= 1.5px"
+    },
+    {
+      "id": "button_BLANK_3",
+      "rect_px": [
+        1168,
+        791,
+        1404,
+        836
+      ],
+      "kind": "button",
+      "label": "",
+      "action": null,
+      "actuator_center_px": [
+        1379,
+        813
+      ],
+      "actuator_bounds_px": [
+        1358,
+        793,
+        1402,
+        834
+      ],
+      "alignment_source": "image-verified physical lens geometry; named bulb photometric centroids <= 1.5px"
+    },
+    {
+      "id": "power_panel",
+      "rect_px": [
+        1165,
+        822,
+        1391,
+        961
+      ],
+      "kind": "hardware_control",
+      "notes": "Red switch; preserve existing quit/close semantics; never OS shutdown."
+    },
+    {
+      "id": "window_minimize",
+      "rect_px": [
+        1193,
+        885,
+        1245,
+        917
+      ],
+      "kind": "bezel_window_control",
+      "label": "MIN",
+      "action": "bz7",
+      "center_px": [
+        1219,
+        901
+      ],
+      "notes": "Photographically drawn compact steel button next to red POWER rocker; use same transform for hitbox and animation."
+    },
+    {
+      "id": "window_fullscreen",
+      "rect_px": [
+        1193,
+        921,
+        1245,
+        953
+      ],
+      "kind": "bezel_window_control",
+      "label": "FULL",
+      "action": "bz8",
+      "center_px": [
+        1219,
+        937
+      ],
+      "notes": "Photographically drawn compact steel button next to red POWER rocker; use same transform for hitbox and animation."
+    },
+    {
+      "id": "power_switch",
+      "rect_px": [
+        1258,
+        880,
+        1338,
+        959
+      ],
+      "kind": "switch",
+      "action": "REQUEST_APP_EXIT",
+      "center_px": [
+        1297,
+        921
+      ]
+    }
+  ],
+  "z_order_back_to_front": [
+    "transparent_window",
+    "scene_offscreen_source",
+    "barrel_distorted_scene",
+    "crt_scanline_phosphor",
+    "crt_aperture_clip",
+    "metal_bezel_base",
+    "nixie_recess_layer",
+    "digits_and_nixie_glass",
+    "green_audio_glass_and_phosphor",
+    "telemetry_digits",
+    "vertical_usage_lamps",
+    "volume_dial_and_lamps",
+    "button_switch_caps",
+    "soft_local_light_spill",
+    "glass_glints"
+  ],
+  "static_text": {
+    "nixie_label": "24HR HH:MM",
+    "volume": "VOLUME",
+    "primary_buttons": [
+      "GRID",
+      "CAST",
+      "LINGUA",
+      "DEAL",
+      "PSWRD"
+    ],
+    "auxiliary_buttons": [
+      "",
+      "",
+      ""
+    ]
+  },
+  "semantic_actions": {
+    "GRID": "GRADE",
+    "CAST": "WIRE",
+    "LINGUA": "TONGUE",
+    "DEAL": "CUT",
+    "PSWRD": "PASS"
+  },
+  "format_version": 1,
+  "alignment_revision": "CRT_V2_PASS9_CPU_METER_AND_WINDOW_KEYS_20261025",
+  "calibration": {
+    "method": "independent analysis of unmodified 1448x1086 approved art; OpenCV Hough circular rim and color-channel photometry; mechanical housing geometric centres used where light is asymmetric",
+    "dial_circle_hough_px": {
+      "center": [
+        134,
+        819
+      ],
+      "radius": 48,
+      "roi": [
+        74,
+        752,
+        207,
+        878
+      ]
+    },
+    "bright_button_light_centroids_approx_px": [
+      [
+        1379,
+        484
+      ],
+      [
+        1379,
+        531
+      ],
+      [
+        1379,
+        578
+      ],
+      [
+        1379,
+        625
+      ],
+      [
+        1379,
+        672
+      ]
+    ],
+    "volume_lamp_physical_centers_px": [
+      [
+        248,
+        751
+      ],
+      [
+        248,
+        779
+      ],
+      [
+        248,
+        807
+      ],
+      [
+        248,
+        835
+      ],
+      [
+        248,
+        863
+      ]
+    ],
+    "note": "Do not mistake peak LED luminosity for machined lens centre; no screenshot coordinate or generative reference used as measurement source. Native Windows test remains necessary."
+  }
+}

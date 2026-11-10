@@ -1,0 +1,49 @@
+{
+  "source": "Oggcultist 2.0.6 / oggcultist/gui/textures.py",
+  "source_sha256": "7085eecedb90b1ae4961676ef9d9cf62f3034c24f8583c0e2630271bb31428c1",
+  "method": "source module grain(base, (256,256), amount, seed, mottle=True) without any recreated texture algorithm",
+  "tiles": {
+    "page": {
+      "color": "#1D1714",
+      "amount": 0.2,
+      "seed": 0,
+      "sha256": "90afc61ae8a092f7437ee923c5603b531caa1ad73ba839eb1e6ecb5cd9b5a254"
+    },
+    "card": {
+      "color": "#261F1B",
+      "amount": 0.18,
+      "seed": 1,
+      "sha256": "e967522de73ba83db441ba39ca4c4861ebe9b57f933d70cad6f23dda28801870"
+    },
+    "side": {
+      "color": "#130F0D",
+      "amount": 0.22,
+      "seed": 2,
+      "sha256": "a64a09d049eeb9a2a4ce31ce42c4cb3182d834c6dffc29e0439e0a3b9639f1ca"
+    },
+    "sunken": {
+      "color": "#16110F",
+      "amount": 0.2,
+      "seed": 3,
+      "sha256": "35c3954ee2ee60a1b2b8d850a14a71275f0e1bf5b072af3285133d8fe4179a34"
+    },
+    "sunken_alt": {
+      "color": "#1A1512",
+      "amount": 0.18,
+      "seed": 4,
+      "sha256": "4127ac6122a703f79633f8e7b1da74d4c80a5a81646467bdd4ed9ca83b1ae7ed"
+    },
+    "control": {
+      "color": "#2F2620",
+      "amount": 0.18,
+      "seed": 5,
+      "sha256": "16ec3e023a10c5bdf1f615aeef67deeef550dca10f02b91952e48d5d886f308a"
+    },
+    "accent_soft": {
+      "color": "#4A2C18",
+      "amount": 0.2,
+      "seed": 6,
+      "sha256": "df068b3bba4ed24e705b131211f8a8535d9d1172c9e3b9055ac0d07bfc7c4f98"
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "release": "Marble Oracle — Touch Type Four-Game Edition (2026-11-09)",
+  "based_on": "Marble-Oracle-OFFICIAL-ASCII-Refinement-FULL-Windows-Linux.zip",
+  "platforms": [
+    "Windows 11",
+    "Linux Mint"
+  ],
+  "top_level": [
+    "START MARBLE ORACLE - WINDOWS.vbs",
+    "START MARBLE ORACLE - LINUX.sh",
+    "Application"
+  ],
+  "sections": [
+    "HOME",
+    "PASSPHRASE",
+    "OGGCULTIST",
+    "TOUCH TYPE"
+  ],
+  "file_count": 320,
+  "python_source_count": 150,
+  "component_hashes": {
+    "Application/Runtime/Marble_Oracle_App/oracle_touch_type.py": {
+      "size_bytes": 27996,
+      "sha256": "7007e0f1e8b549cb0e00495d733b20c5e9548878da92c5e5db0bc1e39dcb13ea"
+    },
+    "Application/Runtime/Marble_Oracle_App/marble_oracle.py": {
+      "size_bytes": 187498,
+      "sha256": "391e4b32007aa939fccc90b774f3881dc0a3441d546931bc42c9d127762d7872"
+    },
+    "Application/Runtime/Marble_Oracle_App/oracle_chrome.py": {
+      "size_bytes": 63889,
+      "sha256": "378917c7bcd3de03530ed280c73a30ef65ced86c2f8f17af3abdcfd0afd7bc35"
+    },
+    "Application/Tests/test_touch_type.py": {
+      "size_bytes": 5546,
+      "sha256": "6204d4ec957cd04d7802dd123c4bd818dbdc0df16d1dfb4ca57b7887a978ed1b"
+    },
+    "Application/Runtime/launch_suite.pyw": {
+      "size_bytes": 36628,
+      "sha256": "cc439a4d00505cbd4b4753ccd6581c0685edafda47f50c97817b90c7b63dc455"
+    },
+    "Application/Runtime/Marble_Oracle_App/data/rune_consistent_flips.zip": {
+      "size_bytes": 9782810,
+      "sha256": "a0e77562485098fa911e5a9572d0700b2694dbbc4b832f5fb961e83fae36cf8e"
+    },
+    "Application/Runtime/Marble_Oracle_App/fonts/Uberata-Clear.ttf": {
+      "size_bytes": 575724,
+      "sha256": "248df02a4e0c52c541456ac19f29a2ccc50ff0b12428982a378d1576a5097482"
+    }
+  },
+  "changes": [
+    "Fourth native Tk tab TOUCH TYPE, in the Ember design system",
+    "Home-row guided drills with five graduated lessons",
+    "60-second Word Sprint with words-per-minute and accuracy feedback",
+    "Keyfall falling-word reflex game with increasing speed and four lives",
+    "Sentence Lab with three guided sentences",
+    "On-screen highlighted QWERTY keys and correct finger guidance",
+    "Autosaved aggregate best scores in private per-user state; no network",
+    "Tab switching pauses and preserves game progress, native-key focus regression tests",
+    "Compact panel layout for short CRT screen apertures"
+  ],
+  "native_platform_validation": "Linux virtual-display testing only. Physical Linux Mint/Windows 11 outstanding."
+}

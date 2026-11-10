@@ -1,0 +1,15 @@
+latin_voices.zip: 316 clips, a classical (<lemma>_c) and an ecclesiastical (<lemma>_e) reading of each of the 150 lexicon words and the 8 host extras
+(lucrum, damnum, machina, finis, initium, silentium, ridiculum, carpe).  The bank was first supplied as LatinPronunciation-voices.zip (MP3s); the 158 classical clips were replaced after build 0968 by a new latin_voices.zip (supplied as WAVs, how they were made was not stated),
+and the 158 ecclesiastical clips are the 0967-0968 ones, unchanged.
+They are SPOKEN BY A NEURAL TEXT-TO-SPEECH VOICE, not a person and not the formant synthesiser.  Both readings are the same male voice (Orion), language set to Italian:
+  classical       the 0969 clips (shorter than the 0968 ones: 0.73 s on average).  The 0967-0968 clips were an Italian spelling forced to classical values (v written u, c and g kept hard, ae = ai,
+                  oe = oi, gn = ngn); docs/LATIN_VOICE_SCRIPTS.json holds THOSE scripts and may not describe the 0969 classical clips.
+  ecclesiastical  Italian reading (soft c/g, v = v, gn = ny, ti + vowel = ts).
+The exact text each clip was read from is in docs/LATIN_VOICE_SCRIPTS.json.  A QA pass resynthesised clips that spelled letters (excelsis), split into English
+phrases (via, verbum, veritas, ventus) or used church-Latin gn (magnus, ignis, regnum).  Vowel length cannot be held and Italian h is silent: voice limits, not spelling bugs.
+The ecclesiastical clips were converted from MP3 to mono 16-bit 22,050 Hz WAV (the samples are those of the decoded MP3s); the 0969 classical clips arrived as mono 16-bit 22,050 Hz WAVs.  All are stored losslessly packed (.pcmz).
+No SOURCES.txt: the LEXICON panel's filled mark means "a person said it" and these were not said by a person.
+A loose data/voices/<lemma>_c.wav (or _e) overrides the zip's clip for that reading (see oracle_audio.VoiceBank); it is also never marked as recorded.
+Words outside the 158 are spoken by the formant synthesiser from oracle_latin's respelling.
+Terms of use of the speech service's output were not checked here.
+Earlier banks are in git: the 0964 bank (300 clips, Orion in English and Italian), the Orion + Luna bank (tags build-0962 and build-0963), the "Leo" clips (builds 0956-0961) and the espeak-ng clips (tag build-0955).

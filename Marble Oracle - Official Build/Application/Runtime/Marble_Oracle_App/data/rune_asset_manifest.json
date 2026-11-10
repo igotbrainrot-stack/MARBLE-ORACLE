@@ -1,0 +1,198 @@
+{
+  "status": "provisional glyph-to-art visual matching; independent artist review needed for stylised stones, especially 01 and 16",
+  "source": "Runes.zip (provided by user)",
+  "entries": [
+    {
+      "assetNumber": 1,
+      "rune": "Ansuz",
+      "unicode": "ᚨ",
+      "front": "01.png",
+      "back": "01-blank.png",
+      "review": "provisional: stylised shape; confirm with source artist"
+    },
+    {
+      "assetNumber": 2,
+      "rune": "Uruz",
+      "unicode": "ᚢ",
+      "front": "02.png",
+      "back": "02-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 3,
+      "rune": "Thurisaz",
+      "unicode": "ᚦ",
+      "front": "03.png",
+      "back": "03-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 4,
+      "rune": "Fehu",
+      "unicode": "ᚠ",
+      "front": "04.png",
+      "back": "04-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 5,
+      "rune": "Raidho",
+      "unicode": "ᚱ",
+      "front": "05.png",
+      "back": "05-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 6,
+      "rune": "Kenaz",
+      "unicode": "ᚲ",
+      "front": "06.png",
+      "back": "06-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 7,
+      "rune": "Gebo",
+      "unicode": "ᚷ",
+      "front": "07.png",
+      "back": "07-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 8,
+      "rune": "Wunjo",
+      "unicode": "ᚹ",
+      "front": "08.png",
+      "back": "08-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 9,
+      "rune": "Hagalaz",
+      "unicode": "ᚺ",
+      "front": "09.png",
+      "back": "09-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 10,
+      "rune": "Nauthiz",
+      "unicode": "ᚾ",
+      "front": "10.png",
+      "back": "10-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 11,
+      "rune": "Isa",
+      "unicode": "ᛁ",
+      "front": "11.png",
+      "back": "11-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 12,
+      "rune": "Algiz",
+      "unicode": "ᛉ",
+      "front": "12.png",
+      "back": "12-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 13,
+      "rune": "Sowilo",
+      "unicode": "ᛊ",
+      "front": "13.png",
+      "back": "13-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 14,
+      "rune": "Tiwaz",
+      "unicode": "ᛏ",
+      "front": "14.png",
+      "back": "14-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 15,
+      "rune": "Berkano",
+      "unicode": "ᛒ",
+      "front": "15.png",
+      "back": "15-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 16,
+      "rune": "Perthro",
+      "unicode": "ᛈ",
+      "front": "16.png",
+      "back": "16-blank.png",
+      "review": "provisional: stylised shape; confirm with source artist"
+    },
+    {
+      "assetNumber": 17,
+      "rune": "Jera",
+      "unicode": "ᛃ",
+      "front": "17.png",
+      "back": "17-blank.png",
+      "review": "provisional: stylised shape; confirm with source artist"
+    },
+    {
+      "assetNumber": 18,
+      "rune": "Eihwaz",
+      "unicode": "ᛇ",
+      "front": "18.png",
+      "back": "18-blank.png",
+      "review": "provisional: stylised shape; confirm with source artist"
+    },
+    {
+      "assetNumber": 19,
+      "rune": "Ehwaz",
+      "unicode": "ᛖ",
+      "front": "19.png",
+      "back": "19-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 20,
+      "rune": "Mannaz",
+      "unicode": "ᛗ",
+      "front": "20.png",
+      "back": "20-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 21,
+      "rune": "Laguz",
+      "unicode": "ᛚ",
+      "front": "21.png",
+      "back": "21-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 22,
+      "rune": "Ingwaz",
+      "unicode": "ᛜ",
+      "front": "22.png",
+      "back": "22-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 23,
+      "rune": "Dagaz",
+      "unicode": "ᛞ",
+      "front": "23.png",
+      "back": "23-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    },
+    {
+      "assetNumber": 24,
+      "rune": "Othala",
+      "unicode": "ᛟ",
+      "front": "24.png",
+      "back": "24-blank.png",
+      "review": "visually compared to Elder Futhark chart; final human approval recommended"
+    }
+  ]
+}

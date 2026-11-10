@@ -1,0 +1,3 @@
+# Optional live CRT pixel warping; main app works without this.
+Pillow>=10.0
+# For extra raster throughput, optionally also install numpy and opencv-python.

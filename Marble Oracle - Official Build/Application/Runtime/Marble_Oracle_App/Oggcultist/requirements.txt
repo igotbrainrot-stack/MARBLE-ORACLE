@@ -1,0 +1,4 @@
+mutagen>=1.47,<2
+Pillow>=10,<13
+jeepney>=0.8,<1; sys_platform == "linux"   # optional: media buttons on Linux (MPRIS)
+

@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "oggcultist",
+  "name": "Oggcultist",
+  "version": "2.0.6",
+  "summary": "Local-first music player, audio converter and album art editor",
+  "entrypoint": "launch.py",
+  "python_api": "oggcultist.suite_bridge.launch",
+  "integration_mode": "separate-process-child-window",
+  "supports_same_process_embedded_tabs": false,
+  "relative_assets": {
+    "icon_png": "oggcultist/resources/icon.png",
+    "icon_ico": "oggcultist/resources/icon.ico",
+    "symbol": "oggcultist/resources/brand_symbol.png",
+    "wordmark": "oggcultist/resources/brand_wordmark.png",
+    "original_approved_kit": "branding/approved-ogg",
+    "bundled_font": "oggcultist/resources/fonts/Uberata-Clear.ttf"
+  },
+  "capabilities": [
+    "library",
+    "artist_browser",
+    "album_browser",
+    "playlists",
+    "player",
+    "audio_converter",
+    "album_art",
+    "settings"
+  ],
+  "minimum_python": "3.10",
+  "ui_toolkit": "Tkinter/ttk",
+  "dependency_manifest": "requirements.txt",
+  "supported_platforms": [
+    "Windows 11",
+    "Linux Mint"
+  ],
+  "command_examples": {
+    "version": [
+      "python",
+      "launch.py",
+      "--version"
+    ],
+    "paths": [
+      "python",
+      "launch.py",
+      "--paths"
+    ]
+  },
+  "data_policy": "Do not move, edit or delete the existing Oggcultist user data or music files. Use built-in paths module.",
+  "embedding_note": "Current OggcultistApp extends tk.Tk; it is not safe to insert directly as a tab without refactoring to a ttk.Frame and adapting lifecycle."
+}

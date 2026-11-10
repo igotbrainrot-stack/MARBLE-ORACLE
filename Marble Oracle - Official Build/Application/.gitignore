@@ -1,0 +1,10 @@
+# Generated runtime and test files; user media is not ignored automatically.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+.mypy_cache/
+*.log
+*.tmp
+*.part
+.venv/

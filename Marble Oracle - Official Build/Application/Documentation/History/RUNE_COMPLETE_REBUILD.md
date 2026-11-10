@@ -1,0 +1,9 @@
+# Marble Oracle: matched Rune stone rebuild
+
+This release replaces the visible Rune panel sprites with a **single master stone** and 24 carved Elder Futhark glyph variants. The 12-frame animations simulate a vertical-axis flip: blank frames 0–5 (width narrows), then marked frames 6–11 (width expands). Every frame shares the same textured rock silhouette; idle blank equals frame 0 pixel-for-pixel, and frame 11 shares the exact same alpha silhouette as the idle blank. The lettering is based on the glyphs in `oracle_runes.SPEC` and rendered with the Noto Sans Runic typeface only at asset-generation time. Runtime does not load the Noto typeface or require Pillow.
+
+The master is taken from the existing high-resolution reverse-stone artwork in `data/rune_flip_strips.zip` to guarantee a matched 3D-looking rock. A new standalone Runway visual reference was also generated for this design pass (task `35e3e6cb-eccb-47b4-bbf3-ddb10a65cf32`), but the compiled sprites are deterministically built from the locally bundled source asset rather than the separately hosted Runway image.
+
+The runtime zip archive `data/rune_consistent_flips.zip` contains 10 sizes, 24 faces, and 12 frames each. The previous art archives remain for source history/fallback. The visible UI reads the new archive, including the idle blank stone. Smaller windows use an asset size below the available space; no oversized label is ever placed. A larger empty band remains between the draw/mode controls and the stone art.
+
+Regression tests: `test_rune_native_assets.py`, `test_rune_border_fit.py`, `Application/Tests/test_rune_consistency.py`, and `Application/Tests/test_rune_click_and_art.py`. The renderer uses Tk PhotoImage and PNGs; Pillow is needed only for optional asset generation and offline pixel tests. No change to Tarot or Oggcultist is intended.

@@ -1,0 +1,5 @@
+# Tools needed only to build the portable executable.
+pyinstaller>=6.3,<7
+
+# Only for preparing the v5.3 legacy family at release-build time.
+fonttools>=4.40,<5

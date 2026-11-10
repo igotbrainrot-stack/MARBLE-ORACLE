@@ -1,0 +1,3 @@
+# Required only for Windows speaker-output loopback (optional for all other features)
+soundcard>=0.4.3
+numpy>=1.26
