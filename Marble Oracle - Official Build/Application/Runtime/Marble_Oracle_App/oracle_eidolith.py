@@ -25,10 +25,12 @@ from oggcultist_design_system import COLOR as C
 from oracle_assets import load_json, save_json, state_dir
 from oracle_eidolith_core import (PROFILES, PROFILE_ORDER, DEFAULT_PROFILE, LEGACY_PROFILE_NAMES, NAME_MODES, RESOLUTIONS, RESOLUTION_ORDER, output_name,
                                   detect_encoders, profile_support, seconds_label)
-from oracle_eidolith_jobs import (QueueRunner, new_job, diagnostics_report, ACTIVE, RETRYABLE)
+from oracle_eidolith_jobs import (QueueRunner, new_job, diagnostics_report, probe_profile, svt_av1_version,
+                                  ACTIVE, RETRYABLE)
+from oracle_eidolith_core import HARDWARE_ORDER, is_hardware
 
 APP_NAME = "EIDOLITH"
-APP_VERSION = "0.4.6"
+APP_VERSION = "0.4.7"
 QUEUE_STATE = 'eidolith_queue.json'
 STALL_NOTICE_SECONDS = 30
 
@@ -83,6 +85,7 @@ class EidolithPanel(tk.Frame):
         self.slim_subs = tk.BooleanVar(value=bool(self.state.get('slim_subs', False)))
         self.slim_eng_audio = tk.BooleanVar(value=bool(self.state.get('slim_eng_audio', False)))
         self.skip_converted = tk.BooleanVar(value=bool(self.state.get('skip_converted', True)))
+        self.smart_copy = tk.BooleanVar(value=bool(self.state.get('smart_copy', True)))
         self.resolution = tk.StringVar(value=saved_res if saved_res in RESOLUTIONS else 'Original')
         self.active_nav = tk.StringVar(value='PLAYER')
         self.status_var = tk.StringVar(value='Ready. Import a local video file to inspect or convert.')
@@ -435,7 +438,8 @@ class EidolithPanel(tk.Frame):
                     wraplength=430, justify='left').pack(anchor='w', pady=(2, 0))
         for text, variable in (('Slim: keep English subtitles', self.slim_subs),
                                ('Slim: prefer English audio over the default track', self.slim_eng_audio),
-                               ('Skip files already converted to this folder', self.skip_converted)):
+                               ('Skip files already converted to this folder', self.skip_converted),
+                               ("Don't re-encode video that is already compact AV1/HEVC", self.smart_copy)):
             tk.Checkbutton(row2, text=text, variable=variable, command=self._save_state, anchor='w',
                            font=(FAMILY, 10), bg=C['raised'], fg=C['text_2'], selectcolor=C['control'],
                            activebackground=C['raised'], activeforeground=C['text'],
@@ -721,6 +725,7 @@ class EidolithPanel(tk.Frame):
             'slim_subs': bool(self.slim_subs.get()),
             'slim_eng_audio': bool(self.slim_eng_audio.get()),
             'skip_converted': bool(self.skip_converted.get()),
+            'smart_copy': bool(self.smart_copy.get()),
             'rename_mode': self.rename_mode.get(),
             'title_override': self.title_override.get(),
             'season_override': self.season_override.get(),
@@ -862,33 +867,43 @@ class EidolithPanel(tk.Frame):
             self._set_status('Updated output folder.')
 
     def select_fast_profile(self):
-        # Prefer GPU AV1 only when a working NVIDIA driver is visible, not
-        # merely because FFmpeg was compiled with an NVENC encoder.
-        nvsmi = which('nvidia-smi')
-        usable_gpu = False
-        if nvsmi:
-            try:
-                result = subprocess.run([nvsmi, '-L'], stdout=subprocess.PIPE,
-                                        stderr=subprocess.DEVNULL, text=True, timeout=4,
-                                        creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-                usable_gpu = result.returncode == 0 and 'GPU' in result.stdout
-            except (OSError, subprocess.SubprocessError):
-                pass
-        if usable_gpu and 'av1_nvenc' in self.encoders:
-            choice = 'NVIDIA AV1 (fast)'
-        elif usable_gpu and 'hevc_nvenc' in self.encoders:
-            choice = 'NVIDIA HEVC (fast)'
-        elif 'libx264' in self.encoders:
-            choice = 'Fast CPU H.264'
-        elif 'libsvtav1' in self.encoders:
-            choice = 'Faster CPU AV1'
-        else:
-            self._set_status('No fast encoder found in FFmpeg. Check codec support.')
-            return
+        # Pick the fastest profile that really works here: each hardware
+        # encoder FFmpeg lists gets a one-second test encode, because being
+        # compiled into FFmpeg does not mean the GPU and driver are present.
+        self._set_status('Testing hardware encoders on this computer…')
+        self.update_idletasks()
+        choice, notes = None, []
+        for name in HARDWARE_ORDER:
+            if PROFILES[name]['codec'] not in self.encoders:
+                continue
+            works, why, _ = probe_profile(self.ffmpeg, name)
+            if works:
+                choice = name
+                break
+            notes.append(f'{name}: {why[:120]}')
+        for note in notes:
+            self._append_log('Hardware test failed — ' + note)
+        if choice is None:
+            if 'libx264' in self.encoders:
+                choice = 'Fast CPU H.264'
+            elif 'libsvtav1' in self.encoders:
+                choice = 'Turbo AV1 (preset 12)'
+            else:
+                self._set_status('No fast encoder found in FFmpeg. Check codec support.')
+                return
+        version = svt_av1_version(self.ffmpeg) if 'libsvtav1' in self.encoders else ''
+        try:
+            old = version and tuple(int(x) for x in version.split('.')[:2]) < (2, 3)
+        except ValueError:
+            old = False
+        if old:
+            self._append_log(f'This FFmpeg contains SVT-AV1 {version}. Its developers report versions 2.3 and later '
+                             'are noticeably faster at the same quality, so a newer FFmpeg speeds up the CPU AV1 profiles.')
         self.profile.set(choice)
         self._update_profile_desc()
         self._update_name_preview()
-        self._set_status('Fast profile selected: ' + choice + '. Quality/size may differ from CPU archival AV1.')
+        kind = 'hardware encoder, passed a test encode' if is_hardware(choice) else 'no working hardware encoder found; fastest CPU profile'
+        self._set_status(f'Fast profile selected: {choice} ({kind}). For fast AV1 on CPU choose Turbo AV1 (preset 12).')
 
     def _update_profile_desc(self):
         prof = PROFILES.get(self.profile.get(), {})
@@ -958,6 +973,16 @@ class EidolithPanel(tk.Frame):
             self._set_status('Encoder unavailable: ' + reason)
             messagebox.showerror('EIDOLITH: Encoder missing', reason, parent=self)
             return
+        if is_hardware(profile_name):
+            # A real one-second test encode: listing in FFmpeg is not proof the hardware works.
+            self._set_status(f'Testing {profile_name} on this computer…')
+            self.update_idletasks()
+            works, why, _ = probe_profile(self.ffmpeg, profile_name)
+            if not works:
+                self._append_log(f'{profile_name} failed its test encode: {why}')
+                self._set_status(f'{profile_name} does not work on this computer ({why[:90]}). '
+                                 'Press USE FAST PROFILE to pick the fastest one that does.')
+                return
         if PROFILES[profile_name]['codec'] == 'copy' and RESOLUTIONS.get(self.resolution.get()):
             self._set_status(f'Lossless remux copies video unchanged and cannot resize to {self.resolution.get()}. '
                              'Choose an encoding profile, or set RESOLUTION to Original.')
@@ -976,7 +1001,7 @@ class EidolithPanel(tk.Frame):
             self.queue_seq = max(self.queue_seq, self.runner.next_id())
             self.runner.add(new_job(self.queue_seq, src, dst, profile_name, self.audio_mode.get(),
                                     self.resolution.get(), self.slim_output.get(),
-                                    self.slim_subs.get(), self.slim_eng_audio.get()))
+                                    self.slim_subs.get(), self.slim_eng_audio.get(), self.smart_copy.get()))
             self.queue_seq += 1
             queued += 1
         self._refresh_queue()

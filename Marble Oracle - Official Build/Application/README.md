@@ -28,6 +28,11 @@ All tabs retain the established dark Oggcultist-inspired visual style and bundle
 - FFmpeg and FFprobe are necessary for video encoding/probing. Playback capability depends on local multimedia support.
 - The in-app video viewer is an **initial 12 fps preview implementation**, not a fully synchronised libmpv player; HDR, track switching and precise audio/video synchronisation are not assured.
 - **RESOLUTION** (CONVERT page): Original, 1080p, 720p or 480p. Video is only scaled down, keeping its aspect ratio (a widescreen film at 720p becomes 1280×536). From 1080p, 720p encodes about 2–3× faster, more for grainy video.
+- **Speed (0.4.7):** see `Documentation/EIDOLITH_SPEED_RESEARCH_0_4_7.md`.
+  - **Turbo AV1 (preset 12)** is about 2.5× the speed of Fast AV1 for roughly 15% larger files.
+  - **USE FAST PROFILE** runs a one-second test encode on each hardware encoder (NVIDIA, Intel Quick Sync, AMD) and picks the first that works. Hardware encoders have not been verified on real hardware by this project.
+  - **Don't re-encode video that is already compact AV1/HEVC** (on by default) copies such video in seconds; untick it to force a re-encode.
+  - A newer FFmpeg (SVT-AV1 2.3 or later) makes the CPU AV1 profiles faster.
 - **Default profile** is now **Fast AV1 (preset 8)**. The old default is still available as **Balanced archive** (much slower, smaller files); a saved choice is kept.
 - Upright phone video keeps its shape when resized, interlaced sources (DVD, old TV captures) are deinterlaced automatically, and a job is refused up front when the output folder has under 200 MB free.
 - **Network use:** the HOME screen fetches market prices (CoinGecko, Frankfurter) and news headlines (BBC, Guardian, Al Jazeera, NPR) unless the app is started with `--no-network`. Video and audio conversion never use the network.

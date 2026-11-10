@@ -16,9 +16,12 @@ PROFILES = {
     'Space saver': dict(container='mkv', codec='libsvtav1', crf=34, preset='6', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 34 · preset 6 · smaller, more visible loss possible'),
     'Fast AV1 (preset 8)': dict(container='mkv', codec='libsvtav1', crf=30, preset='8', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 30 · preset 8 · several times faster than Balanced, slightly larger files'),
     'Faster CPU AV1': dict(container='mkv', codec='libsvtav1', crf=30, preset='10', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 30 · preset 10 · faster, less compression efficiency'),
+    'Turbo AV1 (preset 12)': dict(container='mkv', codec='libsvtav1', crf=30, preset='12', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 30 · preset 12 · fastest CPU AV1, about 2.5× the speed of Fast AV1, roughly 15% larger files'),
     'NVIDIA AV1 (fast)': dict(container='mkv', codec='av1_nvenc', cq=30, preset='p4', pix_fmt='p010le', desc='Hardware AV1 10-bit · NVIDIA NVENC · much faster when supported'),
     'NVIDIA HEVC (fast)': dict(container='mkv', codec='hevc_nvenc', cq=27, preset='p4', pix_fmt='yuv420p', desc='Hardware HEVC · NVIDIA NVENC · fast, broad device support'),
     'NVIDIA H.264 (fastest compatibility)': dict(container='mp4', codec='h264_nvenc', cq=23, preset='p4', pix_fmt='yuv420p', desc='Hardware AVC · NVIDIA NVENC · fast, widest device support'),
+    'Intel Quick Sync HEVC (fast)': dict(container='mkv', codec='hevc_qsv', args=('-preset', 'medium', '-global_quality', '24'), desc='Hardware HEVC · Intel Quick Sync · offered only after a test encode succeeds on this computer · not yet verified on real hardware'),
+    'AMD AMF HEVC (fast)': dict(container='mkv', codec='hevc_amf', args=('-quality', 'balanced', '-rc', 'cqp', '-qp_i', '24', '-qp_p', '26', '-qp_b', '28'), desc='Hardware HEVC · AMD AMF · offered only after a test encode succeeds on this computer · not yet verified on real hardware'),
     'Fast CPU H.264': dict(container='mp4', codec='libx264', crf=23, preset='veryfast', pix_fmt='yuv420p', desc='CPU H.264 · CRF 23 · veryfast preset · good speed'),
     'Broad device compatibility': dict(container='mkv', codec='libx265', crf=25, preset='medium', pix_fmt='yuv420p', desc='CPU HEVC / x265 · CRF 25 · medium'),
     'Legacy compatibility': dict(container='mp4', codec='libx264', crf=21, preset='medium', pix_fmt='yuv420p', desc='CPU H.264 / x264 · CRF 21 · medium'),
@@ -33,7 +36,8 @@ for _old, _new in LEGACY_PROFILE_NAMES.items():
     PROFILES[_old] = PROFILES[_new]
 SUFFIXES = {
     'High fidelity': 'AV1', 'Balanced archive (default)': 'AV1', 'Balanced archive': 'AV1', 'Space saver': 'AV1',
-    'Fast AV1 (preset 8)': 'AV1', 'Faster CPU AV1': 'AV1', 'NVIDIA AV1 (fast)': 'AV1',
+    'Fast AV1 (preset 8)': 'AV1', 'Faster CPU AV1': 'AV1', 'Turbo AV1 (preset 12)': 'AV1', 'NVIDIA AV1 (fast)': 'AV1',
+    'Intel Quick Sync HEVC (fast)': 'HEVC', 'AMD AMF HEVC (fast)': 'HEVC',
     'NVIDIA HEVC (fast)': 'HEVC', 'NVIDIA H.264 (fastest compatibility)': 'H264',
     'Fast CPU H.264': 'H264', 'Broad device compatibility': 'HEVC',
     'Legacy compatibility': 'H264', 'Lossless remux': 'Remux',
@@ -257,6 +261,7 @@ def encoding_args(profile_name: str, audio_mode='copy') -> list:
         args.extend(('-rc', 'vbr', '-cq', str(profile['cq']), '-b:v', '0'))
     if profile.get('preset'):
         args.extend(('-preset', str(profile['preset'])))
+    args.extend(profile.get('args', ()))
     if profile.get('pix_fmt'):
         args.extend(('-pix_fmt', profile['pix_fmt']))
     args.extend(('-c:a', 'libopus', '-b:a', '128k') if audio_mode == 'opus' else ('-c:a', 'copy'))
@@ -278,6 +283,13 @@ def detect_encoders(ffmpeg: str, timeout=8) -> set[str]:
             if (m := re.match(r'^\s*[VAS][.A-Z]{5}\s+(\S+)', line))}
 
 
+HARDWARE_ORDER = ('NVIDIA AV1 (fast)', 'NVIDIA HEVC (fast)', 'Intel Quick Sync HEVC (fast)', 'AMD AMF HEVC (fast)')
+
+
+def is_hardware(name: str) -> bool:
+    return PROFILES[name]['codec'].endswith(('_nvenc', '_qsv', '_amf'))
+
+
 def profile_support(name: str, installed: set[str]) -> tuple[bool, str]:
     codec = PROFILES[name]['codec']
     if codec == 'copy':
@@ -286,8 +298,8 @@ def profile_support(name: str, installed: set[str]) -> tuple[bool, str]:
         return False, 'FFmpeg encoder capabilities unavailable'
     if codec not in installed:
         return False, f'FFmpeg does not contain {codec}'
-    if name.startswith('NVIDIA'):
-        return True, 'Requires a compatible NVIDIA GPU and driver; FFmpeg listing alone is insufficient'
+    if is_hardware(name):
+        return True, 'Needs matching graphics hardware and driver; a test encode confirms it when you queue'
     return True, ''
 
 

@@ -38,7 +38,9 @@ os.environ['MARBLE_ORACLE_STATE'] = STATE
 
 from oracle_eidolith_core import detect_encoders, output_name  # noqa: E402
 import oracle_eidolith_jobs  # noqa: E402
-from oracle_eidolith_jobs import ENGINE_VERSION, QueueRunner, new_job, plan_streams, PlanError  # noqa: E402
+from oracle_eidolith_jobs import (ENGINE_VERSION, QueueRunner, new_job, plan_streams, PlanError,  # noqa: E402
+                                  probe_profile, svt_av1_version)
+from oracle_eidolith_core import HARDWARE_ORDER, PROFILES  # noqa: E402
 
 FFMPEG, FFPROBE = shutil.which('ffmpeg'), shutil.which('ffprobe')
 RESULTS = []
@@ -133,6 +135,14 @@ def make_media(folder: Path) -> dict:
     m['interlaced'] = folder / 'dvd_interlaced.mkv'
     ff('-f', 'lavfi', '-i', 'testsrc2=size=720x576:rate=25:duration=2', '-c:v', 'libx264', '-preset', 'ultrafast',
        '-flags', '+ilme+ildct', '-top', '1', str(m['interlaced']))
+    if 'libx265' in detect_encoders(FFMPEG):
+        m['small_hevc'] = folder / 'small_hevc.mkv'
+        ff('-f', 'lavfi', '-i', 'testsrc2=size=1280x720:rate=24:duration=6', '-f', 'lavfi', '-i', 'sine=d=6',
+           '-c:v', 'libx265', '-preset', 'fast', '-b:v', '1500k', '-x265-params', 'log-level=error', '-c:a', 'aac',
+           str(m['small_hevc']))
+        m['big_hevc'] = folder / 'big_hevc.mkv'
+        ff('-f', 'lavfi', '-i', 'testsrc2=size=1280x720:rate=24:duration=4,noise=alls=20:allf=t', '-c:v', 'libx265',
+           '-preset', 'ultrafast', '-b:v', '12M', '-x265-params', 'log-level=error', str(m['big_hevc']))
     m['robot'] = folder / 'Mr. Robot (2015) - S01E01 - eps1.0_hellofriend.mov (1080p BluRay x265 RCVR).mkv'
     shutil.copy2(m['subs_cover_mkv'], m['robot'])
     return m
@@ -370,6 +380,52 @@ def section_audit(m, out):
         check('8 queue continues after the disk-space failure', after['status'] == 'failed' and no_partials(out))
     finally:
         oracle_eidolith_jobs.shutil.disk_usage = real
+
+
+def section_speed(m, out):
+    ok, why, _ = probe_profile(FFMPEG, 'Turbo AV1 (preset 12)')
+    check('9 test encode passes for a CPU profile', ok, why)
+    check('9 SVT-AV1 version is detected', bool(svt_av1_version(FFMPEG)))
+    gpu = shutil.which('nvidia-smi') is not None
+    for name in HARDWARE_ORDER:
+        if PROFILES[name]['codec'] not in detect_encoders(FFMPEG) or (gpu and name.startswith('NVIDIA')):
+            continue
+        ok, why, _ = probe_profile(FFMPEG, name)
+        if not Path('/dev/dri').exists() or name.startswith('NVIDIA'):
+            check(f'9 {name}: listed in FFmpeg but test encode fails without the hardware, with a reason',
+                  not ok and bool(why), why)
+    r = runner(out)
+    turbo = add(r, m['plain'], out, 'Turbo AV1 (preset 12)')
+    jobs = {}
+    if 'small_hevc' in m:
+        for key, src, profile, res, smart in (('copy', 'small_hevc', 'Fast AV1 (preset 8)', 'Original', True),
+                                              ('off', 'small_hevc', 'Turbo AV1 (preset 12)', 'Original', False),
+                                              ('resize', 'small_hevc', 'Turbo AV1 (preset 12)', '480p', True),
+                                              ('big', 'big_hevc', 'Turbo AV1 (preset 12)', 'Original', True),
+                                              ('h264', 'small_hevc', 'Fast CPU H.264', 'Original', True)):
+            jobs[key] = add(r, m[src], out, profile, resolution=res)
+            jobs[key]['smart_copy'] = smart
+    r.start()
+    r.wait(900)
+    check('9 Turbo AV1 completes with preset 12 and reports average speed', turbo['status'] == 'completed'
+          and 'average' in turbo['progress']
+          and "-preset:v:0 12" in Path(turbo['log_path']).read_text(encoding='utf-8'), turbo['error'])
+    if jobs:
+        def vcodec(job):
+            return [s['codec_name'] for s in streams(job['dst']) if s['codec_type'] == 'video'][0]
+        check('9 smart copy: compact HEVC is copied, not re-encoded, and says so',
+              jobs['copy']['status'] == 'completed' and vcodec(jobs['copy']) == 'hevc'
+              and any('copied without re-encoding' in x for x in jobs['copy']['report']), jobs['copy']['error'])
+        check('9 smart copy off: same file is re-encoded to AV1', jobs['off']['status'] == 'completed'
+              and vcodec(jobs['off']) == 'av1')
+        check('9 smart copy never skips a resize', jobs['resize']['status'] == 'completed'
+              and vcodec(jobs['resize']) == 'av1')
+        check('9 smart copy re-encodes high-bitrate HEVC', jobs['big']['status'] == 'completed'
+              and vcodec(jobs['big']) == 'av1')
+        check('9 smart copy does not override an H.264 compatibility profile', jobs['h264']['status'] == 'completed'
+              and vcodec(jobs['h264']) == 'h264')
+    else:
+        print('SKIP 9 smart copy tests need libx265 to build HEVC sources')
 
 
 def section_cancel(m, out):
@@ -611,6 +667,21 @@ def section_panel(m, out):
     check('5 CLEAR ALL empties the queue and the saved queue', panel.queue_items == [] and saved.get('jobs') == []
           and panel.queue_list.size() == 0)
     check('5 remove/clear never touch sources', all(Path(p).exists() for p in (m['robot'], m['raw'], m['long'])))
+    # USE FAST PROFILE picks a profile that passes a real test encode on this machine.
+    panel.select_fast_profile()
+    pump(0.05)
+    picked = panel.profile.get()
+    check('5 USE FAST PROFILE picks a profile that works here', probe_profile(FFMPEG, picked)[0], picked)
+    if shutil.which('nvidia-smi') is None and 'hevc_nvenc' in panel.encoders:
+        panel.profile.set('NVIDIA HEVC (fast)')
+        panel._set_nav('CONVERT')
+        panel.convert_list.selection_clear(0, 'end')
+        panel.convert_list.selection_set(0)
+        count = len(panel.queue_items)
+        panel.queue_selected()
+        check('5 a hardware profile that fails its test encode is refused when queuing',
+              len(panel.queue_items) == count and 'does not work on this computer' in panel.status_var.get(),
+              panel.status_var.get())
     panel.resolution.set('720p')
     panel.profile.set('Lossless remux')
     panel._set_nav('CONVERT')
@@ -654,7 +725,8 @@ def main():
         for n, (name, fn) in enumerate((('batch', section_batch), ('tracks', section_tracks),
                                         ('cancel', section_cancel), ('restart', section_restart),
                                         ('panel', section_panel), ('resolution', section_resolution),
-                                        ('slim', section_slim), ('audit', section_audit)), 1):
+                                        ('slim', section_slim), ('audit', section_audit),
+                                        ('speed', section_speed)), 1):
             out = tmp / f'out{n}-{name}'
             out.mkdir()
             fn(m, out)

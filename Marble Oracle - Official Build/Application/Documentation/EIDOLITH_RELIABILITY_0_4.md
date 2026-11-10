@@ -184,7 +184,7 @@ python3 Application/Tests/test_eidolith_naming_regression.py                # 14
 |---|---|
 | Baseline 0.3, full suite (same environment) | 21/21 tests pass. `verify_release.py` fails only after the tests rewrite `TAB_OGGCULTIST_DEFAULT.png` (D11); it passes on a fresh extract |
 | 0.4 branch, full suite | **23/23 tests pass** (the 21 existing tests plus 2 new EIDOLITH tests) |
-| `test_eidolith_queue_reliability.py` | **90/90** (83/83 before the 0.4.6 options) including resolution, short-name, slim-output, Opus-layout, job-removal and audit-fix checks; `test_audit_fixes.py` added (suite is now 24 tests) (54/54 before that addition, repeated 4× with no flakes) |
+| `test_eidolith_queue_reliability.py` | **103/103** (90/90 before the 0.4.7 speed features) including resolution, short-name, slim-output, Opus-layout, job-removal and audit-fix checks; `test_audit_fixes.py` added (suite is now 24 tests) (54/54 before that addition, repeated 4× with no flakes) |
 | `verify_release.py` on the packaged 0.4 tree | PASS (inventory regenerated) |
 | Offline launch: `START MARBLE ORACLE - LINUX.sh`, no network namespace, Xvfb, Python 3.12 | Requirements window and main “Marble_Oracle CRT V2 - Integrated” window appear; no download attempted |
 

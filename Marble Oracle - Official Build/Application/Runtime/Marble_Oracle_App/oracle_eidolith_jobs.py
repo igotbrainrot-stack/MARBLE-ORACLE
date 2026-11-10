@@ -35,10 +35,10 @@ import threading
 import time
 import uuid
 
-from oracle_eidolith_core import (PROFILES, RESOLUTIONS, encoding_args, fit_resolution, profile_support,
+from oracle_eidolith_core import (PROFILES, RESOLUTIONS, encoding_args, fit_resolution, is_hardware, profile_support,
                                   progress_seconds, seconds_label, safe_piece)
 
-ENGINE_VERSION = '0.4.6'
+ENGINE_VERSION = '0.4.7'
 NOWIN = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 
 ACTIVE = ('probing', 'converting', 'validating')
@@ -57,7 +57,7 @@ OPUS_BY_CHANNELS = {1: 'mono', 2: 'stereo', 3: '3.0', 4: 'quad', 5: '5.0', 6: '5
 IMAGE_CODECS = {'png': ('png', 'image/png'), 'mjpeg': ('jpg', 'image/jpeg'),
                 'bmp': ('bmp', 'image/bmp'), 'gif': ('gif', 'image/gif'),
                 'webp': ('webp', 'image/webp')}
-EXPECTED_VIDEO = {'libsvtav1': 'av1', 'av1_nvenc': 'av1', 'libaom-av1': 'av1',
+EXPECTED_VIDEO = {'hevc_qsv': 'hevc', 'hevc_amf': 'hevc', 'libsvtav1': 'av1', 'av1_nvenc': 'av1', 'libaom-av1': 'av1',
                   'hevc_nvenc': 'hevc', 'libx265': 'hevc',
                   'h264_nvenc': 'h264', 'libx264': 'h264'}
 PROGRESS_KEYS = ('frame', 'fps', 'bitrate', 'total_size', 'out_time_us', 'out_time_ms',
@@ -144,6 +144,91 @@ def _rotation(video: dict) -> int:
 MIN_FREE_BYTES = 200 * 1024 * 1024
 
 
+EFFICIENT_CODECS = ('av1', 'hevc')
+MAX_COPY_BITS_PER_PIXEL = 0.10      # ~5 Mb/s at 1080p24, ~2.2 Mb/s at 720p24
+
+
+def _fps(video: dict) -> float:
+    for key in ('avg_frame_rate', 'r_frame_rate'):
+        try:
+            num, den = str(video.get(key) or '').split('/')
+            if float(den) > 0 and float(num) > 0:
+                return float(num) / float(den)
+        except ValueError:
+            pass
+    return 0.0
+
+
+def _already_efficient(video: dict, info: dict, resolution: str, target_codec: str):
+    """(copy?, note). True only when every condition is known to hold."""
+    codec = str(video.get('codec_name') or '')
+    if codec not in EFFICIENT_CODECS or EXPECTED_VIDEO.get(target_codec) not in EFFICIENT_CODECS:
+        return False, ''
+    width, height = int(video.get('width') or 0), int(video.get('height') or 0)
+    shown = (height, width) if _rotation(video) % 180 == 90 else (width, height)
+    if not width or not height or fit_resolution(shown[0], shown[1], resolution):
+        return False, ''                                   # needs resizing
+    if str(video.get('field_order') or '').lower() in ('tt', 'bb', 'tb', 'bt'):
+        return False, ''                                   # needs deinterlacing
+    fmt = info.get('format', {})
+    try:
+        bitrate = float(fmt.get('bit_rate') or 0)
+        if not bitrate:
+            bitrate = float(fmt.get('size') or 0) * 8 / float(fmt.get('duration') or 0)
+    except (ValueError, ZeroDivisionError):
+        bitrate = 0.0
+    fps = _fps(video)
+    if bitrate <= 0 or fps <= 0:
+        return False, ''                                   # unknown: re-encode as asked
+    limit = width * height * fps * MAX_COPY_BITS_PER_PIXEL
+    if bitrate > limit:
+        return False, ''                                   # large file: worth re-encoding
+    return True, f'already {codec} at {bitrate / 1e6:.1f} Mb/s, under the {limit / 1e6:.1f} Mb/s re-encode threshold'
+
+
+_PROBE_CACHE: dict = {}
+
+
+def probe_profile(ffmpeg: str, profile_name: str, timeout: float = 45):
+    """Really encode one second of test video with this profile's encoder.
+
+    Returns (ok, reason, seconds). `ffmpeg -encoders` only says an encoder
+    was compiled in; this says whether it starts on this machine.
+    """
+    key = (ffmpeg, profile_name)
+    if key in _PROBE_CACHE:
+        return _PROBE_CACHE[key]
+    if not ffmpeg or PROFILES[profile_name]['codec'] == 'copy':
+        return True, '', 0.0
+    args = encoding_args(profile_name)
+    video_args = args[:args.index('-c:a')]
+    cmd = [ffmpeg, '-hide_banner', '-nostdin', '-v', 'info', '-f', 'lavfi', '-i',
+           'testsrc2=size=1280x720:rate=30:duration=1', *video_args, '-an', '-f', 'null', '-']
+    started = time.monotonic()
+    try:
+        run = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True, errors='replace',
+                             timeout=timeout, creationflags=NOWIN)
+        lines = [l for l in run.stderr.splitlines() if l.strip()]
+        result = (run.returncode == 0, '' if run.returncode == 0 else (first_error_line(lines) or 'encoder failed to start'),
+                  time.monotonic() - started)
+        version = re.search(r'SVT-AV1 Encoder Lib v?(\d+(?:\.\d+)+)', run.stderr)
+        if version:
+            _PROBE_CACHE[(ffmpeg, 'svt-version')] = version.group(1)
+    except subprocess.TimeoutExpired:
+        result = (False, f'test encode did not finish within {int(timeout)} s', timeout)
+    except OSError as exc:
+        result = (False, str(exc), 0.0)
+    _PROBE_CACHE[key] = result
+    return result
+
+
+def svt_av1_version(ffmpeg: str) -> str:
+    """Version of the SVT-AV1 library inside FFmpeg ('' if unknown)."""
+    if (ffmpeg, 'svt-version') not in _PROBE_CACHE and ffmpeg:
+        probe_profile(ffmpeg, 'Turbo AV1 (preset 12)')
+    return _PROBE_CACHE.get((ffmpeg, 'svt-version'), '')
+
+
 def _is_10bit(pix_fmt: str) -> bool:
     pix_fmt = str(pix_fmt or '')
     return '10' in pix_fmt or pix_fmt.startswith('p010')
@@ -163,7 +248,8 @@ def _is_commentary(stream) -> bool:
 
 
 def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolution: str = 'Original',
-                 slim: bool = False, slim_subs: bool = False, slim_english_audio: bool = False) -> dict:
+                 slim: bool = False, slim_subs: bool = False, slim_english_audio: bool = False,
+                 smart_copy: bool = False) -> dict:
     """Decide exactly which tracks are kept, converted or dropped.
 
     Raises PlanError (before anything is written) when the profile cannot
@@ -181,7 +267,13 @@ def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolu
         raise PlanError(f'Found {len(groups["primary"])} main video tracks; EIDOLITH converts exactly one '
                         'and would otherwise drop pictures. Source unchanged.')
     video = groups['primary'][0]
-    if not copy_all:
+    # Smart copy (as library tools such as Tdarr do): video that is already
+    # compact AV1/HEVC and needs no resize is copied, not re-encoded. That
+    # takes seconds, and avoids a second generation of quality loss.
+    video_copy, copy_note = False, ''
+    if smart_copy and not copy_all:
+        video_copy, copy_note = _already_efficient(video, info, resolution, vcodec)
+    if not copy_all and not video_copy:
         if str(video.get('color_transfer', '')).lower() in ('smpte2084', 'arib-std-b67'):
             raise PlanError('HDR source detected: accurate HDR re-encoding is not yet verified. '
                             'Use Lossless remux or an HDR-aware workflow. Source unchanged.')
@@ -197,10 +289,12 @@ def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolu
     width, height = video.get('width'), video.get('height')
     if _rotation(video) % 180 == 90:
         width, height = height, width
-    scale = None if copy_all else fit_resolution(width, height, resolution)
-    deinterlace = not copy_all and str(video.get('field_order') or '').lower() in ('tt', 'bb', 'tb', 'bt')
+    scale = None if copy_all or video_copy else fit_resolution(width, height, resolution)
+    deinterlace = not copy_all and not video_copy and str(video.get('field_order') or '').lower() in ('tt', 'bb', 'tb', 'bt')
     target = 'copied' if copy_all else f'{EXPECTED_VIDEO.get(vcodec, vcodec)} via {vcodec}' + (
         f' ({profile.get("pix_fmt")})' if profile.get('pix_fmt') else '')
+    if video_copy:
+        target = f'copied without re-encoding ({copy_note})'
     if scale:
         target += f', scaled to {scale[0]}x{scale[1]}'
     elif RESOLUTIONS.get(resolution or 'Original'):
@@ -352,6 +446,8 @@ def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolu
 
     if copy_all:
         codec_args = ['-c', 'copy']
+    elif video_copy:
+        codec_args = ['-c:v:0', 'copy'] + (['-c:a', 'libopus', '-b:a', '128k'] if audio_mode == 'opus' else ['-c:a', 'copy'])
     else:
         codec_args, rename = [], {'-c:v': '-c:v:0', '-pix_fmt': '-pix_fmt:v:0', '-crf': '-crf:v:0',
                                   '-preset': '-preset:v:0', '-rc': '-rc:v:0', '-cq': '-cq:v:0', '-b:v': '-b:v:0'}
@@ -371,7 +467,8 @@ def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolu
             # Applies to the main video only; copied cover art is untouched.
             codec_args += ['-filter:v:0', ','.join(filters)]
     return dict(maps=maps, codec_args=codec_args, extra=extra, covers=covers, attach=attach,
-                expected=expected, report=report, container=container, scale=scale, meta_args=meta_args)
+                expected=expected, report=report, container=container, scale=scale, meta_args=meta_args,
+                video_copy=video_copy)
 
 
 def build_command(ffmpeg: str, src: str, dst: str, plan: dict) -> list:
@@ -402,13 +499,14 @@ def validate_output(ffprobe: str, src_info: dict, dst: str, plan: dict, profile_
     lines.append('VERIFIED track counts: ' + ', '.join(f'{k}={exp[k]}' for k in exp))
     profile = PROFILES[profile_name]
     video = got['primary'][0]
-    if profile['codec'] == 'copy':
+    if profile['codec'] == 'copy' or plan.get('video_copy'):
         want = classify(src_info.get('streams', []))['primary'][0].get('codec_name')
     else:
         want = EXPECTED_VIDEO.get(profile['codec'])
     if want and video.get('codec_name') != want:
         raise RuntimeError(f'Output video codec is {video.get("codec_name")}, expected {want}')
-    if profile.get('pix_fmt') and _is_10bit(profile['pix_fmt']) and not _is_10bit(video.get('pix_fmt')):
+    if (profile.get('pix_fmt') and _is_10bit(profile['pix_fmt']) and not plan.get('video_copy')
+            and not _is_10bit(video.get('pix_fmt'))):
         raise RuntimeError(f'Output is {video.get("pix_fmt")}, expected 10-bit')
     if plan.get('scale') and (int(video.get('width') or 0), int(video.get('height') or 0)) != tuple(plan['scale']):
         raise RuntimeError(f'Output is {video.get("width")}x{video.get("height")}, expected '
@@ -534,15 +632,15 @@ def reconcile_jobs(jobs: list) -> list:
     return messages
 
 
-PERSIST_KEYS = ('id', 'src', 'dst', 'profile', 'audio_mode', 'resolution', 'slim', 'slim_subs', 'slim_eng_audio', 'status', 'progress', 'percent', 'duration',
+PERSIST_KEYS = ('id', 'src', 'dst', 'profile', 'audio_mode', 'resolution', 'slim', 'slim_subs', 'slim_eng_audio', 'smart_copy', 'status', 'progress', 'percent', 'duration',
                 'created_at', 'started_at', 'finished_at', 'error', 'log_path', 'temp_path', 'cover_temps',
                 'stale_partials', 'pid', 'report', 'attempts')
 
 
 def new_job(job_id, src, dst, profile, audio_mode='copy', resolution='Original', slim=False,
-            slim_subs=False, slim_eng_audio=False) -> dict:
+            slim_subs=False, slim_eng_audio=False, smart_copy=False) -> dict:
     return dict(id=job_id, src=src, dst=dst, profile=profile, audio_mode=audio_mode, resolution=resolution, slim=bool(slim),
-                slim_subs=bool(slim_subs), slim_eng_audio=bool(slim_eng_audio),
+                slim_subs=bool(slim_subs), slim_eng_audio=bool(slim_eng_audio), smart_copy=bool(smart_copy),
                 status='queued', progress='', percent=None, duration=0.0,
                 created_at=time.time(), started_at=None, finished_at=None,
                 last_activity=None, last_advance=None, out_seconds=0.0, speed=0.0,
@@ -819,7 +917,8 @@ class QueueRunner:
             info = probe(self.ffprobe, job['src'])
             job['duration'] = max(0.0, float(info.get('format', {}).get('duration', 0) or 0))
             plan = plan_streams(info, job['profile'], job.get('audio_mode', 'copy'), job.get('resolution', 'Original'),
-                                bool(job.get('slim')), bool(job.get('slim_subs')), bool(job.get('slim_eng_audio')))
+                                bool(job.get('slim')), bool(job.get('slim_subs')), bool(job.get('slim_eng_audio')),
+                                bool(job.get('smart_copy')))
             job['report'] = list(plan['report'])
             for line in plan['report']:
                 self._log(log, 'PLAN ' + line)
@@ -886,6 +985,8 @@ class QueueRunner:
                 if 'nvenc' in PROFILES[job['profile']]['codec']:
                     hint = (' — the NVIDIA encoder could not start on this machine (GPU, driver or '
                             'CUDA library missing/unsupported). Choose a CPU profile.')
+                elif is_hardware(job['profile']):
+                    hint = ' — this hardware encoder could not start on this machine. Choose a CPU profile.'
                 raise RuntimeError(f'FFmpeg exited with status {rc}: {cause}{hint}')
 
             self._set(job, 'validating', 'checking output tracks, codec and duration')
@@ -899,7 +1000,9 @@ class QueueRunner:
             size_src = os.path.getsize(job['src']) or 1
             saved = 100.0 * (1 - os.path.getsize(job['dst']) / size_src)
             job['percent'] = 1.0
-            self._set(job, 'completed', f'finished in {seconds_label(time.time() - job["started_at"])} · '
+            elapsed = max(0.001, time.time() - job['started_at'])
+            pace = f' · average {job["duration"] / elapsed:.2f}x' if job.get('duration') else ''
+            self._set(job, 'completed', f'finished in {seconds_label(elapsed)}{pace} · '
                                         f'{saved:+.1f}% storage saved', save=False)
             self._log(log, f'COMPLETED: {job["dst"]} · storage saved {saved:+.1f}%')
         except _Cancelled:
