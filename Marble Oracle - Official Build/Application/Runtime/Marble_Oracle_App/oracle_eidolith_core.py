@@ -12,7 +12,7 @@ from pathlib import Path
 
 PROFILES = {
     'High fidelity': dict(container='mkv', codec='libsvtav1', crf=24, preset='4', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 24 · preset 4 · very slow, maximum detail'),
-    'Balanced archive (default)': dict(container='mkv', codec='libsvtav1', crf=28, preset='5', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 28 · preset 5 · slow, smaller archives'),
+    'Balanced archive': dict(container='mkv', codec='libsvtav1', crf=28, preset='5', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 28 · preset 5 · slow, smaller archives'),
     'Space saver': dict(container='mkv', codec='libsvtav1', crf=34, preset='6', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 34 · preset 6 · smaller, more visible loss possible'),
     'Fast AV1 (preset 8)': dict(container='mkv', codec='libsvtav1', crf=30, preset='8', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 30 · preset 8 · several times faster than Balanced, slightly larger files'),
     'Faster CPU AV1': dict(container='mkv', codec='libsvtav1', crf=30, preset='10', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 30 · preset 10 · faster, less compression efficiency'),
@@ -25,8 +25,14 @@ PROFILES = {
     'Lossless remux': dict(container='mkv', codec='copy', desc='Stream copy · no re-encode · fast if streams are compatible'),
 }
 PROFILE_ORDER = tuple(PROFILES)
+DEFAULT_PROFILE = 'Fast AV1 (preset 8)'
+# The 0.3 name is still accepted (saved settings, saved queues, scripts) but
+# is no longer listed: it stopped being the default in 0.4.5.
+LEGACY_PROFILE_NAMES = {'Balanced archive (default)': 'Balanced archive'}
+for _old, _new in LEGACY_PROFILE_NAMES.items():
+    PROFILES[_old] = PROFILES[_new]
 SUFFIXES = {
-    'High fidelity': 'AV1', 'Balanced archive (default)': 'AV1', 'Space saver': 'AV1',
+    'High fidelity': 'AV1', 'Balanced archive (default)': 'AV1', 'Balanced archive': 'AV1', 'Space saver': 'AV1',
     'Fast AV1 (preset 8)': 'AV1', 'Faster CPU AV1': 'AV1', 'NVIDIA AV1 (fast)': 'AV1',
     'NVIDIA HEVC (fast)': 'HEVC', 'NVIDIA H.264 (fastest compatibility)': 'H264',
     'Fast CPU H.264': 'H264', 'Broad device compatibility': 'HEVC',
@@ -112,6 +118,13 @@ def parse_media_name(path: str) -> dict:
         episode = match.group('e') or match.group('ex') or match.group('ee')
         last_episode = match.group('e2')
         title = clean(raw[:match.start()])
+        if title == 'Untitled':
+            # 'S01E01.mkv': take the show from its folder rather than invent
+            # 'Untitled'; with no usable folder the source name is kept.
+            title = _folder_title(path)
+            if not title:
+                return dict(kind='Unknown', title=clean(raw), year=None,
+                            season=None, episode=None, extra_episode=None, episode_title='')
         tail = clean(raw[match.end():])
         if tail == 'Untitled':
             tail = ''
@@ -119,13 +132,50 @@ def parse_media_name(path: str) -> dict:
             tail = ''
         return dict(kind='TV', title=title, season=int(season), episode=int(episode),
                     extra_episode=int(last_episode) if last_episode else None, episode_title=tail, year=None)
-    years = list(YEAR.finditer(raw))
-    if years:
-        match = years[0]
-        return dict(kind='Movie', title=clean(raw[:match.start()]), year=int(match.group()),
-                    season=None, episode=None, extra_episode=None, episode_title='')
+    year = _pick_year(raw)
+    if year:
+        title = clean(raw[:year.start()])
+        if title != 'Untitled':
+            return dict(kind='Movie', title=title, year=int(year.group()),
+                        season=None, episode=None, extra_episode=None, episode_title='')
     return dict(kind='Unknown', title=clean(raw), year=None,
                 season=None, episode=None, extra_episode=None, episode_title='')
+
+
+SEASON_FOLDER = re.compile(r'(?i)^(?:season|series|staffel|s)[ ._-]*\d+$|^specials?$|^extras?$|^eidolith outputs$')
+
+
+GENERIC_FOLDERS = {'tv', 'tv shows', 'shows', 'series', 'video', 'videos', 'movies', 'films', 'media', 'downloads',
+                   'download', 'desktop', 'documents', 'home', 'new folder', 'temp', 'tmp', 'torrents', 'complete'}
+
+
+def _pick_year(raw: str):
+    """The release year of a movie name, or None.
+
+    A number that is part of the title must not win: '2001 A Space Odyssey
+    (1968)', 'Blade Runner 2049 (2017)', '1917 (2019)'. A year in brackets is
+    preferred; otherwise the last year before the first release tag.
+    """
+    cut = RELEASE.search(BRACKETED.sub(lambda m: ' ' * len(m.group(0)), raw))
+    limit = cut.start() if cut else len(raw)
+    found = [m for m in YEAR.finditer(raw)
+             if not (raw[max(0, m.start() - 1):m.start()].lower() == 's' and raw[m.end():m.end() + 1].lower() == 'e')]
+    bracketed = [m for m in found if raw[max(0, m.start() - 1):m.start()] in ('(', '[') and raw[m.end():m.end() + 1] in (')', ']')]
+    if bracketed:
+        return bracketed[-1]
+    early = [m for m in found if m.start() < limit]
+    return (early or found or [None])[-1]
+
+
+def _folder_title(path: str) -> str:
+    """Show name from the nearest parent folder that is not a season folder."""
+    parts = [p for p in Path(path).parts[:-1] if p not in ('.', '', '/', '\\') and not p.endswith((':', ':\\', ':/'))]
+    for name in reversed(parts[-2:]):
+        if SEASON_FOLDER.match(name.strip()):
+            continue
+        title = clean_words(name)
+        return '' if title == 'Untitled' or title.lower() in GENERIC_FOLDERS else title
+    return ''
 
 
 def standard_stem(src: str, mode: str='Auto (TV / movie)', title_override: str='',

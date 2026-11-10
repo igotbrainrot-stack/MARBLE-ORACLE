@@ -37,7 +37,8 @@ STATE = tempfile.mkdtemp(prefix='eidolith-reliability-state-')
 os.environ['MARBLE_ORACLE_STATE'] = STATE
 
 from oracle_eidolith_core import detect_encoders, output_name  # noqa: E402
-from oracle_eidolith_jobs import QueueRunner, new_job, plan_streams, PlanError  # noqa: E402
+import oracle_eidolith_jobs  # noqa: E402
+from oracle_eidolith_jobs import ENGINE_VERSION, QueueRunner, new_job, plan_streams, PlanError  # noqa: E402
 
 FFMPEG, FFPROBE = shutil.which('ffmpeg'), shutil.which('ffprobe')
 RESULTS = []
@@ -115,6 +116,15 @@ def make_media(folder: Path) -> dict:
        '-attach', str(jpg), '-metadata:s:t:0', 'mimetype=image/jpeg', '-metadata:s:t:0', 'filename=cover.jpg',
        '-attach', str(font), '-metadata:s:t:1', 'mimetype=font/ttf', '-metadata:s:t:1', 'filename=font.ttf', str(rich))
     m['rich'] = rich
+    base1080 = folder / 'base1080.mp4'
+    ff('-f', 'lavfi', '-i', 'testsrc2=size=1920x1080:rate=30:duration=2', '-c:v', 'libx264', '-preset', 'ultrafast',
+       str(base1080))
+    m['phone'] = folder / 'phone_portrait.mp4'
+    ff('-display_rotation', '90', '-i', str(base1080), '-c', 'copy', str(m['phone']))
+    base1080.unlink()
+    m['interlaced'] = folder / 'dvd_interlaced.mkv'
+    ff('-f', 'lavfi', '-i', 'testsrc2=size=720x576:rate=25:duration=2', '-c:v', 'libx264', '-preset', 'ultrafast',
+       '-flags', '+ilme+ildct', '-top', '1', str(m['interlaced']))
     m['robot'] = folder / 'Mr. Robot (2015) - S01E01 - eps1.0_hellofriend.mov (1080p BluRay x265 RCVR).mkv'
     shutil.copy2(m['subs_cover_mkv'], m['robot'])
     return m
@@ -296,6 +306,34 @@ def section_slim(m, out):
               and any(s.get('disposition', {}).get('attached_pic') for s in info['streams']))
     check('7 slim output is smaller than full output', all(j['status'] == 'completed' for j in (slim, full))
           and os.path.getsize(slim['dst']) < os.path.getsize(full['dst']))
+
+
+def section_audit(m, out):
+    r = runner(out)
+    phone = add(r, m['phone'], out, 'Fast CPU H.264', resolution='720p')
+    dvd = add(r, m['interlaced'], out, 'Fast CPU H.264')
+    r.start()
+    r.wait(300)
+    v = [s for s in streams(phone['dst']) if s['codec_type'] == 'video'] if phone['status'] == 'completed' else []
+    check('8 upright phone video at 720p is 720x1280 with square pixels (was squashed)', v
+          and (v[0]['width'], v[0]['height']) == (720, 1280)
+          and v[0].get('sample_aspect_ratio', '1:1') in ('1:1', 'N/A'), phone['error'] or v)
+    check('8 interlaced source is deinterlaced and reported', dvd['status'] == 'completed'
+          and any('deinterlaced' in x for x in dvd['report'])
+          and 'bwdif' in Path(dvd['log_path']).read_text(encoding='utf-8'), dvd['error'])
+    real = oracle_eidolith_jobs.shutil.disk_usage
+    try:
+        oracle_eidolith_jobs.shutil.disk_usage = lambda path: type('U', (), {'free': 50 * 1024 * 1024})()
+        r = runner(out)
+        full = add(r, m['plain'], out, 'Fast CPU H.264')
+        after = add(r, m['plain'], out, 'Lossless remux')
+        r.start()
+        r.wait(120)
+        check('8 nearly full disk fails the job before encoding, with a reason', full['status'] == 'failed'
+              and 'MB free' in full['error'] and not Path(full['dst']).exists(), full['error'])
+        check('8 queue continues after the disk-space failure', after['status'] == 'failed' and no_partials(out))
+    finally:
+        oracle_eidolith_jobs.shutil.disk_usage = real
 
 
 def section_cancel(m, out):
@@ -482,7 +520,7 @@ def section_panel(m, out):
     panel.queue_list.selection_set(0)
     panel.copy_diagnostics()
     clip = root.clipboard_get()
-    check('5 diagnostics copied without local folder paths', 'EIDOLITH 0.4 diagnostic report' in clip
+    check('5 diagnostics copied without local folder paths', f'EIDOLITH {ENGINE_VERSION} diagnostic report' in clip
           and str(out) not in clip and str(m['robot'].parent) not in clip and '<source folder>' in clip)
     # Queued jobs can be removed (selected, several at once) or all cleared.
     panel.queue_list.selection_clear(0, 'end')
@@ -560,7 +598,7 @@ def main():
         for n, (name, fn) in enumerate((('batch', section_batch), ('tracks', section_tracks),
                                         ('cancel', section_cancel), ('restart', section_restart),
                                         ('panel', section_panel), ('resolution', section_resolution),
-                                        ('slim', section_slim)), 1):
+                                        ('slim', section_slim), ('audit', section_audit)), 1):
             out = tmp / f'out{n}-{name}'
             out.mkdir()
             fn(m, out)

@@ -79,6 +79,26 @@ def main():
     assert output_name('my_home_movie.mp4', 'Fast CPU H.264', **short) == 'my_home_movie.mp4'
     assert output_name(src, 'Faster CPU AV1', episode_title=False) == 'Mr. Robot (2015) - S01E01 [AV1].mkv'
     assert output_name(src, 'Faster CPU AV1', format_tag=False) == 'Mr. Robot (2015) - S01E01 - eps1.0_hellofriend.mov.mkv'
+    # Audit fixes: numbers inside a title are not the release year; an empty
+    # show title is taken from the folder or the source name is kept.
+    audit = {'2001 A Space Odyssey (1968).mkv': '2001 A Space Odyssey (1968).mkv',
+             'Blade Runner 2049 (2017).mkv': 'Blade Runner 2049 (2017).mkv',
+             '1917 (2019).mkv': '1917 (2019).mkv',
+             'Blade.Runner.2049.2017.1080p.BluRay.mkv': 'Blade Runner 2049 (2017).mkv',
+             'Show S2024E05.mkv': 'Show S2024E05.mkv', '2012.mkv': '2012.mkv',
+             'S01E01.mkv': 'S01E01.mkv',
+             '/tv/Mr. Robot (2015)/Season 1/S01E01.mkv': 'Mr. Robot (2015) - S01E01.mkv',
+             '/tv/Mr. Robot/1x02.mkv': 'Mr. Robot - S01E02.mkv',
+             '/home/me/Downloads/S01E01.mkv': 'S01E01.mkv',
+             '/tv/Season 1/S01E01.mkv': 'S01E01.mkv'}
+    for source, expected in audit.items():
+        got = output_name(source, 'Fast AV1 (preset 8)', **short)
+        if got != expected:
+            failures.append(f'{source!r}\n   expected {expected!r}\n   got      {got!r}')
+    from oracle_eidolith_core import DEFAULT_PROFILE, PROFILE_ORDER, PROFILES
+    assert DEFAULT_PROFILE == 'Fast AV1 (preset 8)' and 'Balanced archive' in PROFILE_ORDER
+    assert 'Balanced archive (default)' not in PROFILE_ORDER
+    assert PROFILES['Balanced archive (default)'] is PROFILES['Balanced archive']   # saved 0.3 settings still load
     if failures:
         raise SystemExit('NAMING FAILURES:\n' + '\n'.join(failures))
     print(f'EIDOLITH naming regression: {len(CASES)} cases + parser/safety/resolution checks PASSED')

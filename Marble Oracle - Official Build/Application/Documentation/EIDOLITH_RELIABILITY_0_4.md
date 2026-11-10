@@ -139,6 +139,28 @@ Before this change, only CLEAR FINISHED existed, so queued jobs could not be rem
 - **CLEAR ALL** empties the queue.
 - Both leave the converting job alone, update the saved queue immediately, and never touch files on disk.
 
+## 2d. Audit fixes (0.4.5)
+
+Fixed, each with a regression test:
+- **Rotated (portrait) phone video** was fitted using its stored size, giving a squashed 1280×720 with a corrective aspect flag. The displayed size is now used (1080×1920 → 720×1280, square pixels).
+- **Movie year:** a number inside the title no longer wins (`2001 A Space Odyssey (1968)`, `Blade Runner 2049 (2017)`, `1917 (2019)`). A bracketed year is preferred, otherwise the last year before the first release tag.
+- **Empty show title:** `S01E01.mkv` takes the show name from its folder (skipping `Season N` and generic folders such as Downloads). With no usable folder the source name is kept; “Untitled” is no longer invented.
+- **Interlaced sources** are deinterlaced (bwdif) when encoding, and the plan reports it.
+- **Disk space:** a job fails before encoding when the output folder has under 200 MB free; a warning is logged when free space is below the source size.
+- **Network fetchers** (news, market data): responses capped at 2 MB; only http(s) (news) / https (markets) URLs are fetched.
+- **Passphrase clipboard** is cleared after 60 seconds if it still holds the copied phrase.
+- **Default profile** is Fast AV1 (preset 8). “Balanced archive (default)” is renamed “Balanced archive”; the old name still loads from saved settings and queues.
+- **Windows `.bat` fallback launcher** added beside the `.vbs` (not run on Windows).
+- **Version label** now 0.4.5.
+
+Not changed:
+- **Network on by default (HOME):** left as is, now documented in the README. Needs an owner decision.
+- **Passphrase strength (≈44 bits):** left as designed.
+- **Dependency pinning, and the FFmpeg checksum coming from the same site as the download:** not changed.
+- **Music tab's own pytest suite:** 16 of 393 tests fail on both the 0.3 baseline and this branch. They expect an older font set and version 2.0.3. The music tab was not modified.
+- **Licensing:** terms for the text-to-speech Latin voice clips are unchecked, and no source/licence note was found for the tarot, rune and bezel artwork.
+- **Slim output and foreign-language video:** SLIM OUTPUT keeps the source's default audio track and drops subtitles, including for foreign-language video.
+
 ## 3. Tests and results
 
 Environment: Ubuntu 24.04 container, Xvfb, Python 3.12.3 (system, Tk 8.6, Pillow 10.2, mutagen 1.48),
@@ -156,7 +178,7 @@ python3 Application/Tests/test_eidolith_naming_regression.py                # 14
 |---|---|
 | Baseline 0.3, full suite (same environment) | 21/21 tests pass. `verify_release.py` fails only after the tests rewrite `TAB_OGGCULTIST_DEFAULT.png` (D11); it passes on a fresh extract |
 | 0.4 branch, full suite | **23/23 tests pass** (the 21 existing tests plus 2 new EIDOLITH tests) |
-| `test_eidolith_queue_reliability.py` | **79/79** including resolution, short-name, slim-output, Opus-layout and job-removal checks (54/54 before that addition, repeated 4× with no flakes) |
+| `test_eidolith_queue_reliability.py` | **83/83** including resolution, short-name, slim-output, Opus-layout, job-removal and audit-fix checks; `test_audit_fixes.py` added (suite is now 24 tests) (54/54 before that addition, repeated 4× with no flakes) |
 | `verify_release.py` on the packaged 0.4 tree | PASS (inventory regenerated) |
 | Offline launch: `START MARBLE ORACLE - LINUX.sh`, no network namespace, Xvfb, Python 3.12 | Requirements window and main “Marble_Oracle CRT V2 - Integrated” window appear; no download attempted |
 

@@ -23,12 +23,12 @@ from marble_uberata import FAMILY
 from oracle_ogg_texture import frame as ogl_frame, label as ogl_label, install as ogl_install
 from oggcultist_design_system import COLOR as C
 from oracle_assets import load_json, save_json, state_dir
-from oracle_eidolith_core import (PROFILES, PROFILE_ORDER, NAME_MODES, RESOLUTIONS, RESOLUTION_ORDER, output_name,
+from oracle_eidolith_core import (PROFILES, PROFILE_ORDER, DEFAULT_PROFILE, LEGACY_PROFILE_NAMES, NAME_MODES, RESOLUTIONS, RESOLUTION_ORDER, output_name,
                                   detect_encoders, profile_support, seconds_label)
 from oracle_eidolith_jobs import (QueueRunner, new_job, diagnostics_report, ACTIVE, RETRYABLE)
 
 APP_NAME = "EIDOLITH"
-APP_VERSION = "0.4"
+APP_VERSION = "0.4.5"
 QUEUE_STATE = 'eidolith_queue.json'
 STALL_NOTICE_SECONDS = 30
 
@@ -68,7 +68,8 @@ class EidolithPanel(tk.Frame):
             self.state = {}
         self.files = list(self.state.get('files', []))
         self.output_dir = self.state.get('output_dir') or ''
-        self.profile = tk.StringVar(value=self.state.get('profile') if self.state.get('profile') in PROFILES else 'Balanced archive (default)')
+        saved_profile = LEGACY_PROFILE_NAMES.get(self.state.get('profile'), self.state.get('profile'))
+        self.profile = tk.StringVar(value=saved_profile if saved_profile in PROFILES else DEFAULT_PROFILE)
         self.rename_mode = tk.StringVar(value=self.state.get('rename_mode') if self.state.get('rename_mode') in NAME_MODES else NAME_MODES[0])
         self.title_override = tk.StringVar(value=self.state.get('title_override') or '')
         self.season_override = tk.StringVar(value=self.state.get('season_override') or '')

@@ -28,6 +28,11 @@ All tabs retain the established dark Oggcultist-inspired visual style and bundle
 - FFmpeg and FFprobe are necessary for video encoding/probing. Playback capability depends on local multimedia support.
 - The in-app video viewer is an **initial 12 fps preview implementation**, not a fully synchronised libmpv player; HDR, track switching and precise audio/video synchronisation are not assured.
 - **RESOLUTION** (CONVERT page): Original, 1080p, 720p or 480p. Video is only scaled down, keeping its aspect ratio (a widescreen film at 720p becomes 1280×536). From 1080p, 720p encodes about 2–3× faster, more for grainy video.
+- **Default profile** is now **Fast AV1 (preset 8)**. The old default is still available as **Balanced archive** (much slower, smaller files); a saved choice is kept.
+- Upright phone video keeps its shape when resized, interlaced sources (DVD, old TV captures) are deinterlaced automatically, and a job is refused up front when the output folder has under 200 MB free.
+- **Network use:** the HOME screen fetches market prices (CoinGecko, Frankfurter) and news headlines (BBC, Guardian, Al Jazeera, NPR) unless the app is started with `--no-network`. Video and audio conversion never use the network.
+- **Windows:** if `START MARBLE ORACLE - WINDOWS.vbs` is blocked (VBScript disabled), use `START MARBLE ORACLE - WINDOWS (if the VBS launcher is blocked).bat`. This fallback has not been run on a real Windows machine yet.
+- **PASSPHRASE:** a copied passphrase is cleared from the clipboard after 60 seconds (clipboard-history tools may still keep it).
 - **SLIM OUTPUT** (on by default) keeps only the video and the main audio track. It drops extra audio tracks (dubs, commentary), subtitles, cover art, fonts, chapters and title metadata, and lists every drop in the job log. Untick it to keep everything. Most of the saving comes from extra audio tracks; subtitles, cover art and metadata are usually under 1 MB together. For the biggest audio saving, also set **AUDIO** to `opus`.
 - **Fast AV1 (preset 8)** sits between Balanced and Faster CPU AV1: several times faster than Balanced, with slightly larger files.
 - **Balanced archive** is 10-bit CPU SVT-AV1 and can encode slowly. Choose **USE FAST PROFILE** to prefer compatible NVIDIA NVENC hardware or a quicker CPU preset. Neither speed nor size reduction is guaranteed.

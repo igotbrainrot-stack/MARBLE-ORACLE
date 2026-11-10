@@ -28,6 +28,7 @@ import platform
 import queue as _queue
 import re
 import shlex
+import shutil
 import signal
 import subprocess
 import threading
@@ -37,7 +38,7 @@ import uuid
 from oracle_eidolith_core import (PROFILES, RESOLUTIONS, encoding_args, fit_resolution, profile_support,
                                   progress_seconds, seconds_label, safe_piece)
 
-ENGINE_VERSION = '0.4'
+ENGINE_VERSION = '0.4.5'
 NOWIN = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 
 ACTIVE = ('probing', 'converting', 'validating')
@@ -126,6 +127,23 @@ def _describe_audio(items):
     return ', '.join(parts)
 
 
+def _rotation(video: dict) -> int:
+    """Display rotation of a video stream in degrees (0, 90, 180, 270)."""
+    value = None
+    for item in video.get('side_data_list') or []:
+        if 'rotation' in item:
+            value = item['rotation']
+    if value is None:
+        value = (video.get('tags') or {}).get('rotate')
+    try:
+        return int(round(float(value))) % 360
+    except (TypeError, ValueError):
+        return 0
+
+
+MIN_FREE_BYTES = 200 * 1024 * 1024
+
+
 def _is_10bit(pix_fmt: str) -> bool:
     pix_fmt = str(pix_fmt or '')
     return '10' in pix_fmt or pix_fmt.startswith('p010')
@@ -161,13 +179,22 @@ def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolu
     if RESOLUTIONS.get(resolution or 'Original') and copy_all:
         raise PlanError(f'Lossless remux copies the video unchanged and cannot resize to {resolution}. '
                         'Set RESOLUTION to Original or choose an encoding profile. Source unchanged.')
-    scale = None if copy_all else fit_resolution(video.get('width'), video.get('height'), resolution)
+    # FFmpeg rotates phone video upright before filtering, so fit the
+    # displayed size, not the stored one (a 1920x1080 stream rotated 90
+    # degrees is a 1080x1920 picture).
+    width, height = video.get('width'), video.get('height')
+    if _rotation(video) % 180 == 90:
+        width, height = height, width
+    scale = None if copy_all else fit_resolution(width, height, resolution)
+    deinterlace = not copy_all and str(video.get('field_order') or '').lower() in ('tt', 'bb', 'tb', 'bt')
     target = 'copied' if copy_all else f'{EXPECTED_VIDEO.get(vcodec, vcodec)} via {vcodec}' + (
         f' ({profile.get("pix_fmt")})' if profile.get('pix_fmt') else '')
     if scale:
         target += f', scaled to {scale[0]}x{scale[1]}'
     elif RESOLUTIONS.get(resolution or 'Original'):
         target += f', already within {resolution} so size kept'
+    if deinterlace:
+        target += ', deinterlaced (interlaced source)'
     report.append(f'KEEP video: {video.get("codec_name", "?")} {video.get("width", "?")}x{video.get("height", "?")} '
                   f'{video.get("pix_fmt", "")} -> {target}')
 
@@ -290,9 +317,14 @@ def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolu
             if key != '-c:s':                 # subtitles are decided above
                 codec_args += [rename.get(key, key), val]
             i += 2
+        filters = []
+        if deinterlace:
+            filters.append('bwdif=mode=send_frame:parity=auto:deint=all')
         if scale:
+            filters.append(f'scale={scale[0]}:{scale[1]}:flags=lanczos')
+        if filters:
             # Applies to the main video only; copied cover art is untouched.
-            codec_args += ['-filter:v:0', f'scale={scale[0]}:{scale[1]}:flags=lanczos']
+            codec_args += ['-filter:v:0', ','.join(filters)]
     return dict(maps=maps, codec_args=codec_args, extra=extra, covers=covers, attach=attach,
                 expected=expected, report=report, container=container, scale=scale, meta_args=meta_args)
 
@@ -749,6 +781,18 @@ class QueueRunner:
 
             out_dir = os.path.dirname(os.path.abspath(job['dst']))
             os.makedirs(out_dir, exist_ok=True)
+            try:
+                free = shutil.disk_usage(out_dir).free
+            except OSError:
+                free = None
+            if free is not None:
+                if free < MIN_FREE_BYTES:
+                    raise RuntimeError(f'Only {free / 1e6:.0f} MB free in the output folder; at least '
+                                       f'{MIN_FREE_BYTES // (1024 * 1024)} MB is needed. Free some space or choose '
+                                       'another OUTPUT FOLDER.')
+                if free < os.path.getsize(job['src']):
+                    self._log(log, f'WARNING: output folder has {free / 1e9:.1f} GB free, less than the source size '
+                                   f'({os.path.getsize(job["src"]) / 1e9:.1f} GB). The job may run out of space.')
             token = uuid.uuid4().hex[:12]
             stem, ext = os.path.splitext(job['dst'])
             temp_path = f'{stem}.eidolith-{token}-part{ext}'
@@ -771,7 +815,7 @@ class QueueRunner:
 
             cmd = build_command(self.ffmpeg, job['src'], temp_path, plan)
             self._log(log, 'COMMAND: ' + command_text(cmd))
-            if job['profile'] in ('High fidelity', 'Balanced archive (default)', 'Space saver'):
+            if job['profile'] in ('High fidelity', 'Balanced archive (default)', 'Balanced archive', 'Space saver'):
                 self._log(log, 'NOTE: CPU 10-bit SVT-AV1 at this preset is often slower than real time. '
                                'Progress below shows whether FFmpeg is advancing.')
             self._log(log, '--- FFmpeg stderr ---', ui=False)

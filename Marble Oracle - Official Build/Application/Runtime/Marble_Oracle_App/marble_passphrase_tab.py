@@ -31,6 +31,9 @@ AMBER = OGG["accent"]
 INSET = OGG["sunken"]
 
 
+CLIPBOARD_CLEAR_MS = 60_000
+
+
 def action_button(parent, label, command, *, color=TEXT, fill="#2F2620", pady=8, primary=False):
     """Oggcultist Ember: boxed, restrained secondary actions and one orange primary."""
     if primary:
@@ -182,11 +185,28 @@ class PassphrasePanel(tk.Frame):
         self.status.set(note or f"Re-rolled {PART_NAMES[part].lower()}. Personal rerolls change the original selection distribution.")
         self._refresh()
 
+    def _clear_clipboard(self, copied):
+        """Clear the clipboard only if it still holds the phrase we put there."""
+        self.clip_clear = None
+        try:
+            top = self.winfo_toplevel()
+            if top.clipboard_get() == copied:
+                top.clipboard_clear()
+                top.clipboard_append("")
+                top.update_idletasks()
+                self.status.set("Clipboard cleared.")
+        except tk.TclError:
+            pass
+
     def copy(self):
         self.winfo_toplevel().clipboard_clear()
         self.winfo_toplevel().clipboard_append(self.phrase)
         self.update_idletasks()
-        self.status.set("Copied to clipboard. Nothing was saved to a file or sent online.")
+        self.status.set("Copied. The clipboard is cleared in 60 seconds. Nothing was saved to a file or sent online.")
+        copied = self.phrase
+        if getattr(self, "clip_clear", None) is not None:
+            self.after_cancel(self.clip_clear)
+        self.clip_clear = self.after(CLIPBOARD_CLEAR_MS, lambda: self._clear_clipboard(copied))
         self.copy_button.configure(text="COPIED")
         if self.copy_reset is not None:
             self.after_cancel(self.copy_reset)
