@@ -34,6 +34,7 @@ def exercise():
     with tempfile.TemporaryDirectory(prefix='marble-eidolith-test-') as folder:
         folder = Path(folder)
         os.environ['XDG_DATA_HOME'] = str(folder / 'user-data')
+        os.environ['MARBLE_ORACLE_STATE'] = str(folder / 'state')
         video = folder / 'test_video.mp4'
         copy = folder / 'second_video.mp4'
         cmd = ['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y',

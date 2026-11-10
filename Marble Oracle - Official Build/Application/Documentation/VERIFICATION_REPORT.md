@@ -1,5 +1,7 @@
 # MARBLE ORACLE — Verification report
 
+> **EIDOLITH 0.4 update (10 November 2026).** In the same Xvfb/Python 3.12/FFmpeg 6.1.1 environment, the 0.3 baseline passed all 21 tests. The 0.4 tree passes **23/23** (the 21 existing tests plus `test_eidolith_naming_regression.py` and `test_eidolith_queue_reliability.py`, now 61/61 checks including 720p scaling). `verify_release.py` passes on the packaged 0.4 tree. An offline launch through `START MARBLE ORACLE - LINUX.sh` was confirmed. Defects, evidence and limitations are in `EIDOLITH_RELIABILITY_0_4.md`. Native Windows 11, physical Linux Mint and NVIDIA hardware remain **untested**. The historical 0.3 report follows unchanged.
+
 **Release:** EIDOLITH 0.3 cleanup, 10 November 2026.  
 **Source checkpoint:** `Marble-Oracle-OFFICIAL-EIDOLITH-0.3-Faster-Conversion-Standard-Naming-FULL-Windows-Linux.zip` (SHA-256 `df9f71512120d913f94b2e9736b5824cabc8e6f6ea07ac31928e40b355f9620a`).  
 **Environment:** Linux virtual X display (Xvfb), available system Python 3, FFmpeg/FFprobe, isolated HOME/config folders per test. **Not** native Linux Mint or Windows 11.  
@@ -88,6 +90,8 @@ xvfb-run -a python3 Application/Tests/test_tab_layout.py
 xvfb-run -a python3 Application/Tests/test_ogg206_embedded.py
 xvfb-run -a python3 Application/Tests/test_eidolith_speed_naming.py
 xvfb-run -a python3 Application/Tests/test_eidolith_workspaces.py
+xvfb-run -a python3 Application/Tests/test_eidolith_queue_reliability.py
+python3 Application/Tests/test_eidolith_naming_regression.py
 xvfb-run -a python3 Application/Runtime/Marble_Oracle_App/marble_oracle.py --selftest --no-network
 ```
 
