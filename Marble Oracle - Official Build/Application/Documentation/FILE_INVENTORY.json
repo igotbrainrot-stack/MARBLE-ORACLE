@@ -9,7 +9,7 @@
   "Application/Documentation/VERIFICATION_REPORT.md"
  ],
  "inventory_file_count": 363,
- "inventory_total_bytes": 114463504,
+ "inventory_total_bytes": 114473290,
  "files": [
   {
    "path": "Application/.gitignore",
@@ -43,8 +43,8 @@
   },
   {
    "path": "Application/Documentation/EIDOLITH_RELIABILITY_0_4.md",
-   "bytes": 14713,
-   "sha256": "a97228c1a95b16bd5225b475af961f642c39f6cffbda41a0e97a0ec493472baa"
+   "bytes": 15852,
+   "sha256": "de2ac2e107387e5a4f6a693e0e5ccd433cc77a9737c63ca382f6b24081b0e610"
   },
   {
    "path": "Application/Documentation/EIDOLITH_SPEED_AND_NAMING_0_3.md",
@@ -313,8 +313,8 @@
   },
   {
    "path": "Application/README.md",
-   "bytes": 6303,
-   "sha256": "3fed09550b6f980033617bfd8ad1eb437386b61145669b446bd5abf8458a2f58"
+   "bytes": 6734,
+   "sha256": "d5fd088421330f5c518528103f7ec977c7f19bc08ec6041da8bdca4bb279103d"
   },
   {
    "path": "Application/Runtime/Launch_Marble_Oracle.vbs",
@@ -1488,8 +1488,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith.py",
-   "bytes": 59780,
-   "sha256": "80d3b03095ef5c99424c4061ab9e5865d618baa37b64c02028c28dce7b5d2183"
+   "bytes": 60593,
+   "sha256": "518dbb98b531586d51967c296c7dcb5ce2ae27ebab41c65ad7264728b2ceb249"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_core.py",
@@ -1498,8 +1498,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_jobs.py",
-   "bytes": 42112,
-   "sha256": "d15473423d3c06eb3c6aa0f8f09cea6e8f2e2e79cd5f4a707f61eef424e52b52"
+   "bytes": 45483,
+   "sha256": "2f0c1585808ffb257c5db6da81b855ffa0de6d555b211d99d8048a7977539cd2"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_player.py",
@@ -1708,8 +1708,8 @@
   },
   {
    "path": "Application/Tests/test_eidolith_queue_reliability.py",
-   "bytes": 23117,
-   "sha256": "7a0c92be79027b4175906d2e2a4ef057931cb6bf6a105a2e61b08abff5c98b99"
+   "bytes": 27149,
+   "sha256": "e15f2f8d3f150acbf050c5e205e74eccfcf9eb6d5183d9400ea0dba5970e8ac7"
   },
   {
    "path": "Application/Tests/test_eidolith_speed_naming.py",
