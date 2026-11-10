@@ -100,7 +100,7 @@ Result: `Mr. Robot (2015) - S01E01 - eps1.0_hellofriend.mov [AV1].mkv`.
   - The video is scaled down to fit the box with its aspect ratio kept, and is never scaled up.
   - Portrait video uses the rotated box.
   - The exact even size is computed before encoding, applied to the main video only (cover art is untouched) and verified on the output.
-  - Output names gain the tag, e.g. `[AV1 720p]`.
+  - Output names are short by default (`Mr. Robot (2015) - S01E01.mkv`). The episode title and a format tag such as `[AV1 720p]` are opt-in tick boxes under ORGANISE OUTPUT FILENAME.
   - Lossless remux cannot resize, so that combination is refused when queuing.
 - **Fast AV1 (preset 8)** is a new SVT-AV1 10-bit profile at CRF 30.
 
@@ -132,7 +132,7 @@ python3 Application/Tests/test_eidolith_naming_regression.py                # 14
 |---|---|
 | Baseline 0.3, full suite (same environment) | 21/21 tests pass. `verify_release.py` fails only after the tests rewrite `TAB_OGGCULTIST_DEFAULT.png` (D11); it passes on a fresh extract |
 | 0.4 branch, full suite | **23/23 tests pass** (the 21 existing tests plus 2 new EIDOLITH tests) |
-| `test_eidolith_queue_reliability.py` | **61/61** including resolution checks (54/54 before that addition, repeated 4× with no flakes) |
+| `test_eidolith_queue_reliability.py` | **62/62** including resolution and short-name checks (54/54 before that addition, repeated 4× with no flakes) |
 | `verify_release.py` on the packaged 0.4 tree | PASS (inventory regenerated) |
 | Offline launch: `START MARBLE ORACLE - LINUX.sh`, no network namespace, Xvfb, Python 3.12 | Requirements window and main “Marble_Oracle CRT V2 - Integrated” window appear; no download attempted |
 

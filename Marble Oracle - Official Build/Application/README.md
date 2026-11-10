@@ -27,10 +27,10 @@ All tabs retain the established dark Oggcultist-inspired visual style and bundle
 
 - FFmpeg and FFprobe are necessary for video encoding/probing. Playback capability depends on local multimedia support.
 - The in-app video viewer is an **initial 12 fps preview implementation**, not a fully synchronised libmpv player; HDR, track switching and precise audio/video synchronisation are not assured.
-- **RESOLUTION** (CONVERT page): Original, 1080p, 720p or 480p. Video is only scaled down, keeping its aspect ratio (a widescreen film at 720p becomes 1280×536), and the output name gains a tag such as `[AV1 720p]`. From 1080p, 720p encodes about 2–3× faster, more for grainy video.
+- **RESOLUTION** (CONVERT page): Original, 1080p, 720p or 480p. Video is only scaled down, keeping its aspect ratio (a widescreen film at 720p becomes 1280×536). From 1080p, 720p encodes about 2–3× faster, more for grainy video.
 - **Fast AV1 (preset 8)** sits between Balanced and Faster CPU AV1: several times faster than Balanced, with slightly larger files.
 - **Balanced archive** is 10-bit CPU SVT-AV1 and can encode slowly. Choose **USE FAST PROFILE** to prefer compatible NVIDIA NVENC hardware or a quicker CPU preset. Neither speed nor size reduction is guaranteed.
-- Automatic TV/movie filenames recognise episode markers such as `S02E05` and movie years; ambiguous names should be reviewed before queuing.
+- Automatic TV/movie filenames recognise episode markers such as `S02E05` and movie years; ambiguous names should be reviewed before queuing. Names are short by default (`Mr. Robot (2015) - S01E01.mkv`). Tick **Add episode title** or **Add format tag** (e.g. `[AV1 720p]`) under ORGANISE OUTPUT FILENAME to include them. Clashing names get ` (2)`, and nothing is overwritten.
 - Outputs are written separately and checked (track counts, codec, 10-bit, duration); original input files are **never deleted or overwritten**. HDR and unsupported track cases are blocked for safety with a reason.
 - The queue runs every **queued** job in order: a failed job is marked FAILED and the next one starts. **CANCEL CURRENT** skips one job, **STOP QUEUE** keeps the rest queued, and failed jobs re-run only with **RETRY**.
 - The QUEUE page shows **JOB n OF m**, a progress bar (or an indeterminate sweep when duration is unknown), elapsed time, speed, ETA and the last FFmpeg activity. **OPEN LOG** shows the full per-job log; **COPY DIAGNOSTICS** copies a shareable report with your folder names removed.

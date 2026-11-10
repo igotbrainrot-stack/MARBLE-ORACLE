@@ -43,18 +43,25 @@
   "baseline_0_3_total": 21,
   "eidolith_0_4_pass": 23,
   "eidolith_0_4_total": 23,
-  "queue_reliability_checks": "61/61",
+  "queue_reliability_checks": "62/62",
   "previous_0_3_record": {
    "baseline_0_3_pass": 21,
    "baseline_0_3_total": 21,
    "eidolith_0_4_pass": 23,
    "eidolith_0_4_total": 23,
-   "queue_reliability_checks": "54/54 (x4)",
+   "queue_reliability_checks": "61/61",
    "previous_0_3_record": {
-    "baseline_pass": 9,
-    "baseline_total": 9,
-    "postcleanup_pass": 19,
-    "postcleanup_total": 19
+    "baseline_0_3_pass": 21,
+    "baseline_0_3_total": 21,
+    "eidolith_0_4_pass": 23,
+    "eidolith_0_4_total": 23,
+    "queue_reliability_checks": "54/54 (x4)",
+    "previous_0_3_record": {
+     "baseline_pass": 9,
+     "baseline_total": 9,
+     "postcleanup_pass": 19,
+     "postcleanup_total": 19
+    }
    }
   }
  },
@@ -83,6 +90,7 @@
   "persisted queue, interrupted-job reconciliation, owned-partial cleanup",
   "spaced-name filename parser fix (Mr. Robot case)",
   "RESOLUTION setting (1080p/720p/480p downscale, verified)",
-  "Fast AV1 (preset 8) profile"
+  "Fast AV1 (preset 8) profile",
+  "short output names by default; episode title and format tag opt-in"
  ]
 }
