@@ -2,19 +2,19 @@
 
 This is a self-contained Tk panel that matches the other suite tabs closely.
 Playback renders FFmpeg-decoded video inside the application, with an
-explicit fullscreen option. Probing and conversion use ffprobe/ffmpeg locally. The queue is serial, cancellable, and keeps
-original files intact.
+explicit fullscreen option. Probing and conversion use ffprobe/ffmpeg locally.
+The queue itself lives in oracle_eidolith_jobs.QueueRunner (serial,
+fail-and-continue, cancellable, persisted, per-job logs) and keeps original
+files intact.
 """
 from __future__ import annotations
 
 import json
 import os
 import queue
-import uuid
 import shutil
-import signal
 import subprocess
-import threading
+import sys
 import time
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -22,13 +22,15 @@ from tkinter import filedialog, messagebox
 from marble_uberata import FAMILY
 from oracle_ogg_texture import frame as ogl_frame, label as ogl_label, install as ogl_install
 from oggcultist_design_system import COLOR as C
-from oracle_assets import load_json, save_json
+from oracle_assets import load_json, save_json, state_dir
 from oracle_eidolith_core import (PROFILES, PROFILE_ORDER, NAME_MODES, output_name,
-                                  encoding_args, detect_encoders, profile_support,
-                                  progress_label, progress_seconds)
+                                  detect_encoders, profile_support, seconds_label)
+from oracle_eidolith_jobs import (QueueRunner, new_job, diagnostics_report, ACTIVE, RETRYABLE)
 
 APP_NAME = "EIDOLITH"
-APP_VERSION = "0.3"
+APP_VERSION = "0.4"
+QUEUE_STATE = 'eidolith_queue.json'
+STALL_NOTICE_SECONDS = 30
 
 NAV_ITEMS = ("PLAYER", "CONVERT", "QUEUE", "ABOUT")
 
@@ -74,20 +76,48 @@ class EidolithPanel(tk.Frame):
         self.audio_mode = tk.StringVar(value=self.state.get('audio_mode') or 'copy')
         self.active_nav = tk.StringVar(value='PLAYER')
         self.status_var = tk.StringVar(value='Ready. Import a local video file to inspect or convert.')
-        self.queue_items = []
-        self.queue_seq = 0
-        self.worker_thread = None
-        self.worker_stop = threading.Event()
-        self.active_proc = None
         self.play_proc = None
         self.uiq = queue.Queue()
         self._after_id = None
+        self._profile_desc_text = None
+        self._anim_phase = 0
+        self.log_dir = os.path.join(state_dir(), 'eidolith_logs')
+        self.runner = QueueRunner(self.ffmpeg, self.ffprobe, self.encoders, self.uiq,
+                                  log_dir=self.log_dir, persist=self._persist_queue)
+        saved_queue = load_json(QUEUE_STATE, {})
+        restore_messages = self.runner.restore(saved_queue.get('jobs', []) if isinstance(saved_queue, dict) else [])
+        self.queue_seq = self.runner.next_id()
         self._build_ui()
         self._load_files()
+        self._refresh_queue()
+        for message in restore_messages:
+            self._append_log('RESTORE: ' + message)
+        if self.runner.jobs:
+            waiting = len(self.runner.pending())
+            retry = sum(j['status'] in RETRYABLE for j in self.runner.jobs)
+            self._append_log(f'Restored queue: {waiting} queued, {retry} failed/cancelled/interrupted. '
+                             'Nothing starts until you press START QUEUE.')
         self._schedule_ui_queue()
         for var in (self.profile, self.rename_mode, self.title_override, self.season_override, self.episode_override):
             var.trace_add('write', lambda *_: self._update_name_preview())
+        self.profile.trace_add('write', lambda *_: self._update_profile_desc())
         self.after_idle(self._probe_selected)
+
+    # ---------- queue engine bridge (names kept from 0.3 for compatibility) ----------
+    @property
+    def queue_items(self):
+        return self.runner.jobs
+
+    @property
+    def worker_thread(self):
+        return self.runner.thread
+
+    @property
+    def active_proc(self):
+        return self.runner.active_proc
+
+    def _persist_queue(self, jobs):
+        save_json(QUEUE_STATE, {'version': 1, 'jobs': jobs})
 
     # ---------- styling helpers ----------
     def _label(self, parent, txt, size=12, colour='text', bold=False, **kwargs):
@@ -421,35 +451,115 @@ class EidolithPanel(tk.Frame):
 
     def _section_queue(self, parent):
         tools = ogl_frame(parent, bg=C['canvas'])
-        tools.pack(fill='x', pady=(0, 10))
+        tools.pack(fill='x', pady=(0, 8))
         self._button(tools, 'START QUEUE', self.start_queue, primary=True).pack(side='left')
+        self._button(tools, 'STOP QUEUE', self.stop_queue).pack(side='left', padx=(7, 0))
         self._button(tools, 'CANCEL CURRENT', self.cancel_current).pack(side='left', padx=(7, 0))
         self._button(tools, 'RETRY FAILED', self.retry_failed).pack(side='left', padx=(7, 0))
         self._button(tools, 'CLEAR FINISHED', self.clear_finished).pack(side='left', padx=(7, 0))
-        outer, box = self._section_frame(parent, 'ENCODE JOBS', 'Queued / converting / completed / failed.')
+
+        # Current job: index/total, state, a real progress bar (or an
+        # indeterminate sweep when duration is unknown), timings and the
+        # last time FFmpeg reported anything.
+        now = ogl_frame(parent, bg=C['raised'])
+        now.pack(fill='x', pady=(0, 8))
+        self.job_headline = self._label(now, 'NO ACTIVE JOB', 12, 'text_bright', bold=True, bg=C['raised'])
+        self.job_headline.pack(anchor='w', padx=12, pady=(9, 3))
+        self.progress_canvas = tk.Canvas(now, height=12, bg=C['sunken'], highlightthickness=1,
+                                         highlightbackground=C['control_line'], bd=0)
+        self.progress_canvas.pack(fill='x', padx=12)
+        self.job_detail = self._label(now, 'Queue a file from CONVERT, then press START QUEUE.', 10, 'text_2',
+                                      bg=C['raised'])
+        self.job_detail.pack(anchor='w', fill='x', padx=12, pady=(4, 9))
+
+        outer, box = self._section_frame(parent, 'ENCODE JOBS',
+                                         'Queued / probing / converting / validating / completed / failed / cancelled.')
         outer.pack(fill='both', expand=True)
         self.queue_list = tk.Listbox(box, activestyle='none', bg=C['canvas'], fg=C['text'], bd=0,
                                      highlightthickness=1, highlightbackground=C['control_line'],
                                      selectbackground=C['hover'], selectforeground=C['text_bright'],
-                                     font=(FAMILY, 11), height=11)
-        self.queue_list.pack(fill='both', expand=True, padx=12, pady=12)
-        outer2, logbox = self._section_frame(parent, 'CONVERSION LOG', 'FFmpeg output and job diagnostics.')
+                                     exportselection=False, font=(FAMILY, 11), height=8)
+        self.queue_list.pack(fill='both', expand=True, padx=12, pady=(12, 6))
+        self.queue_list.bind('<<ListboxSelect>>', lambda e: self._update_progress_panel())
+        logtools = ogl_frame(box, bg=C['raised'])
+        logtools.pack(fill='x', padx=12, pady=(0, 10))
+        self._button(logtools, 'OPEN LOG', self.open_job_log).pack(side='left')
+        self._button(logtools, 'COPY DIAGNOSTICS', self.copy_diagnostics).pack(side='left', padx=(7, 0))
+        self._button(logtools, 'LOG FOLDER', self.open_log_folder).pack(side='left', padx=(7, 0))
+        self._button(logtools, 'RETRY SELECTED', self.retry_selected).pack(side='left', padx=(7, 0))
+
+        outer2, logbox = self._section_frame(parent, 'CONVERSION LOG',
+                                             'Recent events. Full FFmpeg output is kept in one log file per job.')
         outer2.pack(fill='both', expand=True)
-        self.log_text = self._text(logbox, height=12)
+        self.log_text = self._text(logbox, height=9)
         self.log_text.pack(fill='both', expand=True, padx=12, pady=12)
 
+    def _selected_job(self):
+        sel = self.queue_list.curselection() if hasattr(self, 'queue_list') else ()
+        if sel and sel[0] < len(self.queue_items):
+            return self.queue_items[sel[0]]
+        if self.runner.current is not None:
+            return self.runner.current
+        finished = [j for j in self.queue_items if j.get('finished_at')]
+        return max(finished, key=lambda j: j['finished_at']) if finished else None
+
+    def _open_path(self, path):
+        try:
+            if os.name == 'nt':
+                os.startfile(path)  # type: ignore[attr-defined]
+            else:
+                opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
+                subprocess.Popen([opener, path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                 start_new_session=True)
+            return True
+        except (OSError, AttributeError) as exc:
+            self._set_status(f'Could not open {path}: {exc}')
+            return False
+
+    def open_job_log(self):
+        job = self._selected_job()
+        path = job.get('log_path') if job else ''
+        if not path or not os.path.isfile(path):
+            self._set_status('No log yet for this job; logs are written once a job starts. Folder: ' + self.log_dir)
+            return
+        if self._open_path(path):
+            self._set_status('Opened log: ' + path)
+
+    def open_log_folder(self):
+        os.makedirs(self.log_dir, exist_ok=True)
+        if self._open_path(self.log_dir):
+            self._set_status('Log folder: ' + self.log_dir)
+
+    def copy_diagnostics(self):
+        job = self._selected_job()
+        if not job:
+            self._set_status('Select a job to copy its diagnostics.')
+            return
+        report = diagnostics_report(job)
+        try:
+            self.clipboard_clear()
+            self.clipboard_append(report)
+        except tk.TclError:
+            pass
+        self._append_log(f'Diagnostics for job {job["id"]} copied to clipboard (folders replaced by placeholders).')
+        self._set_status('Diagnostics copied. Local folder names are replaced; the full log stays on this computer.')
+
     def retry_failed(self):
-        for job in self.queue_items:
-            if job['status'] in ('failed', 'cancelled'):
-                job['status'] = 'queued'
-                job['progress'] = ''
-        self._refresh_queue()
-        self._set_status('Failed and cancelled jobs returned to queue.')
+        count = self.runner.retry()
+        self._set_status(f'{count} failed/cancelled/interrupted job(s) returned to queue. Press START QUEUE to run them.'
+                         if count else 'No failed, cancelled or interrupted jobs to retry.')
+
+    def retry_selected(self):
+        job = self._selected_job()
+        if not job or job['status'] not in RETRYABLE:
+            self._set_status('Select a failed, cancelled or interrupted job to retry it.')
+            return
+        self.runner.retry(ids={job['id']})
+        self._set_status(f'Job {job["id"]} returned to queue. Press START QUEUE to run it.')
 
     def clear_finished(self):
-        self.queue_items = [j for j in self.queue_items if j['status'] not in ('completed', 'cancelled', 'failed')]
-        self._refresh_queue()
-        self._set_status('Finished jobs cleared; pending and active jobs preserved.')
+        removed = self.runner.clear_finished()
+        self._set_status(f'Cleared {removed} finished job(s); queued and active jobs preserved.')
 
     def _section_about(self, parent):
         outer, box = self._section_frame(parent, 'ABOUT EIDOLITH',
@@ -458,7 +568,7 @@ class EidolithPanel(tk.Frame):
         about = self._text(box, height=16)
         about.pack(fill='both', expand=True, padx=14, pady=14)
         about.insert('1.0',
-                     'EIDOLITH 0.3 — LOCAL VIDEO WORKSPACE\n\n'
+                     f'EIDOLITH {APP_VERSION} — LOCAL VIDEO WORKSPACE\n\n'
                      'PLAYER\n'
                      '• Play video inside the Marble Oracle EIDOLITH tab.\n'
                      '• Play / Pause / Stop, seek, ±10 seconds, audio volume.\n'
@@ -470,8 +580,14 @@ class EidolithPanel(tk.Frame):
                      '• Keep original source files; no automatic deletion.\n'
                      '• All conversion uses your local FFmpeg tools.\n\n'
                      'QUEUE\n'
-                     '• Serial jobs, percent, processing speed, ETA, cancel, retry and logs.\n• Convert to temporary files; verify streams then publish without overwriting.\n'
-                     '• Advanced metadata/HDR/track validation and resumable job history remain future work.\n\n'
+                     '• Serial jobs in order; a failed job is marked FAILED and the queue continues.\n'
+                     '• CANCEL CURRENT skips one job; STOP QUEUE leaves the remaining jobs queued.\n'
+                     '• Job N of M, progress bar, elapsed time, speed, ETA and last FFmpeg activity.\n'
+                     '• One full log per job (command, FFmpeg output, exit code, checks); OPEN LOG / COPY DIAGNOSTICS.\n'
+                     '• Convert to temporary files; verify tracks, codec, bit depth and duration, then publish without overwriting.\n'
+                     '• Cover art, subtitles and attachments are carried or reported; nothing is dropped silently.\n'
+                     '• The queue is saved: after a restart, interrupted jobs are marked and their own partial files removed.\n'
+                     '• HDR / Dolby Vision re-encoding and resuming a half-finished encode remain future work.\n\n'
                      'PRIVACY\n'
                      '• No cloud, accounts or telemetry.\n'
                      '• FFmpeg/FFprobe/FFplay must be installed and are not bundled here.\n'
@@ -706,7 +822,9 @@ class EidolithPanel(tk.Frame):
             description += '  · UNAVAILABLE: ' + note
         elif note:
             description += '  · ' + note
-        self.profile_desc.configure(text=description, wraplength=450)
+        if description != self._profile_desc_text:
+            self._profile_desc_text = description
+            self.profile_desc.configure(text=description, wraplength=450)
 
     def _update_name_preview(self):
         if not hasattr(self, 'name_preview') or not hasattr(self, 'convert_list'):
@@ -741,83 +859,6 @@ class EidolithPanel(tk.Frame):
             n += 1
         return path
 
-    def _build_command(self, src, dst, profile_name, audio_mode='copy'):
-        if not self.ffmpeg:
-            raise RuntimeError('ffmpeg is not available')
-        ok, reason = profile_support(profile_name, self.encoders)
-        if not ok:
-            raise RuntimeError(reason)
-        cmd = [self.ffmpeg, '-hide_banner', '-nostdin', '-n', '-stats_period', '1',
-               '-progress', 'pipe:1', '-nostats', '-i', src,
-               '-map', '0:V:0', '-map', '0:a?', '-map', '0:s?']
-        if PROFILES[profile_name]['container'] == 'mkv':
-            cmd += ['-map', '0:t?']  # preserve subtitle-font attachments in Matroska
-        cmd += ['-map_metadata', '0', '-map_chapters', '0']
-        cmd.extend(encoding_args(profile_name, audio_mode))
-        if PROFILES[profile_name]['container'] == 'mkv':
-            cmd += ['-c:t', 'copy']
-        cmd.append(dst)
-        return cmd
-
-    def _probe_duration(self, src):
-        if not self.ffprobe:
-            return 0.0
-        try:
-            out = subprocess.check_output([self.ffprobe, '-v', 'error', '-show_entries', 'format=duration',
-                                            '-of', 'default=noprint_wrappers=1:nokey=1', src],
-                                           text=True, timeout=12,
-                                           stderr=subprocess.DEVNULL,
-                                           creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-            return max(0.0, float(out.strip()))
-        except (ValueError, OSError, subprocess.SubprocessError):
-            return 0.0
-
-    def _preflight_source(self, src, profile_name):
-        if not self.ffprobe:
-            raise RuntimeError('ffprobe is required before encoding to protect track and colour data')
-        raw = subprocess.check_output([self.ffprobe, '-v', 'error', '-show_streams',
-                                       '-of', 'json', src],
-                                      text=True, timeout=20, stderr=subprocess.DEVNULL,
-                                      creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-        streams = json.loads(raw).get('streams', [])
-        if sum(x.get('codec_type') == 'video' and not x.get('disposition', {}).get('attached_pic')
-               for x in streams) != 1:
-            raise RuntimeError('Multiple/no video tracks detected; automatic mapping would be incomplete. Source unchanged.')
-        if any(x.get('codec_type') == 'data' for x in streams):
-            raise RuntimeError('Data streams detected; safe preservation is not configured. Source unchanged.')
-        if PROFILES[profile_name]['container'] != 'mkv' and any(x.get('codec_type') == 'attachment' for x in streams):
-            raise RuntimeError('Attachments found; MP4 output may discard them. Use an MKV profile.')
-        if PROFILES[profile_name]['codec'] != 'copy':
-            for video in (x for x in streams if x.get('codec_type') == 'video'):
-                if str(video.get('color_transfer', '')).lower() in ('smpte2084', 'arib-std-b67'):
-                    raise RuntimeError('HDR source detected: accurate HDR re-encoding is not yet verified. Use Lossless remux or an HDR-aware workflow.')
-                if any('dolby vision' in str(v).lower() or 'dovi' in str(v).lower()
-                       for d in video.get('side_data_list', []) for v in d.values()):
-                    raise RuntimeError('Dolby Vision metadata detected; conversion blocked to avoid silent metadata loss.')
-
-    def _validate_output(self, src, dst):
-        if not os.path.isfile(dst) or os.path.getsize(dst) == 0:
-            raise RuntimeError('Output file is empty or missing')
-        if not self.ffprobe:
-            raise RuntimeError('Cannot verify output without ffprobe')
-        def probe(path):
-            result = subprocess.check_output([self.ffprobe, '-v', 'error', '-show_streams',
-                                              '-show_format', '-print_format', 'json', path],
-                                             text=True, timeout=30, stderr=subprocess.DEVNULL,
-                                             creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-            return json.loads(result)
-        original, output = probe(src), probe(dst)
-        def count(data, kind):
-            return sum(s.get('codec_type') == kind for s in data.get('streams', []))
-        for kind in ('video', 'audio', 'subtitle', 'attachment'):
-            if count(output, kind) != count(original, kind):
-                raise RuntimeError(f'{kind} stream count changed ({count(original,kind)} -> {count(output,kind)})')
-        a = float(original.get('format', {}).get('duration', 0) or 0)
-        b = float(output.get('format', {}).get('duration', 0) or 0)
-        if a > 0 and abs(a-b) > max(1.5, a*0.01):
-            raise RuntimeError(f'Output duration changed unexpectedly ({a:.1f}s -> {b:.1f}s)')
-        return 100.0 * (1 - os.path.getsize(dst) / os.path.getsize(src)) if os.path.getsize(src) else 0.0
-
     def queue_selected(self):
         files = self.selected_files()
         if not files:
@@ -831,177 +872,127 @@ class EidolithPanel(tk.Frame):
             return
         single = len(files) == 1
         for src in files:
-            job = {
-                'id': self.queue_seq, 'src': src,
-                'dst': self._make_output_path(src, profile_name,
-                                              name_mode=self.rename_mode.get(),
-                                              title=self.title_override.get(),
-                                              season=self.season_override.get() if single else '',
-                                              episode=self.episode_override.get() if single else ''),
-                'profile': profile_name, 'audio_mode': self.audio_mode.get(),
-                'status': 'queued', 'progress': '', 'duration': 0.0,
-            }
+            dst = self._make_output_path(src, profile_name,
+                                         name_mode=self.rename_mode.get(),
+                                         title=self.title_override.get(),
+                                         season=self.season_override.get() if single else '',
+                                         episode=self.episode_override.get() if single else '')
+            self.queue_seq = max(self.queue_seq, self.runner.next_id())
+            self.runner.add(new_job(self.queue_seq, src, dst, profile_name, self.audio_mode.get()))
             self.queue_seq += 1
-            self.queue_items.append(job)
         self._refresh_queue()
         self._set_nav('QUEUE')
-        self._set_status(f'Queued {len(files)} file(s) with standard names. Use FAST PROFILE for shorter encoding time.')
+        running = self.runner.running()
+        self._set_status(f'Queued {len(files)} file(s) with standard names. '
+                         + ('They will run after the current jobs.' if running else 'Press START QUEUE to begin.'))
         self._save_state()
 
     def _refresh_queue(self):
+        if not hasattr(self, 'queue_list'):
+            return
+        selected = self.queue_list.curselection()
+        top = self.queue_list.yview()[0] if self.queue_list.size() else 0.0
         self.queue_list.delete(0, 'end')
-        for job in self.queue_items:
-            line = f"[{job['status'].upper():9}] {os.path.basename(job['src'])} → {os.path.basename(job['dst'])}"
+        total = len(self.queue_items)
+        colours = {'completed': C['done'], 'failed': C['failed'], 'cancelled': C['skipped'],
+                   'interrupted': C['review'], 'converting': C['accent'], 'probing': C['accent'],
+                   'validating': C['accent']}
+        for n, job in enumerate(list(self.queue_items), 1):
+            line = (f"[{job['status'].upper():11}] {n}/{total}  {os.path.basename(job['src'])} "
+                    f"→ {os.path.basename(job['dst'])}")
             if job.get('progress'):
                 line += f" · {job['progress']}"
             self.queue_list.insert('end', line)
+            if job['status'] in colours:
+                self.queue_list.itemconfigure('end', foreground=colours[job['status']])
+        for index in selected:
+            if index < self.queue_list.size():
+                self.queue_list.selection_set(index)
+        self.queue_list.yview_moveto(top)
+        self._update_progress_panel()
+
+    def _update_progress_panel(self):
+        if not hasattr(self, 'progress_canvas'):
+            return
+        job = self.runner.current
+        if job is None:
+            sel = self.queue_list.curselection()
+            job = self.queue_items[sel[0]] if sel and sel[0] < len(self.queue_items) else self._selected_job()
+        canvas = self.progress_canvas
+        canvas.delete('all')
+        width = max(10, canvas.winfo_width() - 2)
+        height = max(6, int(canvas.cget('height')))
+        if job is None:
+            self.job_headline.configure(text='NO ACTIVE JOB')
+            pending = len(self.runner.pending())
+            self.job_detail.configure(text=(f'{pending} job(s) queued. Press START QUEUE.' if pending else
+                                            'Queue a file from CONVERT, then press START QUEUE.'))
+            return
+        index, total = self.runner.position(job)
+        status = job['status']
+        self.job_headline.configure(
+            text=f'JOB {index} OF {total} · {status.upper()} · {os.path.basename(job["src"])}')
+        now = time.time()
+        bits = []
+        percent = job.get('percent')
+        if status in ACTIVE:
+            if percent is not None and status == 'converting':
+                canvas.create_rectangle(1, 1, 1 + width * percent, height, fill=C['accent'], width=0)
+                bits.append(f'{percent:.1%}')
+            else:
+                # Indeterminate: progress cannot be calculated, so show motion, not a number.
+                seg = max(40, width // 6)
+                x = (self._anim_phase * 9) % (width + seg) - seg
+                canvas.create_rectangle(max(1, x), 1, min(width, x + seg), height, fill=C['accent_deep'], width=0)
+                bits.append({'probing': 'probing tracks', 'validating': 'verifying output'}.get(status, 'progress unknown'))
+            if status == 'converting' and job.get('duration'):
+                bits.append(f'{seconds_label(job.get("out_seconds", 0))} / {seconds_label(job["duration"])} encoded')
+            elif status == 'converting':
+                bits.append(f'{seconds_label(job.get("out_seconds", 0))} encoded (duration unknown)')
+            if job.get('started_at'):
+                bits.append(f'elapsed {seconds_label(now - job["started_at"])}')
+            if job.get('speed'):
+                bits.append(f'speed {job["speed"]:.2f}x')
+            if status == 'converting':
+                bits.append(f'ETA {seconds_label(job["eta"])}' if job.get('eta') is not None else 'ETA estimating')
+            last = job.get('last_activity')
+            if last:
+                quiet = now - last
+                bits.append(f'last FFmpeg activity {seconds_label(quiet)} ago at {time.strftime("%H:%M:%S", time.localtime(last))}')
+                advance = job.get('last_advance')
+                if status == 'converting' and quiet > STALL_NOTICE_SECONDS:
+                    bits.append(f'NO PROGRESS REPORT FOR {int(quiet)}s — FFmpeg (pid {job.get("pid")}) is still '
+                                'running; check OPEN LOG before cancelling')
+                elif status == 'converting' and advance and now - advance > STALL_NOTICE_SECONDS:
+                    bits.append(f'FFmpeg alive but no new output for {int(now - advance)}s (slow encoder warming up?)')
+        else:
+            colour = {'completed': C['done'], 'failed': C['failed'], 'interrupted': C['review']}.get(status, C['skipped'])
+            fill = 1.0 if status in ('completed', 'failed') else (percent or 0)
+            if status != 'queued':
+                canvas.create_rectangle(1, 1, 1 + width * fill, height, fill=colour, width=0)
+            bits.append(job.get('error') or job.get('progress') or status)
+            if job.get('started_at') and job.get('finished_at'):
+                bits.append(f'took {seconds_label(job["finished_at"] - job["started_at"])}')
+        self.job_detail.configure(text='  ·  '.join(str(b) for b in bits if b), wraplength=max(300, width))
 
     def _append_log(self, text):
         stamp = time.strftime('%H:%M:%S')
         self.log_text.insert('end', f'[{stamp}] {text}\n')
-        if int(self.log_text.index('end-1c').split('.')[0]) > 300:
-            self.log_text.delete('1.0', '70.0')
+        if int(self.log_text.index('end-1c').split('.')[0]) > 400:
+            self.log_text.delete('1.0', '101.0')
         self.log_text.see('end')
 
     def start_queue(self):
         self._update_profile_desc()
-        if self.worker_thread and self.worker_thread.is_alive():
-            self._set_status('Queue already running.')
-            return
-        pending = [j for j in self.queue_items if j['status'] in ('queued', 'failed', 'cancelled')]
-        if not pending:
-            self._set_status('No queued jobs to start.')
-            return
-        self.worker_stop.clear()
-        self.worker_thread = threading.Thread(target=self._worker, daemon=True)
-        self.worker_thread.start()
-        self._set_status('Queue started.')
+        message = self.runner.start()
+        self._set_status(message)
+        self._refresh_queue()
 
     def cancel_current(self):
-        self.worker_stop.set()
-        proc = self.active_proc
-        if proc and proc.poll() is None:
-            try:
-                proc.terminate()
-            except Exception:
-                pass
-        self._set_status('Cancellation requested.')
+        self._set_status(self.runner.cancel_current())
 
-    def _worker(self):
-        for job in self.queue_items:
-            if self.worker_stop.is_set():
-                break
-            if job['status'] not in ('queued', 'failed', 'cancelled'):
-                continue
-            temp_path = None
-            try:
-                if not os.path.isfile(job['src']):
-                    raise FileNotFoundError('Source is missing: ' + job['src'])
-                if os.path.exists(job['dst']):
-                    raise FileExistsError('Output name already exists; originals and existing outputs are never overwritten')
-                job['status'] = 'analyzing'
-                job['progress'] = 'probing duration'
-                self.uiq.put(('refresh', None))
-                job['duration'] = self._probe_duration(job['src'])
-                self._preflight_source(job['src'], job['profile'])
-                stem, ext = os.path.splitext(job['dst'])
-                temp_path = f'{stem}.eidolith-{uuid.uuid4().hex[:12]}-part{ext}'
-                cmd = self._build_command(job['src'], temp_path, job['profile'], job.get('audio_mode', 'copy'))
-                self.uiq.put(('log', 'SOURCE: ' + job['src']))
-                self.uiq.put(('log', 'OUTPUT: ' + job['dst']))
-                self.uiq.put(('log', 'FFmpeg: ' + subprocess.list2cmdline(cmd)))
-                if job['profile'] == 'Balanced archive (default)':
-                    self.uiq.put(('log', 'NOTE: CPU 10-bit SVT-AV1 preset 5 may be slower than real time. Pick NVIDIA AV1/HEVC if supported, or Faster CPU AV1.'))
-                job['status'] = 'converting'
-                job['progress'] = '0% · preparing'
-                self.uiq.put(('refresh', None))
-                self.active_proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                                    text=True, errors='replace', bufsize=1,
-                                                    creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-                current = {}
-                for raw in self.active_proc.stdout:
-                    if self.worker_stop.is_set():
-                        break
-                    line = raw.strip()
-                    if '=' in line:
-                        key, val = line.split('=', 1)
-                        if key in ('frame', 'fps', 'stream_0_0_q', 'bitrate', 'total_size',
-                                   'out_time_us', 'out_time_ms', 'out_time', 'dup_frames',
-                                   'drop_frames', 'speed', 'progress'):
-                            current[key] = val
-                            if key == 'progress':
-                                job['progress'] = progress_label(current, job['duration'])
-                                self.uiq.put(('refresh', None))
-                                if job['duration'] > 0:
-                                    self.uiq.put(('status', f'{os.path.basename(job["src"])} — {job["progress"]}'))
-                                current = {}
-                            continue
-                    if line:
-                        self.uiq.put(('log', line))
-                if self.worker_stop.is_set() and self.active_proc.poll() is None:
-                    self.active_proc.terminate()
-                rc = self.active_proc.wait(timeout=20)
-                if self.worker_stop.is_set():
-                    job['status'], job['progress'] = 'cancelled', 'cancelled — original unchanged'
-                elif rc:
-                    raise RuntimeError('FFmpeg exited with status ' + str(rc) + ' (see log)')
-                else:
-                    job['status'], job['progress'] = 'validating', 'checking output streams'
-                    self.uiq.put(('refresh', None))
-                    savings = self._validate_output(job['src'], temp_path)
-                    if os.path.exists(job['dst']):
-                        raise FileExistsError('Output destination became occupied during conversion')
-                    # Same-directory hard link is atomic and will not overwrite;
-                    # delete only the temporary output created by this job.
-                    try:
-                        os.link(temp_path, job['dst'])
-                        os.unlink(temp_path)
-                    except OSError as hardlink_error:
-                        # exFAT and some Windows filesystems cannot hardlink.
-                        # Claim the destination with O_EXCL, then atomically
-                        # replace our own empty placeholder, never someone
-                        # else's existing output.
-                        if os.path.exists(job['dst']):
-                            raise FileExistsError('Output destination already exists') from hardlink_error
-                        fd = os.open(job['dst'], os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-                        os.close(fd)
-                        try:
-                            os.replace(temp_path, job['dst'])
-                        except OSError:
-                            # Only remove our empty placeholder; never touch
-                            # a non-empty file someone may have created.
-                            if os.path.exists(job['dst']) and os.path.getsize(job['dst']) == 0:
-                                os.unlink(job['dst'])
-                            raise
-                    temp_path = None
-                    job['status'] = 'completed'
-                    job['progress'] = f'finished · {savings:+.1f}% storage saved'
-                    self.uiq.put(('log', f'COMPLETED: {job["dst"]} · storage saved: {savings:+.1f}%'))
-                self.uiq.put(('refresh', None))
-            except Exception as err:
-                job['status'] = 'cancelled' if self.worker_stop.is_set() else 'failed'
-                job['progress'] = str(err)[:125]
-                self.uiq.put(('log', f'{job["status"].upper()}: {job["src"]} — {err} (original retained)'))
-                self.uiq.put(('refresh', None))
-            finally:
-                proc = self.active_proc
-                if proc is not None:
-                    try:
-                        if proc.poll() is None:
-                            proc.terminate()
-                            proc.wait(timeout=8)
-                    except Exception:
-                        try:
-                            proc.kill()
-                        except Exception:
-                            pass
-                self.active_proc = None
-                if temp_path and os.path.isfile(temp_path):
-                    try:
-                        os.unlink(temp_path)
-                    except OSError:
-                        self.uiq.put(('log', 'WARNING: Partial output could not be removed: ' + temp_path))
-        self.uiq.put(('status', 'Queue idle. All originals retained.'))
+    def stop_queue(self):
+        self._set_status(self.runner.stop_queue())
 
     # ---------- UI queue ----------
     def _schedule_ui_queue(self):
@@ -1012,11 +1003,15 @@ class EidolithPanel(tk.Frame):
                     self._refresh_queue()
                 elif kind == 'log':
                     self._append_log(payload)
-                elif kind == 'status':
+                elif kind in ('status', 'done'):
                     self._set_status(payload)
+                    if kind == 'done':
+                        self._refresh_queue()
         except queue.Empty:
             pass
-        self._update_profile_desc()
+        self._anim_phase += 1
+        if self.runner.current is not None:
+            self._update_progress_panel()
         self._after_id = self.after(180, self._schedule_ui_queue)
 
     def _set_status(self, text):
@@ -1034,11 +1029,34 @@ class EidolithPanel(tk.Frame):
         self.video.suspend()
 
     def shutdown(self):
-        # Return False while a conversion is active: the host uses this to
-        # protect in-progress work.
-        running = bool(self.worker_thread and self.worker_thread.is_alive())
-        if running:
-            return False
+        # Return False while a conversion is active and the user chooses to
+        # keep it: the host uses this to protect in-progress work. 0.3 refused
+        # silently, which looked like the window ignoring the close button.
+        if self.runner.running():
+            current = self.runner.current
+            name = os.path.basename(current['src']) if current else 'a job'
+            try:
+                stop = messagebox.askyesno(
+                    'EIDOLITH: conversion running',
+                    f'EIDOLITH is converting {name} ({len(self.runner.pending())} more queued).\n\n'
+                    'Stop the queue and close? The partial output is removed, the original is '
+                    'unchanged, and queued jobs are kept for next time.', parent=self)
+            except tk.TclError:
+                stop = False
+            if not stop:
+                self._set_status('Close cancelled: conversion continues.')
+                return False
+            self.runner.stop_queue()
+            deadline = time.monotonic() + 30
+            while self.runner.running() and time.monotonic() < deadline:
+                try:
+                    self.update()
+                except tk.TclError:
+                    break
+                time.sleep(0.05)
+            if self.runner.running():
+                self._set_status('FFmpeg is still stopping; try closing again in a moment.')
+                return False
         self.stop_playback()
         self.video.destroy()
         if self._after_id is not None:

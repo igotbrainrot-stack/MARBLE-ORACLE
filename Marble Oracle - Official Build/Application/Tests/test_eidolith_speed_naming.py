@@ -8,6 +8,9 @@ import tempfile
 import time
 import tkinter as tk
 
+# Keep EIDOLITH settings, persisted queue and logs out of the user's real state.
+os.environ['MARBLE_ORACLE_STATE'] = tempfile.mkdtemp(prefix='eidolith-test-state-')
+
 RUNTIME = Path(__file__).resolve().parents[1] / 'Runtime' / 'Marble_Oracle_App'
 sys.path.insert(0, str(RUNTIME))
 
