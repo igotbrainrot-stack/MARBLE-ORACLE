@@ -14,6 +14,7 @@ PROFILES = {
     'High fidelity': dict(container='mkv', codec='libsvtav1', crf=24, preset='4', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 24 · preset 4 · very slow, maximum detail'),
     'Balanced archive (default)': dict(container='mkv', codec='libsvtav1', crf=28, preset='5', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 28 · preset 5 · slow, smaller archives'),
     'Space saver': dict(container='mkv', codec='libsvtav1', crf=34, preset='6', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 34 · preset 6 · smaller, more visible loss possible'),
+    'Fast AV1 (preset 8)': dict(container='mkv', codec='libsvtav1', crf=30, preset='8', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 30 · preset 8 · several times faster than Balanced, slightly larger files'),
     'Faster CPU AV1': dict(container='mkv', codec='libsvtav1', crf=30, preset='10', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 30 · preset 10 · faster, less compression efficiency'),
     'NVIDIA AV1 (fast)': dict(container='mkv', codec='av1_nvenc', cq=30, preset='p4', pix_fmt='p010le', desc='Hardware AV1 10-bit · NVIDIA NVENC · much faster when supported'),
     'NVIDIA HEVC (fast)': dict(container='mkv', codec='hevc_nvenc', cq=27, preset='p4', pix_fmt='yuv420p', desc='Hardware HEVC · NVIDIA NVENC · fast, broad device support'),
@@ -26,7 +27,7 @@ PROFILES = {
 PROFILE_ORDER = tuple(PROFILES)
 SUFFIXES = {
     'High fidelity': 'AV1', 'Balanced archive (default)': 'AV1', 'Space saver': 'AV1',
-    'Faster CPU AV1': 'AV1', 'NVIDIA AV1 (fast)': 'AV1',
+    'Fast AV1 (preset 8)': 'AV1', 'Faster CPU AV1': 'AV1', 'NVIDIA AV1 (fast)': 'AV1',
     'NVIDIA HEVC (fast)': 'HEVC', 'NVIDIA H.264 (fastest compatibility)': 'H264',
     'Fast CPU H.264': 'H264', 'Broad device compatibility': 'HEVC',
     'Legacy compatibility': 'H264', 'Lossless remux': 'Remux',
@@ -151,9 +152,37 @@ def standard_stem(src: str, mode: str='Auto (TV / movie)', title_override: str='
     return original if info['kind'] == 'Unknown' and not title_override.strip() else title
 
 
-def output_name(src, profile_name, mode='Auto (TV / movie)', title_override='', season_override='', episode_override=''):
+# Maximum output size. The video is scaled down to fit inside the box, keeping
+# its aspect ratio (a 2.39:1 film at "720p" becomes 1280x536); it is never
+# scaled up. Portrait video uses the box rotated (720x1280).
+RESOLUTIONS = {'Original': None, '1080p': (1920, 1080), '720p': (1280, 720), '480p': (854, 480)}
+RESOLUTION_ORDER = tuple(RESOLUTIONS)
+
+
+def fit_resolution(width, height, resolution='Original'):
+    """Return (w, h) to scale to, or None when no scaling is needed."""
+    box = RESOLUTIONS.get(resolution or 'Original')
+    try:
+        width, height = int(width), int(height)
+    except (TypeError, ValueError):
+        return None
+    if not box or width <= 0 or height <= 0:
+        return None
+    box_w, box_h = box if width >= height else (box[1], box[0])
+    if width <= box_w and height <= box_h:
+        return None
+    factor = min(box_w / width, box_h / height)
+    out_w = max(2, int(round(width * factor / 2)) * 2)
+    out_h = max(2, int(round(height * factor / 2)) * 2)
+    return min(out_w, box_w), min(out_h, box_h)
+
+
+def output_name(src, profile_name, mode='Auto (TV / movie)', title_override='', season_override='',
+                episode_override='', resolution='Original'):
     stem = standard_stem(src, mode, title_override, season_override, episode_override)
     codec = SUFFIXES.get(profile_name, 'Encoded')
+    if RESOLUTIONS.get(resolution or 'Original') and PROFILES[profile_name]['codec'] != 'copy':
+        codec = f'{codec} {resolution}'
     ext = PROFILES[profile_name]['container']
     stem = safe_piece(stem)
     return f'{stem} [{codec}].{ext}'

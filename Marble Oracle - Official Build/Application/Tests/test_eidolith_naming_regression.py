@@ -11,7 +11,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'Runtime' / 'Marble_Oracle_App'))
-from oracle_eidolith_core import output_name, parse_media_name, standard_stem  # noqa: E402
+from oracle_eidolith_core import fit_resolution, output_name, parse_media_name, standard_stem  # noqa: E402
 
 AV1 = 'Balanced archive (default)'
 CASES = [
@@ -58,9 +58,23 @@ def main():
         name = output_name(source, profile)
         assert not any(ch in name for ch in '<>:"/\\|?*'), name
         assert name.count('(') == name.count(')') and name.count('[') == name.count(']'), name
+    # Resolution: fit inside the box, keep aspect, even sizes, never upscale.
+    fits = {(1920, 1080): (1280, 720), (1920, 804): (1280, 536), (3840, 2160): (1280, 720),
+            (1080, 1920): (720, 1280), (1440, 1080): (960, 720), (1918, 1080): (1278, 720),
+            (1280, 720): None, (720, 576): None, (320, 180): None}
+    for (w, h), want in fits.items():
+        got = fit_resolution(w, h, '720p')
+        if got != want:
+            failures.append(f'fit_resolution({w}x{h}, 720p) expected {want}, got {got}')
+    assert fit_resolution(3840, 2160, '1080p') == (1920, 1080)
+    assert fit_resolution(1920, 1080, 'Original') is None and fit_resolution(None, 1080, '720p') is None
+    assert output_name(src, 'Faster CPU AV1', resolution='720p') == \
+        'Mr. Robot (2015) - S01E01 - eps1.0_hellofriend.mov [AV1 720p].mkv'
+    assert output_name(src, 'Fast AV1 (preset 8)') == 'Mr. Robot (2015) - S01E01 - eps1.0_hellofriend.mov [AV1].mkv'
+    assert output_name(src, 'Lossless remux', resolution='720p').endswith('[Remux].mkv')
     if failures:
         raise SystemExit('NAMING FAILURES:\n' + '\n'.join(failures))
-    print(f'EIDOLITH naming regression: {len(CASES)} cases + parser/safety checks PASSED')
+    print(f'EIDOLITH naming regression: {len(CASES)} cases + parser/safety/resolution checks PASSED')
 
 
 if __name__ == '__main__':

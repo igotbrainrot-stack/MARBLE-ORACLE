@@ -34,7 +34,7 @@ import threading
 import time
 import uuid
 
-from oracle_eidolith_core import (PROFILES, encoding_args, profile_support,
+from oracle_eidolith_core import (PROFILES, RESOLUTIONS, encoding_args, fit_resolution, profile_support,
                                   progress_seconds, seconds_label, safe_piece)
 
 ENGINE_VERSION = '0.4'
@@ -108,7 +108,7 @@ def _is_10bit(pix_fmt: str) -> bool:
 
 
 # ---------------------------------------------------------- stream plan
-def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy') -> dict:
+def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy', resolution: str = 'Original') -> dict:
     """Decide exactly which tracks are kept, converted or dropped.
 
     Raises PlanError (before anything is written) when the profile cannot
@@ -133,8 +133,16 @@ def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy') -> dic
         if any('dolby vision' in str(v).lower() or 'dovi' in str(v).lower()
                for d in video.get('side_data_list', []) for v in d.values()):
             raise PlanError('Dolby Vision metadata detected; conversion blocked to avoid silent metadata loss.')
+    if RESOLUTIONS.get(resolution or 'Original') and copy_all:
+        raise PlanError(f'Lossless remux copies the video unchanged and cannot resize to {resolution}. '
+                        'Set RESOLUTION to Original or choose an encoding profile. Source unchanged.')
+    scale = None if copy_all else fit_resolution(video.get('width'), video.get('height'), resolution)
     target = 'copied' if copy_all else f'{EXPECTED_VIDEO.get(vcodec, vcodec)} via {vcodec}' + (
         f' ({profile.get("pix_fmt")})' if profile.get('pix_fmt') else '')
+    if scale:
+        target += f', scaled to {scale[0]}x{scale[1]}'
+    elif RESOLUTIONS.get(resolution or 'Original'):
+        target += f', already within {resolution} so size kept'
     report.append(f'KEEP video: {video.get("codec_name", "?")} {video.get("width", "?")}x{video.get("height", "?")} '
                   f'{video.get("pix_fmt", "")} -> {target}')
 
@@ -221,8 +229,11 @@ def plan_streams(info: dict, profile_name: str, audio_mode: str = 'copy') -> dic
             if key != '-c:s':                 # subtitles are decided above
                 codec_args += [rename.get(key, key), val]
             i += 2
+        if scale:
+            # Applies to the main video only; copied cover art is untouched.
+            codec_args += ['-filter:v:0', f'scale={scale[0]}:{scale[1]}:flags=lanczos']
     return dict(maps=maps, codec_args=codec_args, extra=extra, covers=covers, attach=attach,
-                expected=expected, report=report, container=container)
+                expected=expected, report=report, container=container, scale=scale)
 
 
 def build_command(ffmpeg: str, src: str, dst: str, plan: dict) -> list:
@@ -261,6 +272,9 @@ def validate_output(ffprobe: str, src_info: dict, dst: str, plan: dict, profile_
         raise RuntimeError(f'Output video codec is {video.get("codec_name")}, expected {want}')
     if profile.get('pix_fmt') and _is_10bit(profile['pix_fmt']) and not _is_10bit(video.get('pix_fmt')):
         raise RuntimeError(f'Output is {video.get("pix_fmt")}, expected 10-bit')
+    if plan.get('scale') and (int(video.get('width') or 0), int(video.get('height') or 0)) != tuple(plan['scale']):
+        raise RuntimeError(f'Output is {video.get("width")}x{video.get("height")}, expected '
+                           f'{plan["scale"][0]}x{plan["scale"][1]}')
     lines.append(f'VERIFIED video: {video.get("codec_name")} {video.get("width")}x{video.get("height")} {video.get("pix_fmt", "")}')
     a = float(src_info.get('format', {}).get('duration', 0) or 0)
     b = float(out.get('format', {}).get('duration', 0) or 0)
@@ -382,13 +396,13 @@ def reconcile_jobs(jobs: list) -> list:
     return messages
 
 
-PERSIST_KEYS = ('id', 'src', 'dst', 'profile', 'audio_mode', 'status', 'progress', 'percent', 'duration',
+PERSIST_KEYS = ('id', 'src', 'dst', 'profile', 'audio_mode', 'resolution', 'status', 'progress', 'percent', 'duration',
                 'created_at', 'started_at', 'finished_at', 'error', 'log_path', 'temp_path', 'cover_temps',
                 'stale_partials', 'pid', 'report', 'attempts')
 
 
-def new_job(job_id, src, dst, profile, audio_mode='copy') -> dict:
-    return dict(id=job_id, src=src, dst=dst, profile=profile, audio_mode=audio_mode,
+def new_job(job_id, src, dst, profile, audio_mode='copy', resolution='Original') -> dict:
+    return dict(id=job_id, src=src, dst=dst, profile=profile, audio_mode=audio_mode, resolution=resolution,
                 status='queued', progress='', percent=None, duration=0.0,
                 created_at=time.time(), started_at=None, finished_at=None,
                 last_activity=None, last_advance=None, out_seconds=0.0, speed=0.0,
@@ -430,7 +444,8 @@ class QueueRunner:
         for raw in saved or []:
             if not isinstance(raw, dict) or not raw.get('src') or not raw.get('dst') or raw.get('profile') not in PROFILES:
                 continue
-            job = new_job(raw.get('id', 0), raw['src'], raw['dst'], raw['profile'], raw.get('audio_mode', 'copy'))
+            job = new_job(raw.get('id', 0), raw['src'], raw['dst'], raw['profile'], raw.get('audio_mode', 'copy'),
+                          raw.get('resolution') if raw.get('resolution') in RESOLUTIONS else 'Original')
             job.update({k: raw[k] for k in PERSIST_KEYS if k in raw})
             jobs.append(job)
         messages = reconcile_jobs(jobs)
@@ -629,7 +644,8 @@ class QueueRunner:
             self._log(log, f'FFmpeg: {self.ffmpeg or "MISSING"} · {self._ffmpeg_version_line() if self.ffmpeg else ""}', ui=False)
             self._log(log, f'SOURCE: {job["src"]}')
             self._log(log, f'OUTPUT: {job["dst"]}')
-            self._log(log, f'PROFILE: {job["profile"]} · audio {job.get("audio_mode", "copy")}')
+            self._log(log, f'PROFILE: {job["profile"]} · audio {job.get("audio_mode", "copy")} · '
+                           f'resolution {job.get("resolution", "Original")}')
             if job.get('log_path'):
                 self.emit('log', f'LOG FILE: {job["log_path"]}')
             self._set(job, 'probing', 'probing source tracks')
@@ -645,7 +661,7 @@ class QueueRunner:
                 raise FileExistsError('Output name already exists; originals and existing outputs are never overwritten')
             info = probe(self.ffprobe, job['src'])
             job['duration'] = max(0.0, float(info.get('format', {}).get('duration', 0) or 0))
-            plan = plan_streams(info, job['profile'], job.get('audio_mode', 'copy'))
+            plan = plan_streams(info, job['profile'], job.get('audio_mode', 'copy'), job.get('resolution', 'Original'))
             job['report'] = list(plan['report'])
             for line in plan['report']:
                 self._log(log, 'PLAN ' + line)
@@ -852,7 +868,8 @@ def diagnostics_report(job: dict, max_ffmpeg_lines: int = 80) -> str:
     lines = [f'EIDOLITH {ENGINE_VERSION} diagnostic report',
              f'Job {job.get("id")} · status {str(job.get("status", "")).upper()} · attempts {job.get("attempts", 0)}',
              f'Source: {job.get("src", "")}', f'Output: {job.get("dst", "")}',
-             f'Profile: {job.get("profile")} · audio {job.get("audio_mode", "copy")}',
+             f'Profile: {job.get("profile")} · audio {job.get("audio_mode", "copy")} · '
+             f'resolution {job.get("resolution", "Original")}',
              f'Platform: {platform.platform()}']
     if job.get('error'):
         lines.append(f'Error: {job["error"]}')

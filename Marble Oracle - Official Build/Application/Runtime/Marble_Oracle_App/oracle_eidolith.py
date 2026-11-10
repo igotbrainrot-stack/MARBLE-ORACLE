@@ -23,7 +23,7 @@ from marble_uberata import FAMILY
 from oracle_ogg_texture import frame as ogl_frame, label as ogl_label, install as ogl_install
 from oggcultist_design_system import COLOR as C
 from oracle_assets import load_json, save_json, state_dir
-from oracle_eidolith_core import (PROFILES, PROFILE_ORDER, NAME_MODES, output_name,
+from oracle_eidolith_core import (PROFILES, PROFILE_ORDER, NAME_MODES, RESOLUTIONS, RESOLUTION_ORDER, output_name,
                                   detect_encoders, profile_support, seconds_label)
 from oracle_eidolith_jobs import (QueueRunner, new_job, diagnostics_report, ACTIVE, RETRYABLE)
 
@@ -74,6 +74,8 @@ class EidolithPanel(tk.Frame):
         self.season_override = tk.StringVar(value=self.state.get('season_override') or '')
         self.episode_override = tk.StringVar(value=self.state.get('episode_override') or '')
         self.audio_mode = tk.StringVar(value=self.state.get('audio_mode') or 'copy')
+        saved_res = self.state.get('resolution')
+        self.resolution = tk.StringVar(value=saved_res if saved_res in RESOLUTIONS else 'Original')
         self.active_nav = tk.StringVar(value='PLAYER')
         self.status_var = tk.StringVar(value='Ready. Import a local video file to inspect or convert.')
         self.play_proc = None
@@ -98,7 +100,8 @@ class EidolithPanel(tk.Frame):
             self._append_log(f'Restored queue: {waiting} queued, {retry} failed/cancelled/interrupted. '
                              'Nothing starts until you press START QUEUE.')
         self._schedule_ui_queue()
-        for var in (self.profile, self.rename_mode, self.title_override, self.season_override, self.episode_override):
+        for var in (self.profile, self.rename_mode, self.title_override, self.season_override, self.episode_override,
+                    self.resolution):
             var.trace_add('write', lambda *_: self._update_name_preview())
         self.profile.trace_add('write', lambda *_: self._update_profile_desc())
         self.after_idle(self._probe_selected)
@@ -408,6 +411,13 @@ class EidolithPanel(tk.Frame):
         audio_menu['menu'].config(font=(FAMILY, 10), bg=C['control'], fg=C['text'])
         audio_menu.pack(fill='x', pady=(4, 0))
         self._label(row2, 'Copy audio by default; optional Opus transcode.', 10, 'text_3').pack(anchor='w', pady=(4, 0))
+        self._label(row2, 'RESOLUTION', 11, 'text_3', bold=True).pack(anchor='w', pady=(8, 0))
+        res_menu = tk.OptionMenu(row2, self.resolution, *RESOLUTION_ORDER, command=lambda *_: self._save_state())
+        res_menu.config(relief='flat', bd=0, font=(FAMILY, 10), bg=C['control'], fg=C['text'], activebackground=C['hover'], activeforeground=C['text'])
+        res_menu['menu'].config(font=(FAMILY, 10), bg=C['control'], fg=C['text'])
+        res_menu.pack(fill='x', pady=(4, 0))
+        self._label(row2, 'Scale down only, keeping aspect ratio. From 1080p, 720p encodes about 2–3× faster (more for grainy video).',
+                    10, 'text_3').pack(anchor='w', pady=(4, 0))
 
         row3 = ogl_frame(box, bg=C['raised'])
         row3.pack(fill='x', padx=pad, pady=(0, 8))
@@ -645,6 +655,7 @@ class EidolithPanel(tk.Frame):
             'output_dir': self.output_dir,
             'profile': self.profile.get(),
             'audio_mode': self.audio_mode.get(),
+            'resolution': self.resolution.get(),
             'rename_mode': self.rename_mode.get(),
             'title_override': self.title_override.get(),
             'season_override': self.season_override.get(),
@@ -839,7 +850,8 @@ class EidolithPanel(tk.Frame):
             name = output_name(src, self.profile.get(), self.rename_mode.get(),
                                self.title_override.get(),
                                self.season_override.get() if single else '',
-                               self.episode_override.get() if single else '')
+                               self.episode_override.get() if single else '',
+                               self.resolution.get())
         except (ValueError, KeyError):
             name = '(invalid profile/name)'
         self.name_preview.configure(text='OUTPUT: ' + name, wraplength=440)
@@ -848,7 +860,8 @@ class EidolithPanel(tk.Frame):
         dest_dir = self.output_var.get().strip() or self.output_dir or os.path.join(os.path.dirname(src), 'Eidolith Outputs')
         os.makedirs(dest_dir, exist_ok=True)
         self.output_dir = dest_dir
-        name = output_name(src, profile_name, name_mode or self.rename_mode.get(), title, season, episode)
+        name = output_name(src, profile_name, name_mode or self.rename_mode.get(), title, season, episode,
+                           self.resolution.get())
         original_base, ext = os.path.splitext(name)
         path = os.path.join(dest_dir, name)
         n = 2
@@ -870,6 +883,10 @@ class EidolithPanel(tk.Frame):
             self._set_status('Encoder unavailable: ' + reason)
             messagebox.showerror('EIDOLITH: Encoder missing', reason, parent=self)
             return
+        if PROFILES[profile_name]['codec'] == 'copy' and RESOLUTIONS.get(self.resolution.get()):
+            self._set_status(f'Lossless remux copies video unchanged and cannot resize to {self.resolution.get()}. '
+                             'Choose an encoding profile, or set RESOLUTION to Original.')
+            return
         single = len(files) == 1
         for src in files:
             dst = self._make_output_path(src, profile_name,
@@ -878,7 +895,8 @@ class EidolithPanel(tk.Frame):
                                          season=self.season_override.get() if single else '',
                                          episode=self.episode_override.get() if single else '')
             self.queue_seq = max(self.queue_seq, self.runner.next_id())
-            self.runner.add(new_job(self.queue_seq, src, dst, profile_name, self.audio_mode.get()))
+            self.runner.add(new_job(self.queue_seq, src, dst, profile_name, self.audio_mode.get(),
+                                    self.resolution.get()))
             self.queue_seq += 1
         self._refresh_queue()
         self._set_nav('QUEUE')

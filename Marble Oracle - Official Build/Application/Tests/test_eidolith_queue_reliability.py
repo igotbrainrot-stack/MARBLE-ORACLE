@@ -91,6 +91,13 @@ def make_media(folder: Path) -> dict:
     m['raw'] = folder / 'no_duration.h264'
     ff('-f', 'lavfi', '-i', 'testsrc2=size=320x180:rate=24:duration=20', '-c:v', 'libx264', '-preset',
        'ultrafast', '-f', 'h264', str(m['raw']))
+    m['scope'] = folder / 'scope_1080.mkv'
+    ff('-f', 'lavfi', '-i', 'testsrc2=size=1920x804:rate=24:duration=3', '-f', 'lavfi', '-i', 'sine=duration=3',
+       '-c:v', 'libx264', '-preset', 'ultrafast', '-c:a', 'aac', str(m['scope']))
+    m['cover1080'] = folder / 'cover_1080.mp4'
+    ff('-f', 'lavfi', '-i', 'testsrc2=size=1920x1080:rate=24:duration=3', '-i', str(png), '-map', '0', '-map', '1',
+       '-c:v:0', 'libx264', '-preset', 'ultrafast', '-c:v:1', 'copy', '-disposition:v:1', 'attached_pic',
+       str(m['cover1080']))
     m['robot'] = folder / 'Mr. Robot (2015) - S01E01 - eps1.0_hellofriend.mov (1080p BluRay x265 RCVR).mkv'
     shutil.copy2(m['subs_cover_mkv'], m['robot'])
     return m
@@ -103,10 +110,10 @@ def runner(out: Path):
 _SERIAL = iter(range(10_000))
 
 
-def add(r, src, out: Path, profile, audio='copy'):
+def add(r, src, out: Path, profile, audio='copy', resolution='Original'):
     job_id = len(r.jobs)
-    dst = out / f'{next(_SERIAL):03d} {output_name(str(src), profile)}'
-    r.add(new_job(job_id, str(src), str(dst), profile, audio))
+    dst = out / f'{next(_SERIAL):03d} {output_name(str(src), profile, resolution=resolution)}'
+    r.add(new_job(job_id, str(src), str(dst), profile, audio, resolution))
     return r.jobs[-1]
 
 
@@ -205,6 +212,30 @@ def section_tracks(m, out):
     mkv = plan_streams(pgs, 'Balanced archive (default)')
     check('2 PGS subtitles copied in MKV plan', ['-c:s', 'copy'] == mkv['extra'][:2] and mkv['expected']['subtitle'] == 1)
     check('2 no partial or cover temp files left', no_partials(out))
+
+
+def section_resolution(m, out):
+    r = runner(out)
+    scope = add(r, m['scope'], out, 'Fast AV1 (preset 8)', resolution='720p')
+    cover = add(r, m['cover1080'], out, 'Fast CPU H.264', resolution='720p')
+    small = add(r, m['plain'], out, 'Fast CPU H.264', resolution='720p')
+    remux = add(r, m['cover1080'], out, 'Lossless remux', resolution='720p')
+    r.start()
+    r.wait(600)
+
+    def size(path):
+        v = [s for s in streams(path) if s['codec_type'] == 'video' and not s.get('disposition', {}).get('attached_pic')]
+        return (v[0]['width'], v[0]['height'])
+    check('6 2.39:1 1080p -> 720p keeps aspect (1280x536), preset-8 AV1', scope['status'] == 'completed'
+          and size(scope['dst']) == (1280, 536) and '[AV1 720p]' in scope['dst'], scope['error'])
+    check('6 1080p -> 1280x720 with cover art untouched', cover['status'] == 'completed'
+          and size(cover['dst']) == (1280, 720)
+          and [(s['width'], s['height']) for s in streams(cover['dst']) if s.get('disposition', {}).get('attached_pic')]
+          == [(120, 120)], cover['error'])
+    check('6 smaller source is not upscaled', small['status'] == 'completed' and size(small['dst']) == (320, 180)
+          and any('already within 720p' in x for x in small['report']))
+    check('6 Lossless remux + 720p blocked with reason', remux['status'] == 'failed' and 'cannot resize' in remux['error'])
+    check('6 scaled size verified in report', any('VERIFIED video: av1 1280x536' in x for x in scope['report']))
 
 
 def section_cancel(m, out):
@@ -375,6 +406,19 @@ def section_panel(m, out):
     clip = root.clipboard_get()
     check('5 diagnostics copied without local folder paths', 'EIDOLITH 0.4 diagnostic report' in clip
           and str(out) not in clip and str(m['robot'].parent) not in clip and '<source folder>' in clip)
+    panel.resolution.set('720p')
+    panel.profile.set('Lossless remux')
+    panel._set_nav('CONVERT')
+    panel.convert_list.selection_clear(0, 'end')
+    panel.convert_list.selection_set(0)
+    before = len(panel.queue_items)
+    panel.queue_selected()
+    check('5 GUI refuses Lossless remux + 720p at queue time', len(panel.queue_items) == before
+          and 'cannot resize' in panel.status_var.get())
+    panel.profile.set('Fast CPU H.264')
+    pump(0.1)
+    check('5 name preview shows the 720p tag', '[H264 720p].mp4' in panel.name_preview.cget('text'),
+          panel.name_preview.cget('text'))
     check('5 log folder under state dir', Path(panel.log_dir).is_dir() and Path(panel.log_dir).parent == Path(STATE))
     assert panel.shutdown()
     root.destroy()
@@ -397,7 +441,7 @@ def main():
         before = {p: sha(p) for p in src.iterdir()}
         for n, (name, fn) in enumerate((('batch', section_batch), ('tracks', section_tracks),
                                         ('cancel', section_cancel), ('restart', section_restart),
-                                        ('panel', section_panel)), 1):
+                                        ('panel', section_panel), ('resolution', section_resolution)), 1):
             out = tmp / f'out{n}-{name}'
             out.mkdir()
             fn(m, out)
