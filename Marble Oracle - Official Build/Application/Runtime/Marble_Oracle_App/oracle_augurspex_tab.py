@@ -133,7 +133,9 @@ def chart_grid_plan(count, view_w, view_h):
         # Charts are time series: score the drawable plot, valuing width up to
         # about twice the height, so 2 charts sit side by side when roomy.
         score = min(card_w - CARD_CHROME_W, 2.2 * (card_h - CARD_CHROME_H))
-        key = (0 if scroll else 1, cols if scroll else score, -cols)
+        # Prefer no scrolling; then the larger plot (or, when scrolling, fewer
+        # rows); then an even grid (4 -> 2x2, not 3+1); then fewer columns.
+        key = (0 if scroll else 1, -rows if scroll else score, count % cols == 0, -cols)
         if best is None or key > best[0]:
             best = (key, dict(cols=cols, rows=rows, card_w=max(1, card_w), card_h=card_h, scroll=scroll,
                               total_h=max(view_h, rows * (card_h + CARD_GAP))))
@@ -377,15 +379,19 @@ class PriceChart(tk.Frame):
             pieces.append(name+' '+status)
         return ' · '.join(pieces[:5])
 
-    def display(self,symbol,name,data,error,loading,style,selected):
-        self.symbol=symbol;self.name=name;self.result=data;self.error=error
+    def display(self,symbol,name,data,error,loading,style,selected,auto_note=''):
+        self.symbol=symbol;self.name=name;self.result=data;self.error=error;self.auto_note=auto_note
         self.loading=loading;self.style=style;self.selected=selected
         self._paint_style_toggle()
         self.configure(highlightbackground=self.p['accent'] if selected else self.p['border'],
                        highlightthickness=2 if selected else 1)
         self.title.configure(text=f'{self.index+1:02d}  {symbol or "EMPTY SLOT"}')
         self._company_text=(name if name and name!=symbol else ('MARKET NOT ASSIGNED' if not symbol else ''))
-        self.company.configure(fg=self.p['muted'])
+        if auto_note:
+            # Shown, never silent: this space is borrowing a watchlist market
+            # because its own saved market has no data.
+            self._company_text=f'AUTO-FILLED · {auto_note}'
+        self.company.configure(fg=self.p['accent'] if auto_note else self.p['muted'])
         candles=(data or {}).get('candles',[])
         if candles:
             last=candles[-1]['close'];first=candles[0]['close'];change=((last/first)-1)*100 if first else 0
@@ -785,22 +791,43 @@ class AugurspexPanel(tk.Frame):
             if key not in self._pending:self._audit_active=None
             break
 
-    def _display_slots(self):
-        """(chart slots, tab slots) for saved slots 1..CHARTS.
+    def _space_plan(self):
+        """What each of the N chart spaces shows: list of (symbol, auto).
 
-        CHARTS N always represents slots 1..N. In sourced-only mode a slot is
-        a full chart when it has real history, otherwise a compact status tab.
+        CHARTS N always gives N chart spaces. A space shows its own saved
+        market when that has real history. In sourced-only mode a space whose
+        market has no data borrows the next watchlist market that does
+        (favourites first), labelled AUTO-FILLED; saved slots are not changed.
+        A space shows its own market's status only when no such market is left.
         """
         n=min(self.settings['layout'],len(self.cards))
+        symbols=self.settings['symbols']
         if not self.sourced_only or self.offline:
-            return list(range(n)),[]
+            return [(symbols[i],False) for i in range(n)]
         period=self.settings['interval']
-        charts=[i for i in range(n) if self.settings['symbols'][i] and
-                self._market_verified(self.settings['symbols'][i],period)]
-        return charts,[i for i in range(n) if i not in charts]
+        own=[bool(symbols[i]) and self._market_verified(symbols[i],period) for i in range(n)]
+        taken={symbols[i] for i in range(n) if symbols[i]}
+        fav=set(self.settings.get('favorites',[]))
+        ordered=sorted(self.watchlist,key=lambda row:row['symbol'] not in fav)
+        spare=[row['symbol'] for row in ordered
+               if row['symbol'] not in taken and self._market_verified(row['symbol'],period)]
+        plan=[]
+        for i in range(n):
+            if own[i]:plan.append((symbols[i],False))
+            elif spare:plan.append((spare.pop(0),True))
+            else:plan.append((symbols[i],False))
+        return plan
+
+    def _display_slots(self):
+        """(chart slots, tab slots): every requested space is a chart card."""
+        n=min(self.settings['layout'],len(self.cards))
+        return list(range(n)),[]
 
     def _chart_indices(self):
-        return self._display_slots()[0]
+        """Spaces showing real history (their own market or an auto-filled one)."""
+        period=self.settings['interval']
+        return [i for i,(symbol,_auto) in enumerate(self._space_plan())
+                if symbol and self._market_verified(symbol,period)]
 
     def chip_slots(self):
         return list(self._chip_slots)
@@ -858,7 +885,10 @@ class AugurspexPanel(tk.Frame):
         if not hasattr(self,'selected_market'):return
         index=min(self.active,len(self.settings.get('symbols',[]))-1)
         sym=self.settings['symbols'][index] if index>=0 else ''
-        label=self._names.get(sym,sym) if sym else 'Choose a market from the list'
+        plan=self._space_plan() if hasattr(self,'cards') and self.cards else []
+        shown,auto=plan[index] if 0<=index<len(plan) else (sym,False)
+        label=self._names.get(shown,shown) if shown else 'Choose a market from the list'
+        if auto:label+='  · AUTO-FILLED'
         self.selected_market.configure(text=label)
 
     def _selected(self):
@@ -910,7 +940,8 @@ class AugurspexPanel(tk.Frame):
 
     def _select_chart(self,i):
         self.active=i;self._refresh_charts()
-        symbol=self.settings['symbols'][i]
+        plan=self._space_plan()
+        symbol=plan[i][0] if i<len(plan) else self.settings['symbols'][i]
         key=(symbol,self.settings['interval'])
         err=self._errors.get(key)
         if err:self.status.set(f'{symbol} · {err}'[:230])
@@ -1000,18 +1031,18 @@ class AugurspexPanel(tk.Frame):
 
     def _update_count_badge(self,charts):
         n=self.settings['layout'];period=self.settings['interval']
-        if self.sourced_only and not self.offline:
-            elsewhere=[i+1 for i in range(n,len(self.settings['symbols']))
-                       if self.settings['symbols'][i] and self._market_verified(self.settings['symbols'][i],period)]
-            text=f'CHARTS: {n} REQUESTED · {len(charts)} WITH DATA'
-            if len(charts)<n:text+=f' · {n-len(charts)} SHOWN AS TABS ABOVE'
-            if elsewhere:
-                text+=((' · SLOT ' if len(elsewhere)==1 else ' · SLOTS ')+', '.join(map(str,elsewhere))
-                       +(' ALSO HAS DATA' if len(elsewhere)==1 else ' ALSO HAVE DATA'))
-        else:
-            verified=sum(1 for i in range(n) if self.settings['symbols'][i] and
-                         self._market_verified(self.settings['symbols'][i],period))
-            text=f'CHARTS: {n} REQUESTED · {verified} WITH DATA · ALL {n} SHOWN'
+        plan=self._space_plan()
+        own=sum(1 for symbol,auto in plan if not auto and symbol and self._market_verified(symbol,period))
+        auto=sum(1 for _symbol,a in plan if a)
+        rest=[i for i,(symbol,a) in enumerate(plan) if not a and not (symbol and self._market_verified(symbol,period))]
+        checking=sum(1 for i in rest if self._slot_status(i) in ('CHECKING…','QUEUED'))
+        no_data=len(rest)-checking
+        text=f'CHARTS: {n} REQUESTED · {len(plan)} SHOWN · {own} YOURS'
+        if auto:text+=f' · {auto} AUTO-FILLED'
+        if checking:text+=f' · {checking} CHECKING'
+        if no_data:text+=f' · {no_data} NO DATA'
+        if not self.sourced_only or self.offline:
+            text=f'CHARTS: {n} REQUESTED · {len(plan)} SHOWN · {own} WITH DATA · ALL MARKETS MODE'
         self._badge_text=text
         self._fit(self.count_badge,text)
 
@@ -1065,6 +1096,10 @@ class AugurspexPanel(tk.Frame):
         self._layout_job=None
         if self._stopped or not hasattr(self,'cards'):return
         charts,chips=self._display_slots()
+        # Spaces with real history first; spaces still checking or without
+        # data go to the end, so dead cards never sit between live charts.
+        with_data=set(self._chart_indices())
+        charts=[i for i in charts if i in with_data]+[i for i in charts if i not in with_data]
         self._update_chips(chips)
         self._update_count_badge(charts)
         width=max(1,self.chart_canvas.winfo_width())
@@ -1112,14 +1147,18 @@ class AugurspexPanel(tk.Frame):
 
     def _refresh_charts(self):
         self._selected_market_label()
+        plan=self._space_plan()
         for i,card in enumerate(self.cards):
             symbol=self.settings['symbols'][i]
             period=self.settings['interval']
             key=(symbol,period)
-            data=self._data.get(key);error=self._errors.get(key)
-            if self.offline and symbol and data is None:error='NETWORK DISABLED'
-            card.display(symbol,self._names.get(symbol,symbol),data,error,
-                         key in self._pending,self._slot_style(i),i==self.active)
+            shown,auto=plan[i] if i<len(plan) else (symbol,False)
+            shown_key=(shown,period)
+            data=self._data.get(shown_key);error=self._errors.get(shown_key)
+            if self.offline and shown and data is None:error='NETWORK DISABLED'
+            note=(f'slot market {symbol or "empty"}: {self._slot_status(i)}' if auto else '')
+            card.display(shown,self._names.get(shown,shown),data,error,
+                         shown_key in self._pending,self._slot_style(i),i==self.active,note)
             if symbol and data is None and error is None and key not in self._pending:
                 if not self._eligible_sources(symbol,period) and not self.offline:
                     self._errors[key]='NO ELIGIBLE SOURCE WITH CURRENT PERMISSIONS'

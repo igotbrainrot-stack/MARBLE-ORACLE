@@ -194,7 +194,7 @@
   "source_audit_and_restore": "fixture tests passed",
   "spacious_scrollable_charts": "virtual GUI tests passed",
   "physical_os_market_providers": "not tested",
-  "test_augurspex_charts_layout_0485.py": "PASS 519/519 (fails on 0.4.8.4)",
+  "test_augurspex_charts_layout_0485.py": "PASS 542/542 (fails on 0.4.8.4)",
   "full_suite_0485": "43/43 test scripts pass on a clean copy"
  },
  "provenance_note": "Built from standalone AUGURSPEX 1.2.0 module and locally accessible 0.4.7 native-picker/no-news/no-markets archive; uploaded integrated ZIP unavailable for byte comparison.",
@@ -234,8 +234,8 @@
  "augurspex_release_notes": "Application/Documentation/RELEASE_NOTES_0.4.8.5_AUGURSPEX_CHART_LAYOUT.md",
  "live_provider_data_verified": false,
  "physical_windows_linux_verified": false,
- "augurspex_visual_update": "CHARTS N always represents saved slots 1..N; slots with real history are charts sized by chart_grid_plan to the available area (one chart fills it; dense layouts keep 360x280 minimum and scroll); slots without data are labelled tabs; badge states requested vs with-data counts; interface text fitted to measured width",
- "augurspex_source_display": "Sourced-only by default; slots without real observations shown as status tabs, not hidden; SHOW ALL MARKETS shows every slot as a card; saved slots never deleted",
+ "augurspex_visual_update": "CHARTS N always shows N chart spaces sized by chart_grid_plan; own saved market first, else a labelled AUTO-FILLED watchlist market with data, else own status; live charts placed first; badge counts",
+ "augurspex_source_display": "Sourced-only by default with labelled auto-fill from the watchlist; SHOW ALL MARKETS shows own markets only; saved slots never changed",
  "previous_baseline": {
   "release": "0.4.8.4",
   "zip_sha256": "9505949117c4ccd36d3ab6c73cb803f689dec42f4c192350b3048f604ddd1209"

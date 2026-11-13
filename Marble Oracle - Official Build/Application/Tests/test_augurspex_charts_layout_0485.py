@@ -7,9 +7,9 @@ network is used and production code never fabricates data. Checks, for window
 sizes 900x580, 1000x650 and 1400x870 and CHARTS 1/2/4/6/9, with data only in
 saved slots 1/5/9 and then only in 4/8:
 
-* CHARTS N always represents saved slots 1..N: each is a full chart when it
-  has real history, otherwise a compact status tab (never silently dropped);
-* the full charts are exactly the slots with data among 1..N;
+* CHARTS N always shows N chart spaces. A space shows its own saved market
+  when that has real history; otherwise the next watchlist market with data,
+  labelled AUTO-FILLED; only when none is left does it show its own status;
 * one chart is substantially larger than each of four, and fills the view;
 * no text inside a chart overlaps other text or the canvas edge;
 * status, footer, counter, badge and slot-tab text fit their widgets;
@@ -168,27 +168,49 @@ def plan_tests():
     check('plan: zero charts is safe', plan(0, 500, 300)['rows'] == 0)
 
 
+def expected_spaces(p, n):
+    """Independent model of what the N spaces should show: (symbol, auto)."""
+    fav = set(p.settings.get('favorites', []))
+    spare = [row['symbol'] for row in sorted(p.watchlist, key=lambda row: row['symbol'] not in fav)
+             if row['symbol'] not in SYMS[:n] and p._market_verified(row['symbol'])]
+    out = []
+    for i in range(n):
+        if p._market_verified(SYMS[i]):
+            out.append((SYMS[i], False))
+        elif spare:
+            out.append((spare.pop(0), True))
+        else:
+            out.append((SYMS[i], False))
+    return out
+
+
 def gui_tests():
-    for ok_slots in ((0, 4, 8), (3, 7)):
-        ok = {SYMS[i] for i in ok_slots}
+    for ok_slots, extra in (((0, 4, 8), ('SOL-USD', 'XRP-USD')), ((3, 7), ())):
+        ok = {SYMS[i] for i in ok_slots} | set(extra)
         for size in SIZES:
             with tempfile.TemporaryDirectory() as home:
                 root, tab, p = open_panel(home, TestRouter(ok), size)
-                ready = pump_until(root, lambda: all(p._market_verified(SYMS[i]) for i in ok_slots), 30)
+                ready = pump_until(root, lambda: all(p._market_verified(x) for x in ok), 30)
                 check(f'fixture data loaded for slots {[i + 1 for i in ok_slots]} at {size}', ready)
                 pump(root, .4)
-                label = f'data in slots {[i + 1 for i in ok_slots]} at {size[0]}x{size[1]}'
+                label = (f'data in slots {[i + 1 for i in ok_slots]}' + (f' + {", ".join(extra)}' if extra else '')
+                         + f' at {size[0]}x{size[1]}')
                 areas = {}
                 for n in COUNTS:
                     p.layout_var.set(str(n))
                     p._change_layout(str(n))
                     pump(root, .5)
-                    shown, chips = mapped_cards(p), chip_slots(p)
-                    want = [i for i in ok_slots if i < n]
-                    check(f'{label} CHARTS={n}: full charts are the slots with data', shown == want, (shown, want))
-                    check(f'{label} CHARTS={n}: every slot 1..{n} is a chart or a status tab',
-                          sorted(shown + chips) == list(range(n)), (shown, chips))
-                    for i in shown:
+                    shown = mapped_cards(p)
+                    want = expected_spaces(p, n)
+                    got = [(p.cards[i].symbol, bool(getattr(p.cards[i], 'auto_note', ''))) for i in shown]
+                    check(f'{label} CHARTS={n}: {n} chart spaces shown', shown == list(range(n)), shown)
+                    check(f'{label} CHARTS={n}: own market first, then auto-fill from watchlist', got == want,
+                          (got, want))
+                    autos = [i for i in shown if getattr(p.cards[i], 'auto_note', '')]
+                    check(f'{label} CHARTS={n}: auto-filled charts are labelled',
+                          all(p.cards[i].company.cget('text').startswith('AUTO-FILLED') for i in autos))
+                    with_data = [i for i in shown if p._market_verified(p.cards[i].symbol)]
+                    for i in with_data:
                         over, clip = canvas_text_problems(p.cards[i].canvas)
                         check(f'{label} CHARTS={n} slot {i + 1}: no overlapping chart text', not over, over[:3])
                         check(f'{label} CHARTS={n} slot {i + 1}: no chart text past the edge', not clip, clip[:3])
@@ -203,8 +225,10 @@ def gui_tests():
                     for chip in getattr(p, 'chip_widgets', []):
                         check(f'{label} CHARTS={n}: slot tab "{chip.cget("text")[:20]}" fits', label_fits(chip))
                     badge = getattr(p, 'count_badge', None)
-                    check(f'{label} CHARTS={n}: badge states requested and with-data counts', badge is not None
-                          and f'{n} REQUESTED' in badge.cget('text') and f'{len(want)} WITH DATA' in badge.cget('text'),
+                    autos_n = sum(a for _s, a in want)
+                    check(f'{label} CHARTS={n}: badge states requested, shown and auto-filled counts', badge is not None
+                          and f'{n} REQUESTED' in badge.cget('text') and f'{n} SHOWN' in badge.cget('text')
+                          and (not autos_n or f'{autos_n} AUTO-FILLED' in badge.cget('text')),
                           badge.cget('text') if badge is not None else 'no badge')
                     for name in ('BACK TO HOME', 'SOURCE DETAILS', 'REFRESH'):
                         button = next((w for w in iter_widgets(p) if isinstance(w, tk.Button)
@@ -218,9 +242,9 @@ def gui_tests():
                 if ok_slots == (3, 7):
                     p._change_layout('1')
                     pump(root, .4)
-                    text = p.count_badge.cget('text') if hasattr(p, 'count_badge') else ''
-                    check(f'{label}: CHARTS=1 with data only in later slots says where data is',
-                          'SLOT 4' in text.upper() or 'SLOTS 4' in text.upper(), text)
+                    check(f'{label}: CHARTS=1 with data only in later slots still shows a real chart',
+                          p.cards[0].symbol == SYMS[3] and p.cards[0].auto_note
+                          and bool(p.cards[0].canvas.find_withtag('price-mark')), p.cards[0].symbol)
                 saved = json.loads((Path(home) / '.config' / 'augurspex' / 'settings.json').read_text())
                 check(f'{label}: all nine saved slots survive CHARTS changes',
                       saved.get('symbols', [])[:9] == SYMS, saved.get('symbols'))

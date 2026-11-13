@@ -17,14 +17,16 @@ Synthetic data labelled `TEST FIXTURE, NOT LIVE`, served by a fake router; no ne
 
 ## Changes
 
-- **CHARTS N always represents saved slots 1..N.**
-  - In sourced-only mode (the default), a slot with real history is a full chart.
-  - A slot without data becomes a compact tab above the charts with its number, market and state: `CHECKING…`, `LIMITED`, `NETWORK`, `UNSUPPORTED`, `NO HISTORY`, `NEEDS SETUP`, `PICK A MARKET`.
-  - Clicking a tab selects that slot, so a market can be assigned to it from the list. When tabs exceed two rows, a `+N MORE · SHOW ALL` tab opens SHOW ALL MARKETS.
-  - SHOW ALL MARKETS shows all N slots as full cards, as before.
-- **Count badge** under the selectors states the requested count and how many have data, e.g. `CHARTS: 4 REQUESTED · 1 WITH DATA · 3 SHOWN AS TABS ABOVE · SLOT 9 ALSO HAS DATA`. It never implies more usable charts than exist.
+- **CHARTS N always shows N chart spaces** (1, 2, 4, 6 or 9).
+  - Each space shows its own saved market when that has real history.
+  - In sourced-only mode (the default), a space whose market has no data shows the next watchlist market that does (favourites first). It is labelled **AUTO-FILLED** on the card, with the reason its own market is missing, and `· AUTO-FILLED` in the active-market line. Saved slots are not changed; pick a market from the list to replace it.
+  - Only when no other market with data is left does a space show its own market's status (checking, unavailable…).
+  - Spaces with data are placed first, so dead cards never sit between live charts.
+  - SHOW ALL MARKETS shows each space's own market, with no auto-fill.
+  - An intermediate build showed slots without data as small tabs above the charts. In real use, where usually only crypto markets have a keyless source, that left CHARTS 4–9 with two charts, so it was replaced.
+- **Count badge** under the selectors, e.g. `CHARTS: 9 REQUESTED · 9 SHOWN · 2 YOURS · 2 AUTO-FILLED · 5 NO DATA` (`CHECKING` while sources are still being tried). It never implies more usable charts than exist.
 - **Chart size follows the available area** (`chart_grid_plan`, a pure function).
-  - One chart fills the chart area. Two sit side by side when wide enough. Four form a 2×2 grid.
+  - One chart fills the chart area. Two sit side by side when wide enough. Four form a 2×2 grid (never 3 + 1).
   - Dense layouts keep a legible minimum card (360×280) and scroll vertically.
   - Relayout is debounced to one pass per geometry change.
 - **Text fit:** the status line, footer note, sidebar counter, count badge and slot tabs are fitted to their measured pixel width with an ellipsis. The selected market name wraps to the real panel width instead of a fixed 660 px.
@@ -44,19 +46,19 @@ Synthetic data labelled `TEST FIXTURE, NOT LIVE`, served by a fake router; no ne
 
 ## Tests
 
-New: `Application/Tests/test_augurspex_charts_layout_0485.py`, **519/519** checks, including the per-chart switch (only the clicked chart changes; kept across workspace switch and restart; ALL CHARTS sets every chart; header fits), line default, one-time conversion of old candle settings and a remembered CANDLES choice. It fails on 0.4.8.4 (104 of 334 checks at that time).
+New: `Application/Tests/test_augurspex_charts_layout_0485.py`, **542/542** checks, including N spaces for every CHARTS value with own-market-first and labelled auto-fill, the per-chart switch (only the clicked chart changes; kept across workspace switch and restart; ALL CHARTS sets every chart; header fits), line default, one-time conversion of old candle settings and a remembered CANDLES choice. It fails on 0.4.8.4 (104 of 334 checks at that time).
 
 | Area | What is checked |
 |---|---|
 | Layout function | `chart_grid_plan` sizes for 1, 4 and 9 charts and small views. |
-| CHARTS 1/2/4/6/9 at 900×580, 1000×650 and 1400×870, data in slots 1/5/9 and then 4/8 | Exactly the slots with data among 1..N are full charts; every slot 1..N is a chart or a tab. |
+| CHARTS 1/2/4/6/9 at 900×580, 1000×650 and 1400×870; data in slots 1/5/9 plus two unassigned watchlist markets, then only in slots 4/8 | N spaces are always shown; each shows its own market if it has data, otherwise the expected auto-filled market (labelled), otherwise its own status. |
 | Chart text | No overlapping or out-of-canvas text (`Canvas.bbox`). |
 | Interface text | Status, footer, counter, badge and tabs fit their widgets. |
 | Controls | BACK TO HOME, SOURCE DETAILS and REFRESH stay inside the window. |
 | Size | At 1400×870 one chart has more than 1.8× the area of each of four. At smaller sizes one chart fills the area and four scroll. |
 | Persistence | All nine saved slots survive; CHARTS=2 is restored after a restart. |
 
-Full suite on a clean copy: 43/43 test scripts pass. That is the 42 from 0.4.8.4, all unchanged, plus the new one.
+Full suite on a clean copy: 43/43 test scripts pass: the 42 from 0.4.8.4 plus the new one. `test_augurspex_sourced_layout_0484.py` was updated where it asserted 0.4.8.4's hiding of spaces (now every requested space is shown) and its 405 px card height.
 
 ## Not verified
 

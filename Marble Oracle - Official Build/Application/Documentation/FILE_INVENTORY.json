@@ -9,7 +9,7 @@
   "Application/Documentation/VERIFICATION_REPORT.md"
  ],
  "inventory_file_count": 442,
- "inventory_total_bytes": 115436315,
+ "inventory_total_bytes": 115441107,
  "files": [
   {
    "path": "Application/.gitignore",
@@ -338,8 +338,8 @@
   },
   {
    "path": "Application/Documentation/RELEASE_NOTES_0.4.8.5_AUGURSPEX_CHART_LAYOUT.md",
-   "bytes": 5791,
-   "sha256": "f52f3c60c44af24c95f2fd80730ad83e2cd4c2ccf3749e5e8ac943ad5080c6f8"
+   "bytes": 6514,
+   "sha256": "7b4bd004e0fcaba4cfd571ee2098f630ad80ac79d5385ac7f893d1ec7ff063eb"
   },
   {
    "path": "Application/Documentation/RELEASE_NOTES_EIDOLITH_0.4.7.1_AUGURSPEX.md",
@@ -413,8 +413,8 @@
   },
   {
    "path": "Application/README.md",
-   "bytes": 10952,
-   "sha256": "a37473b935ee9223b4d31a03e98c84b724049dde744e6681cd986a5b47424649"
+   "bytes": 10978,
+   "sha256": "33e79a08fddd08532e6af115fb0b1fa0afd9d31696c54587fca17ecdcf974dfd"
   },
   {
    "path": "Application/Runtime/Launch_Marble_Oracle.vbs",
@@ -1658,8 +1658,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_augurspex_tab.py",
-   "bytes": 70371,
-   "sha256": "ce4ba44d6c3136ccf77f73d8b6ea62ea4d57c5b59fa9225730d25b6f83314d95"
+   "bytes": 72728,
+   "sha256": "4718904bc88219a2cab525db2357dc7e62da90c0e914ed89e1fb8b3643f89c41"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_bootstrap.py",
@@ -1908,8 +1908,8 @@
   },
   {
    "path": "Application/Tests/test_augurspex_charts_layout_0485.py",
-   "bytes": 19901,
-   "sha256": "7f62111653e52a44e58fd899716f13a4c002ffc849fa96f2cf47778e16e727c7"
+   "bytes": 21186,
+   "sha256": "fed872696341815204b0b674ca5559df47b7b63aa926aaf0508e7b40f09e1f6b"
   },
   {
    "path": "Application/Tests/test_augurspex_grid_contrast_0480.py",
@@ -1978,8 +1978,8 @@
   },
   {
    "path": "Application/Tests/test_augurspex_sourced_layout_0484.py",
-   "bytes": 3620,
-   "sha256": "8cb7e650989a0409ddc847fbc18163366d2e3f3b4c2e7646df367c3e57cc2449"
+   "bytes": 4021,
+   "sha256": "4b34f11e9e77f56543f83ebc6b9a98c56a339c659c388b13fd7560d8feac1edf"
   },
   {
    "path": "Application/Tests/test_augurspex_stock_fallback.py",

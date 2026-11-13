@@ -55,13 +55,17 @@ def test_sources_and_spacious_layout():
         for i in p._chart_indices():
             card=p.cards[i]
             assert card.winfo_ismapped()
-            assert card.winfo_height()>=380,card.winfo_height()
+            # 0.4.8.5: card size follows the area (4 spaces -> 2x2 grid).
+            assert card.winfo_height()>=280,card.winfo_height()
             assert card.canvas.winfo_width()>=260,card.canvas.winfo_width()
-        assert not p.cards[1].winfo_ismapped() and not p.cards[2].winfo_ismapped()
+        # 0.4.8.5: CHARTS=4 always shows four spaces. With no other watchlist
+        # market to auto-fill from, AAPL/COH.AX show their own status (no chart).
+        assert p.cards[1].winfo_ismapped() and p.cards[2].winfo_ismapped()
+        assert not p.cards[1].canvas.find_withtag('price-mark') and not p.cards[2].canvas.find_withtag('price-mark')
         assert len(json.loads((cfg/'watchlist.json').read_text())['markets'])==4
         p._toggle_sourced();root.update()
         assert p.watch.size()==4
-        assert len(p._chart_indices())==4
+        assert sum(card.winfo_ismapped() for card in p.cards)==4  # SHOW ALL: every space is a card
         provider.fail.clear()
         p._force_refresh();pump(root,lambda:p._market_verified('AAPL'))
         assert p.cards[1].result is not None

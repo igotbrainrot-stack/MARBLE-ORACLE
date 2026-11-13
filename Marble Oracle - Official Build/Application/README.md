@@ -20,7 +20,7 @@
 | **EIDOLITH** | Local video player, conversion profiles, video inspection, fail-and-continue queue with progress/ETA and per-job logs, standard TV/movie filenames |
 | **PASSPHRASE** | Five-card Marble Passphrase Studio |
 | **TOUCH TYPE** | Four touch-typing mini-games with finger guidance and saved scores |
-| **AUGURSPEX** | Native multi-market watchlist and historical charts inside the suite; no browser tab launch. **CHARTS** shows saved slots 1..N: slots with real history are charts sized to the available space, slots without data are labelled tabs above them. Each chart has a **LINE / CANDLES** switch that it remembers; **ALL CHARTS** sets every chart at once. Line by default |
+| **AUGURSPEX** | Native multi-market watchlist and historical charts inside the suite; no browser tab launch. **CHARTS** shows N chart spaces sized to the available area. Each shows its saved market when it has data, otherwise another watchlist market with data, labelled AUTO-FILLED. Each chart has a **LINE / CANDLES** switch that it remembers; **ALL CHARTS** sets every chart at once. Line by default |
 
 All tabs retain the established dark Oggcultist-inspired visual style and bundled Uberata Clear font.
 
