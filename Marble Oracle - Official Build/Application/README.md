@@ -1,6 +1,6 @@
 # MARBLE ORACLE — Integrated Desktop Suite
 
-**Release:** Marble Oracle EIDOLITH 0.4.7.8 + integrated AUGURSPEX · 13 November 2026 (see `Documentation/RELEASE_NOTES_EIDOLITH_0.4.7.8_AUGURSPEX_SELF_REVIEW.md`)  
+**Release:** Marble Oracle 0.4.8.5 — EIDOLITH + integrated AUGURSPEX · 13 November 2026 (latest changes: `Documentation/RELEASE_NOTES_0.4.8.5_AUGURSPEX_CHART_LAYOUT.md`)  
 **Supported launch targets:** Windows 11, Linux Mint (x86-64 desktop)  
 **Application:** Python/Tkinter, local-first media features
 
@@ -20,7 +20,7 @@
 | **EIDOLITH** | Local video player, conversion profiles, video inspection, fail-and-continue queue with progress/ETA and per-job logs, standard TV/movie filenames |
 | **PASSPHRASE** | Five-card Marble Passphrase Studio |
 | **TOUCH TYPE** | Four touch-typing mini-games with finger guidance and saved scores |
-| **AUGURSPEX** | Native multi-market watchlist and historical charts inside the suite; no browser tab launch |
+| **AUGURSPEX** | Native multi-market watchlist and historical charts inside the suite; no browser tab launch. **CHARTS** shows saved slots 1..N: slots with real history are charts sized to the available space, slots without data are labelled tabs above them |
 
 All tabs retain the established dark Oggcultist-inspired visual style and bundled Uberata Clear font.
 

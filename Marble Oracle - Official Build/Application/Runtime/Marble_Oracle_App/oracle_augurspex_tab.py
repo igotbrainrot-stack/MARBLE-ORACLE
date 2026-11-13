@@ -89,6 +89,45 @@ def chart_geometry(n):
     return {1:(1,1),2:(1,2),4:(2,2),6:(2,3),9:(3,3)}[n]
 
 
+# Chart grid geometry (0.4.8.5). One chart fills the chart area; more charts
+# share it; vertical scrolling is used only when the legible minimum card size
+# cannot fit. Kept free of Tk so it can be tested directly.
+CARD_GAP = 12
+MIN_CARD_W, MIN_CARD_H = 360, 280
+CARD_CHROME_W, CARD_CHROME_H = 100, 160   # header, info strip and axes inside a card
+
+
+def chart_grid_plan(count, view_w, view_h):
+    """Columns, rows and card size for `count` charts in a view_w x view_h area."""
+    count = max(0, int(count))
+    view_w, view_h = max(1, int(view_w)), max(1, int(view_h))
+    if count == 0:
+        return dict(cols=0, rows=0, card_w=0, card_h=0, scroll=False, total_h=view_h)
+    best = None
+    for cols in range(1, min(3, count) + 1):
+        rows = -(-count // cols)
+        card_w = view_w // cols - CARD_GAP
+        if cols > 1 and card_w < MIN_CARD_W:
+            continue
+        fit_h = view_h // rows - CARD_GAP
+        scroll = fit_h < MIN_CARD_H
+        card_h = max(MIN_CARD_H, fit_h)
+        # Charts are time series: score the drawable plot, valuing width up to
+        # about twice the height, so 2 charts sit side by side when roomy.
+        score = min(card_w - CARD_CHROME_W, 2.2 * (card_h - CARD_CHROME_H))
+        key = (0 if scroll else 1, cols if scroll else score, -cols)
+        if best is None or key > best[0]:
+            best = (key, dict(cols=cols, rows=rows, card_w=max(1, card_w), card_h=card_h, scroll=scroll,
+                              total_h=max(view_h, rows * (card_h + CARD_GAP))))
+    return best[1]
+
+
+SHORT_STATUS = {'DATA SOURCE LIMITED': 'LIMITED', 'NETWORK ISSUE': 'NETWORK',
+                'LISTING NOT SUPPORTED': 'UNSUPPORTED', 'NO HISTORY FROM PROVIDER': 'NO HISTORY',
+                'MARKET DATA UNAVAILABLE': 'UNAVAILABLE', 'DATA SOURCE SETUP NEEDED': 'NEEDS SETUP',
+                'NETWORK DISABLED': 'OFFLINE', 'AWAITING DATA': 'WAITING'}
+
+
 # Reserve a real date axis along the bottom and price tick labels on the
 # right. The same geometry is used by the candles/lines, ticks and grid.
 CHART_PAD_L, CHART_PAD_T, CHART_PAD_R, CHART_PAD_B = 13, 16, 74, 51
@@ -440,6 +479,8 @@ class AugurspexPanel(tk.Frame):
         self.sourced_only=not offline
         self._audit_queue=deque();self._audit_queued=set();self._audit_active=None
         self._audit_completed=set()
+        self._layout_job=None;self._layout_sig=None;self._chip_sig=None;self._view_size=(0,0)
+        self.chip_widgets=[];self._chip_slots=[]
         self._stopped=False;self._after=None;self._lock=threading.Lock()
         self._results=queue.Queue();self._pool=ThreadPoolExecutor(max_workers=3,thread_name_prefix='augurspex-chart')
         super().__init__(master,bg=self.p['bg'],highlightthickness=0)
@@ -475,6 +516,18 @@ class AugurspexPanel(tk.Frame):
         btn['menu'].configure(bg=self.p['control'],fg=self.p['ink'],activebackground=self.p['active'],
                               activeforeground=self.p['ink'],font=(FAMILY,11))
         return btn
+
+    def _fit(self,label,text,width=None):
+        """Show `text` in one line of `label`, ellipsised to its measured width."""
+        if width is None:
+            width=label.winfo_width()
+            if width<=1:width=label.winfo_reqwidth()
+        width=max(20,int(width)-2*int(label.cget('padx') or 0)-2)
+        fonts=self.__dict__.setdefault('_fit_fonts',{})
+        spec=label.cget('font')
+        font=fonts.get(spec) or fonts.setdefault(spec,tkfont.Font(self,font=spec))
+        fitted=fit_text_pixels(text,font,width)
+        if label.cget('text')!=fitted:label.configure(text=fitted)
 
     def _build_ui(self):
         # Native layout matches the palette and proportions of EIDOLITH/Oggcultist.
@@ -538,6 +591,7 @@ class AugurspexPanel(tk.Frame):
                                       fg=self.p['ink'],font=(FAMILY,12,'bold'),anchor='w',
                                       wraplength=660,justify='left')
         self.selected_market.pack(fill='x',pady=(3,0))
+        selected_box.bind('<Configure>',lambda e:self.selected_market.configure(wraplength=max(160,e.width-8)),add='+')
         opts=ogg_frame(self.work,bg='#1D1714');opts._oracle_bg=self.p['bg'];opts.pack(fill='x',padx=8,pady=(0,4))
         self.workspace_var=tk.StringVar(value=self.settings['workspace'])
         self.layout_var=tk.StringVar(value=str(self.settings['layout']))
@@ -559,6 +613,12 @@ class AugurspexPanel(tk.Frame):
         # instead of losing it behind the right side of the CRT viewport.
         opts.bind('<Configure>',lambda e:self._reflow_options(e.width),add='+')
         self._reflow_options(1000)  # initial geometry; updates after layout
+        # Requested chart spaces vs slots with real data, always stated.
+        self.count_badge=tk.Label(self.work,text='',anchor='w',bg=self.p['bg'],fg=self.p['muted'],
+                                  font=(FAMILY,10,'bold'))
+        self.count_badge.pack(fill='x',padx=12,pady=(0,2))
+        self._badge_text=''
+        self.count_badge.bind('<Configure>',lambda _e:self._fit(self.count_badge,self._badge_text),add='+')
         # A 9-chart layout cannot physically fit in some embedded CRT apertures.
         # Keep all saved chart slots, give each a real minimum plot area, and
         # scroll through rows rather than reducing Tk canvases to 1x1 pixels.
@@ -570,6 +630,9 @@ class AugurspexPanel(tk.Frame):
         self.chart_canvas.configure(yscrollcommand=self.chart_scroll.set)
         self.chart_scroll.pack(side='right',fill='y')
         self.chart_canvas.pack(side='left',fill='both',expand=True)
+        # Slots without real history become compact tabs here instead of
+        # vanishing (0.4.8.4) or taking chart-sized space.
+        self.chip_strip=tk.Frame(self.chart_port,bg=self.p['bg'])
         self.grid_frame=ogg_frame(self.chart_canvas,bg='#1D1714')
         self.grid_frame._oracle_bg=self.p['bg']
         self._grid_window=self.chart_canvas.create_window(0,0,window=self.grid_frame,anchor='nw')
@@ -584,13 +647,20 @@ class AugurspexPanel(tk.Frame):
             widget.bind('<Button-4>',self._scroll_charts,add='+')
             widget.bind('<Button-5>',self._scroll_charts,add='+')
         footer=ogg_frame(self.work,bg='#261F1B');footer._oracle_bg=self.p['panel'];footer.pack(fill='x',side='bottom',padx=8,pady=(0,7))
-        self._label(footer,'LOCAL · NO LOGIN', 'accent',11,True).pack(side='left',padx=8,pady=5)
-        self._label(footer,'STOCKS: DELAYED / EOD · CRYPTO: VENUE PRICES · SEE SOURCE DETAILS', 'muted',10).pack(side='left',padx=4)
-        self._label(footer,'','weak').pack(side='right')
+        footer_tag=self._label(footer,'LOCAL · NO LOGIN', 'accent',11,True)
+        footer_tag.pack(side='left',padx=8,pady=5)
+        self.footer_note=self._label(footer,'', 'muted',10,anchor='w')
+        self.footer_note.pack(side='left',padx=4,fill='x',expand=True)
+        footer_text='STOCKS: DELAYED / EOD · CRYPTO: VENUE PRICES · SEE SOURCE DETAILS'
+        footer.bind('<Configure>',lambda e:self._fit(self.footer_note,footer_text,
+                    e.width-footer_tag.winfo_reqwidth()-32),add='+')
         status_row=ogg_frame(self.work,bg='#1D1714');status_row._oracle_bg=self.p['bg']
         status_row.pack(side='bottom',fill='x',padx=11,pady=2)
-        self.status_label=tk.Label(status_row,textvariable=self.status,anchor='w',bg=self.p['bg'],fg=self.p['weak'],font=(FAMILY,11))
+        self.status_label=tk.Label(status_row,text='',anchor='w',bg=self.p['bg'],fg=self.p['weak'],font=(FAMILY,11))
         self.status_label.pack(fill='x')
+        # Fitted to measured pixels: a long status was cropped on both sides.
+        self.status.trace_add('write',lambda *_:self._fit(self.status_label,self.status.get()))
+        self.status_label.bind('<Configure>',lambda _e:self._fit(self.status_label,self.status.get()),add='+')
         # Reserve footer/status before allocating the expandable chart grid;
         # otherwise smaller application windows can clip these controls.
         self.chart_port.pack_forget()
@@ -632,7 +702,8 @@ class AugurspexPanel(tk.Frame):
                  (x['symbol'],period) in self._errors for x in self.watchlist)
         total=len(self.watchlist)
         pending=len(self._pending)
-        self.source_count.configure(text=f'{verified} WITH REAL HISTORY  ·  {done}/{total} CHECKED')
+        busy=bool(pending or self._audit_queue)
+        self._fit(self.source_count,f'{verified} WITH DATA · {"CHECKING" if busy else "CHECKED"} {done}/{total}')
         self.sourced_button.configure(text=('SHOW ALL MARKETS' if self.sourced_only else 'SHOW SOURCED ONLY'))
         self.empty_notice.configure(text=('VERIFYING HISTORICAL DATA…\n'
                                           'Charts appear after a provider returns real observations.'
@@ -676,13 +747,36 @@ class AugurspexPanel(tk.Frame):
             if key not in self._pending:self._audit_active=None
             break
 
-    def _chart_indices(self):
+    def _display_slots(self):
+        """(chart slots, tab slots) for saved slots 1..CHARTS.
+
+        CHARTS N always represents slots 1..N. In sourced-only mode a slot is
+        a full chart when it has real history, otherwise a compact status tab.
+        """
+        n=min(self.settings['layout'],len(self.cards))
         if not self.sourced_only or self.offline:
-            return list(range(len(self.cards)))
+            return list(range(n)),[]
         period=self.settings['interval']
-        return [i for i in range(len(self.cards))
-                if self.settings['symbols'][i] and
+        charts=[i for i in range(n) if self.settings['symbols'][i] and
                 self._market_verified(self.settings['symbols'][i],period)]
+        return charts,[i for i in range(n) if i not in charts]
+
+    def _chart_indices(self):
+        return self._display_slots()[0]
+
+    def chip_slots(self):
+        return list(self._chip_slots)
+
+    def _slot_status(self,i):
+        symbol=self.settings['symbols'][i]
+        if not symbol:return 'PICK A MARKET'
+        key=(symbol,self.settings['interval'])
+        if key in self._pending:return 'CHECKING…'
+        if key in self._errors:
+            text=PriceChart._message_for_error(None,self._errors[key])
+            return SHORT_STATUS.get(text,text)
+        if self.offline:return 'OFFLINE'
+        return 'QUEUED'
 
     def _load_watchlist(self):
         self.watchlist,_=merge_watchlists(self.home,DEFAULT_FILE,self.settings)
@@ -806,6 +900,7 @@ class AugurspexPanel(tk.Frame):
 
     def _change_layout(self,value):
         self.settings['layout']=int(value);self.active=min(self.active,int(value)-1)
+        self.layout_var.set(str(self.settings['layout']))
         self._render_grid();self._save();self._refresh_charts()
 
     def _change_interval(self,value):
@@ -833,37 +928,118 @@ class AugurspexPanel(tk.Frame):
 
     def _resize_chart_view(self,event=None):
         width=max(1,self.chart_canvas.winfo_width())
+        height=max(1,self.chart_canvas.winfo_height())
         self.chart_canvas.itemconfigure(self._grid_window,width=width)
-        if hasattr(self,'cards') and self.cards:
-            want=min(2,max(1,width//565),max(1,len(self._chart_indices())))
-            if want!=self._chart_columns:
-                self._layout_chart_cards(want)
+        if (width,height)!=self._view_size:
+            self._view_size=(width,height)
+            self._schedule_layout()
         self._sync_chart_scrollregion()
 
-    def _layout_chart_cards(self,columns):
-        visible=self._chart_indices()
-        columns=max(1,min(columns,max(1,len(visible))))
-        self._chart_columns=columns
-        # Hide failed/unverified market slots instead of filling the screen
-        # with NO SOURCE cards. Saved selections remain available for retry.
+    def _schedule_layout(self):
+        # Debounced: several <Configure> events in one geometry pass give one
+        # relayout, so the grid cannot oscillate.
+        if self._layout_job is None:
+            try:self._layout_job=self.after_idle(self._apply_layout)
+            except tk.TclError:self._layout_job=None
+
+    def _layout_chart_cards(self,_columns=None):
+        self._schedule_layout()
+
+    def _update_count_badge(self,charts):
+        n=self.settings['layout'];period=self.settings['interval']
+        if self.sourced_only and not self.offline:
+            elsewhere=[i+1 for i in range(n,len(self.settings['symbols']))
+                       if self.settings['symbols'][i] and self._market_verified(self.settings['symbols'][i],period)]
+            text=f'CHARTS: {n} REQUESTED · {len(charts)} WITH DATA'
+            if len(charts)<n:text+=f' · {n-len(charts)} SHOWN AS TABS ABOVE'
+            if elsewhere:
+                text+=((' · SLOT ' if len(elsewhere)==1 else ' · SLOTS ')+', '.join(map(str,elsewhere))
+                       +(' ALSO HAS DATA' if len(elsewhere)==1 else ' ALSO HAVE DATA'))
+        else:
+            verified=sum(1 for i in range(n) if self.settings['symbols'][i] and
+                         self._market_verified(self.settings['symbols'][i],period))
+            text=f'CHARTS: {n} REQUESTED · {verified} WITH DATA · ALL {n} SHOWN'
+        self._badge_text=text
+        self._fit(self.count_badge,text)
+
+    def _update_chips(self,chips):
+        width=max(1,self.chart_port.winfo_width())
+        per_row=max(1,min(4,width//175))
+        limit=per_row*2
+        statuses=tuple((i,self.settings['symbols'][i],self._slot_status(i)) for i in chips)
+        sig=(statuses,self.active,per_row)
+        self._chip_slots=list(chips)
+        if sig==self._chip_sig:return
+        self._chip_sig=sig
+        for child in self.chip_strip.winfo_children():child.destroy()
+        self.chip_widgets=[]
+        if not chips:
+            self.chip_strip.pack_forget();return
+        if not self.chip_strip.winfo_ismapped():
+            self.chip_strip.pack(side='top',fill='x',before=self.chart_scroll,pady=(0,4))
+        shown=chips if len(chips)<=limit else chips[:limit-1]
+        font=(FAMILY,10,'bold')
+        cell=max(60,width//per_row-10)
+        for k,i in enumerate(shown):
+            symbol=self.settings['symbols'][i] or 'EMPTY'
+            active=i==self.active
+            chip=tk.Label(self.chip_strip,text='',anchor='w',font=font,padx=6,pady=3,cursor='hand2',
+                          bg=self.p['active'] if active else self.p['control'],
+                          fg=self.p['accent'] if active else self.p['muted'],
+                          highlightthickness=1,highlightbackground=self.p['accent'] if active else self.p['border'])
+            chip.grid(row=k//per_row,column=k%per_row,sticky='ew',padx=2,pady=2)
+            # The status is the point of the tab: keep it whole, shorten the name.
+            status=' · '+self._slot_status(i)
+            fonts=self.__dict__.setdefault('_fit_fonts',{})
+            measure=fonts.get(chip.cget('font')) or fonts.setdefault(chip.cget('font'),tkfont.Font(self,font=chip.cget('font')))
+            room=cell-2*6-4-measure.measure(status)
+            name=fit_text_pixels(f'{i+1:02d} {symbol}',measure,max(measure.measure(f'{i+1:02d}…'),room))
+            self._fit(chip,name+status,cell)
+            chip.bind('<Button-1>',lambda _e,n=i:self._select_chart(n))
+            self.chip_widgets.append(chip)
+        if len(shown)<len(chips):
+            more=tk.Label(self.chip_strip,text='',anchor='w',font=font,padx=6,pady=3,cursor='hand2',
+                          bg=self.p['control'],fg=self.p['accent'],highlightthickness=1,
+                          highlightbackground=self.p['border'])
+            k=len(shown)
+            more.grid(row=k//per_row,column=k%per_row,sticky='ew',padx=2,pady=2)
+            self._fit(more,f'+{len(chips)-len(shown)} MORE · SHOW ALL',cell)
+            more.bind('<Button-1>',lambda _e:self._toggle_sourced())
+            self.chip_widgets.append(more)
+        for c in range(4):
+            self.chip_strip.columnconfigure(c,weight=1 if c<per_row else 0,uniform='chips' if c<per_row else '')
+
+    def _apply_layout(self):
+        self._layout_job=None
+        if self._stopped or not hasattr(self,'cards'):return
+        charts,chips=self._display_slots()
+        self._update_chips(chips)
+        self._update_count_badge(charts)
+        width=max(1,self.chart_canvas.winfo_width())
+        height=max(1,self.chart_canvas.winfo_height())
+        plan=chart_grid_plan(len(charts),width,height)
+        sig=(tuple(charts),plan['cols'],plan['rows'],plan['card_w'],plan['card_h'],width,height,len(self.cards))
+        if sig==self._layout_sig:return
+        self._layout_sig=sig
+        cols=max(1,plan['cols'])
+        self._chart_columns=cols
         for card in self.cards:card.grid_forget()
         for i in range(3):
-            self.grid_frame.columnconfigure(i,weight=0,minsize=0,uniform='')
+            self.grid_frame.columnconfigure(i,weight=1 if i<cols else 0,minsize=0,uniform='cards' if i<cols else '')
         for i in range(9):
-            self.grid_frame.rowconfigure(i,weight=0,minsize=0,uniform='')
-        for position,index in enumerate(visible):
+            self.grid_frame.rowconfigure(i,weight=0,minsize=plan['card_h']+CARD_GAP if i<plan['rows'] else 0,uniform='')
+        for position,index in enumerate(charts):
             card=self.cards[index]
-            card.grid(row=position//columns,column=position%columns,
-                      sticky='nsew',padx=9,pady=9)
+            card.grid(row=position//cols,column=position%cols,sticky='nsew',
+                      padx=CARD_GAP//2,pady=CARD_GAP//2)
             self._bind_chart_scroll(card)
-        for row in range((len(visible)+columns-1)//columns):
-            self.grid_frame.rowconfigure(row,weight=0,minsize=405,uniform='cards')
-        for col in range(columns):
-            self.grid_frame.columnconfigure(col,weight=1,uniform='cards')
-        if visible:
+        self.chart_canvas.itemconfigure(self._grid_window,width=width,
+                                        height=plan['total_h'] if charts else height)
+        if charts:
             self.empty_notice.place_forget()
         else:
-            self.empty_notice.place(relx=.5,rely=.34,anchor='center')
+            self.empty_notice.place(relx=.5,rely=.6,anchor='center')
+        if not plan['scroll']:self.chart_canvas.yview_moveto(0)
         self.chart_canvas.after_idle(self._sync_chart_scrollregion)
 
     def _bind_chart_scroll(self,widget):
@@ -877,8 +1053,9 @@ class AugurspexPanel(tk.Frame):
         for child in self.grid_frame.winfo_children():child.destroy()
         count=self.settings['layout']
         self.cards=[PriceChart(self.grid_frame,self.p,i,self._select_chart) for i in range(count)]
-        self._chart_columns=0
+        self._chart_columns=0;self._layout_sig=None;self._chip_sig=None
         self._resize_chart_view()
+        self._schedule_layout()
         self.chart_canvas.yview_moveto(0)
 
     def _refresh_charts(self):
@@ -898,7 +1075,7 @@ class AugurspexPanel(tk.Frame):
                 else:self._request(symbol,period)
         self._source_summary()
         self._resize_chart_view()
-        self._layout_chart_cards(self._chart_columns)
+        self._schedule_layout()
 
     def _request(self,symbol,period,force=False):
         if self.offline or self._stopped or not self._visible:return
