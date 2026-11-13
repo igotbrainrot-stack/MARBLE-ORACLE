@@ -1,0 +1,637 @@
+--- a/Marble Oracle - Official Build/Application/Runtime/Marble_Oracle_App/oracle_augurspex_tab.py
++++ b/Marble Oracle - Official Build/Application/Runtime/Marble_Oracle_App/oracle_augurspex_tab.py
+@@ -91,7 +91,7 @@
+ 
+ # Reserve a real date axis along the bottom and price tick labels on the
+ # right. The same geometry is used by the candles/lines, ticks and grid.
+-CHART_PAD_L, CHART_PAD_T, CHART_PAD_R, CHART_PAD_B = 13, 16, 74, 51
++CHART_PAD_L, CHART_PAD_T, CHART_PAD_R, CHART_PAD_B = 13, 16, 92, 36
+ 
+ 
+ def _plotted_candles(candles):
+@@ -177,6 +177,27 @@
+     plot_width=max(1,width-CHART_PAD_L-CHART_PAD_R)
+     max_bars=max(8,int(plot_width//6.0))
+     return bars[-max_bars:]
++
++
++def chart_grid_plan(requested, visible, width, height):
++    """Pure viewport layout model, independent of provider results or Tk.
++
++    CHARTS selects a maximum number of sourced charts, rather than the number
++    of fixed source slots. One graph can occupy the full viewport; dense modes
++    scroll only when a legible minimum card height cannot fit.
++    """
++    if requested not in (1, 2, 4, 6, 9):
++        raise ValueError('Unsupported chart count')
++    visible = max(0, min(requested, int(visible)))
++    width = max(1, int(width))
++    height = max(1, int(height))
++    columns = 2 if width >= 900 and visible >= 2 else 1
++    rows = (visible + columns - 1) // columns if visible else 0
++    card_min = 325 if columns == 2 else 340
++    # A single chart uses the viewport, not the old rigid 405px row height.
++    row_height = max(card_min, (height - 12) // max(1, rows)) if visible else 0
++    content_height = max(height, rows * (row_height + 16) + 8) if visible else height
++    return columns, rows, row_height, content_height
+ 
+ 
+ def _blend(colour, other, fraction):
+@@ -312,8 +333,9 @@
+             self.price.configure(text=f'{last:,.4f}' if last<1 else f'{last:,.2f}',
+                                  fg=self.p['green'] if change>=0 else self.p['red'])
+             src=data.get('source','');cur=data.get('currency','');obs=data.get('latest_observation','')[:10]
+-            self._info_text=(f'{src} · {cur} · {obs} · {change:+.2f}%'
+-                             + (' · CACHED' if data.get('cache')=='stale' else ''))
++            close_label='CLOSE-ONLY HISTORY · ' if any(v.get('close_only') for v in candles) else ''
++            self._info_text=(close_label+f'{src} · {cur} · {obs} · {change:+.2f}%'
++                             + (' · CACHED' if data.get('cache')=='stale' else '') + f' · {len(candles)} bars')
+         else:
+             self.price.configure(text='')
+             if not symbol:info='Click a market on the left to assign'
+@@ -366,17 +388,31 @@
+             c.create_line(plot_right,yy,plot_right+5,yy,
+                           fill=grid_major,width=1.3)
+             c.create_text(plot_right+8,yy,text=format_price(price),
+-                          fill=self.p['ink'],font=(FAMILY,axis_size,'bold'),anchor='w')
++                          fill=self.p['ink'],font=(FAMILY,axis_size,'bold'),anchor='w',tags=('price-axis-label',))
+         dates=chart_date_ticks(visible,width)
+-        for j,(x,label) in enumerate(dates):
+-            if j not in (0,len(dates)-1):
++        # Keep only measured, non-overlapping date labels. First and last
++        # observations have priority; intermediate labels are optional.
++        label_font=tkfont.Font(self,font=(FAMILY,axis_size,'bold'))
++        accepted=[]
++        proposed=(sorted(dates,key=lambda tick: 0 if tick==dates[0] else
++                         1 if tick==dates[-1] else 2) if dates else [])
++        for x,label in proposed:
++            label_width=label_font.measure(label)+6
++            left=max(CHART_PAD_L,x-label_width/2)
++            right=min(plot_right,x+label_width/2)
++            if x==dates[0][0]:left=x;right=x+label_width
++            elif x==dates[-1][0]:left=x-label_width;right=x
++            if left<CHART_PAD_L-1 or right>plot_right+1:continue
++            if any(left<r+8 and right>l-8 for l,r in accepted):continue
++            accepted.append((left,right))
++            if len(dates)>2 and x not in (dates[0][0],dates[-1][0]):
+                 c.create_line(x,CHART_PAD_T,x,plot_bottom,
+                               fill=grid_minor,dash=(3,5),width=1.1,
+                               tags=('chart-grid','vertical-grid'))
+             c.create_line(x,plot_bottom,x,plot_bottom+5,fill=grid_major,width=1.3)
+-            anchor=('nw' if j==0 else 'ne' if j==len(dates)-1 else 'n')
++            anchor=('nw' if x==dates[0][0] else 'ne' if x==dates[-1][0] else 'n')
+             c.create_text(x,plot_bottom+8,text=label,anchor=anchor,
+-                          fill=self.p['ink'],font=(FAMILY,axis_size,'bold'))
++                          fill=self.p['ink'],font=label_font,tags=('date-axis-label',))
+         if render_as_candles:
+             step=max(1.0,(plot_right-CHART_PAD_L)/len(points))
+             body=max(3.8,min(11.5,step*.72))
+@@ -414,16 +450,8 @@
+             c.create_oval(last_x-5,last_y-5,last_x+5,last_y+5,
+                           fill=self.p['accent'],outline=graph_outline,width=2.2,
+                           tags=('price-mark','last-point'))
+-        count=len(_plotted_candles(candles))
+-        note=('CLOSE-ONLY HISTORY · line chart' if close_only else
+-              f'LAST {len(points)} OF {count} REAL BARS' if len(points)<count else
+-              f'{count} observations · historical / provider delay')
+-        # In compact cards, an extra note beneath the date axis would
+-        # collide with both date labels and the card's source/status footer.
+-        # The full note remains available on larger canvas sizes.
+-        if height >= 180:
+-            c.create_text(CHART_PAD_L,height-3,text=note,
+-                          fill=self.p['muted'],font=(FAMILY,10),anchor='sw')
++        # No second caption below the date axis: it collided with the dates
++        # at desktop font scaling and is already reported in the info strip.
+ 
+ 
+ class AugurspexPanel(tk.Frame):
+@@ -440,6 +468,8 @@
+         self.sourced_only=not offline
+         self._audit_queue=deque();self._audit_queued=set();self._audit_active=None
+         self._audit_completed=set()
++        self._display_slots=[]  # actual persisted slots represented by visible cards
++        self._layout_signature=None
+         self._stopped=False;self._after=None;self._lock=threading.Lock()
+         self._results=queue.Queue();self._pool=ThreadPoolExecutor(max_workers=3,thread_name_prefix='augurspex-chart')
+         super().__init__(master,bg=self.p['bg'],highlightthickness=0)
+@@ -543,6 +573,8 @@
+         self.layout_var=tk.StringVar(value=str(self.settings['layout']))
+         self.interval_var=tk.StringVar(value=self.settings['interval'])
+         self.style_var=tk.StringVar(value='CANDLES' if self.settings['style']=='1' else 'LINE')
++        self.display_count=self._label(opts,'',fg='accent',size=10,bold=True,anchor='w')
++        self.display_count.grid(row=2,column=0,columnspan=4,sticky='w',padx=5,pady=(2,0))
+         self.option_parts=[]
+         self._option_columns=0
+         for label,var,items,fn in [
+@@ -585,17 +617,41 @@
+             widget.bind('<Button-5>',self._scroll_charts,add='+')
+         footer=ogg_frame(self.work,bg='#261F1B');footer._oracle_bg=self.p['panel'];footer.pack(fill='x',side='bottom',padx=8,pady=(0,7))
+         self._label(footer,'LOCAL · NO LOGIN', 'accent',11,True).pack(side='left',padx=8,pady=5)
+-        self._label(footer,'STOCKS: DELAYED / EOD · CRYPTO: VENUE PRICES · SEE SOURCE DETAILS', 'muted',10).pack(side='left',padx=4)
++        self.footer_data_label=self._label(footer,'STOCKS: DELAYED / EOD · CRYPTO: VENUE PRICES · SEE SOURCE DETAILS', 'muted',10)
++        self.footer_data_label.pack(side='left',padx=4)
+         self._label(footer,'','weak').pack(side='right')
+         status_row=ogg_frame(self.work,bg='#1D1714');status_row._oracle_bg=self.p['bg']
+         status_row.pack(side='bottom',fill='x',padx=11,pady=2)
+-        self.status_label=tk.Label(status_row,textvariable=self.status,anchor='w',bg=self.p['bg'],fg=self.p['weak'],font=(FAMILY,11))
++        self.status_display=tk.StringVar(value=self.status.get())
++        self.status_label=tk.Label(status_row,textvariable=self.status_display,anchor='w',bg=self.p['bg'],fg=self.p['weak'],font=(FAMILY,11))
++        self.status.trace_add('write',lambda *_:self._fit_status_strips())
++        self.work.bind('<Configure>',lambda _e:self._fit_status_strips(),add='+')
+         self.status_label.pack(fill='x')
+         # Reserve footer/status before allocating the expandable chart grid;
+         # otherwise smaller application windows can clip these controls.
+         self.chart_port.pack_forget()
+         self.chart_port.pack(fill='both',expand=True,padx=8,pady=4)
+         self._render_grid()
++
++    def _fit_status_strips(self):
++        """Keep status/footer within the actual embedded panel width.
++
++        The full error remains in self.status and SOURCE DETAILS. Only the
++        visible one-line footer is shortened, with no overlapping widgets.
++        """
++        if not hasattr(self,'status_label'):return
++        width=max(200,self.work.winfo_width()-28)
++        if width<670:
++            footer='STOCKS DELAYED · CRYPTO: VENUE PRICES'
++        elif width<860:
++            footer='STOCKS: DELAYED / EOD · CRYPTO: VENUE PRICES'
++        else:
++            footer='STOCKS: DELAYED / EOD · CRYPTO: VENUE PRICES · SEE SOURCE DETAILS'
++        self.footer_data_label.configure(text=footer)
++        font=tkfont.Font(font=self.status_label.cget('font'))
++        value=fit_text_pixels(self.status.get(),font,width)
++        if self.status_display.get()!=value:
++            self.status_display.set(value)
+ 
+     def _reflow_options(self,width):
+         columns=4 if width>=850 else 2 if width>=440 else 1
+@@ -605,6 +661,8 @@
+             part.grid_forget()
+             part.grid(row=i//columns,column=i%columns,sticky='w',
+                       padx=(2,8),pady=(0,2))
++        self.display_count.grid_configure(row=(len(self.option_parts)+columns-1)//columns,
++                                          column=0,columnspan=columns)
+ 
+     def _toggle_sourced(self):
+         self.sourced_only=not self.sourced_only
+@@ -633,6 +691,10 @@
+         total=len(self.watchlist)
+         pending=len(self._pending)
+         self.source_count.configure(text=f'{verified} WITH REAL HISTORY  ·  {done}/{total} CHECKED')
++        if hasattr(self,'display_count'):
++            shown=len(self._display_slots) if self.sourced_only and not self.offline else int(self.settings['layout'])
++            self.display_count.configure(text=f'{shown} DISPLAYED / {self.settings["layout"]} REQUESTED  ·  VERIFIED DATA ONLY' if self.sourced_only and not self.offline else
++                                         f'{self.settings["layout"]} CHART SLOTS · SHOW ALL MODE')
+         self.sourced_button.configure(text=('SHOW ALL MARKETS' if self.sourced_only else 'SHOW SOURCED ONLY'))
+         self.empty_notice.configure(text=('VERIFYING HISTORICAL DATA…\n'
+                                           'Charts appear after a provider returns real observations.'
+@@ -676,13 +738,21 @@
+             if key not in self._pending:self._audit_active=None
+             break
+ 
++    def _chart_slots(self):
++        """Stable saved slots, independent of the current card count.
++
++        A sourced market assigned to slot 9 remains accessible in CHARTS 1.
++        """
++        count=int(self.settings['layout'])
++        if not self.sourced_only or self.offline:
++            return list(range(count))
++        period=self.settings['interval']
++        return [slot for slot,symbol in enumerate(self.settings['symbols'][:9])
++                if symbol and self._market_verified(symbol,period)][:count]
++
+     def _chart_indices(self):
+-        if not self.sourced_only or self.offline:
+-            return list(range(len(self.cards)))
+-        period=self.settings['interval']
+-        return [i for i in range(len(self.cards))
+-                if self.settings['symbols'][i] and
+-                self._market_verified(self.settings['symbols'][i],period)]
++        # A chart card index is a screen position, NOT a saved market slot.
++        return list(range(len(self._chart_slots())))
+ 
+     def _load_watchlist(self):
+         self.watchlist,_=merge_watchlists(self.home,DEFAULT_FILE,self.settings)
+@@ -777,8 +847,9 @@
+         self.status.set('REMOVED '+sym+' · CHART SLOTS CLEARED')
+ 
+     def _select_chart(self,i):
+-        self.active=i;self._refresh_charts()
+-        symbol=self.settings['symbols'][i]
++        if not 0<=i<len(self._display_slots):return
++        self.active=self._display_slots[i];self._refresh_charts()
++        symbol=self.settings['symbols'][self.active]
+         key=(symbol,self.settings['interval'])
+         err=self._errors.get(key)
+         if err:self.status.set(f'{symbol} · {err}'[:230])
+@@ -805,7 +876,8 @@
+                 for key in ('layout','interval','style','symbols')}
+ 
+     def _change_layout(self,value):
+-        self.settings['layout']=int(value);self.active=min(self.active,int(value)-1)
++        self.settings['layout']=int(value)
++        self.layout_var.set(str(value))
+         self._render_grid();self._save();self._refresh_charts()
+ 
+     def _change_interval(self,value):
+@@ -833,37 +905,44 @@
+ 
+     def _resize_chart_view(self,event=None):
+         width=max(1,self.chart_canvas.winfo_width())
++        height=max(1,self.chart_canvas.winfo_height())
+         self.chart_canvas.itemconfigure(self._grid_window,width=width)
+-        if hasattr(self,'cards') and self.cards:
+-            want=min(2,max(1,width//565),max(1,len(self._chart_indices())))
+-            if want!=self._chart_columns:
+-                self._layout_chart_cards(want)
++        if self.cards:
++            self._layout_chart_cards(width,height)
+         self._sync_chart_scrollregion()
+ 
+-    def _layout_chart_cards(self,columns):
+-        visible=self._chart_indices()
+-        columns=max(1,min(columns,max(1,len(visible))))
++    def _layout_chart_cards(self,width=None,height=None):
++        if not self.cards:return
++        width=max(1,width if width is not None else self.chart_canvas.winfo_width())
++        height=max(1,height if height is not None else self.chart_canvas.winfo_height())
++        slots=self._chart_slots()
++        visible=list(range(len(slots)))
++        columns,rows,row_height,content_height=chart_grid_plan(
++            self.settings['layout'],len(slots),width,height)
++        signature=(tuple(slots),columns,rows,row_height,content_height,width,height)
++        if signature==self._layout_signature:return
++        self._layout_signature=signature
++        self._display_slots=slots
+         self._chart_columns=columns
+-        # Hide failed/unverified market slots instead of filling the screen
+-        # with NO SOURCE cards. Saved selections remain available for retry.
+         for card in self.cards:card.grid_forget()
+-        for i in range(3):
+-            self.grid_frame.columnconfigure(i,weight=0,minsize=0,uniform='')
+-        for i in range(9):
+-            self.grid_frame.rowconfigure(i,weight=0,minsize=0,uniform='')
+-        for position,index in enumerate(visible):
+-            card=self.cards[index]
+-            card.grid(row=position//columns,column=position%columns,
+-                      sticky='nsew',padx=9,pady=9)
+-            self._bind_chart_scroll(card)
+-        for row in range((len(visible)+columns-1)//columns):
+-            self.grid_frame.rowconfigure(row,weight=0,minsize=405,uniform='cards')
++        for col in range(3):
++            self.grid_frame.columnconfigure(col,weight=0,minsize=0,uniform='')
++        for row in range(9):
++            self.grid_frame.rowconfigure(row,weight=0,minsize=0,uniform='')
++        for screen_pos in visible:
++            card=self.cards[screen_pos]
++            card.grid(row=screen_pos//columns,column=screen_pos%columns,
++                      sticky='nsew',padx=8,pady=8)
++            if not getattr(card,'_scroll_bound',False):
++                self._bind_chart_scroll(card)
++                card._scroll_bound=True
++        for row in range(rows):
++            self.grid_frame.rowconfigure(row,weight=1,minsize=row_height,uniform='')
+         for col in range(columns):
+-            self.grid_frame.columnconfigure(col,weight=1,uniform='cards')
+-        if visible:
+-            self.empty_notice.place_forget()
+-        else:
+-            self.empty_notice.place(relx=.5,rely=.34,anchor='center')
++            self.grid_frame.columnconfigure(col,weight=1,uniform='')
++        self.chart_canvas.itemconfigure(self._grid_window,height=content_height)
++        if visible:self.empty_notice.place_forget()
++        else:self.empty_notice.place(relx=.5,rely=.34,anchor='center')
+         self.chart_canvas.after_idle(self._sync_chart_scrollregion)
+ 
+     def _bind_chart_scroll(self,widget):
+@@ -878,27 +957,38 @@
+         count=self.settings['layout']
+         self.cards=[PriceChart(self.grid_frame,self.p,i,self._select_chart) for i in range(count)]
+         self._chart_columns=0
++        self._layout_signature=None
++        self._display_slots=[]
+         self._resize_chart_view()
+         self.chart_canvas.yview_moveto(0)
+ 
+     def _refresh_charts(self):
++        slots=self._chart_slots()
++        # The selected market stays a persisted slot; do not overwrite a
++        # saved symbol when a sourced-only view reorders the display.
++        if slots and self.active not in slots:self.active=slots[0]
+         self._selected_market_label()
+-        for i,card in enumerate(self.cards):
+-            symbol=self.settings['symbols'][i]
+-            period=self.settings['interval']
++        # Layout first so card 0 can show verified saved slot 9, etc.
++        self._layout_chart_cards()
++        self._display_slots=slots
++        period=self.settings['interval']
++        for screen_pos,card in enumerate(self.cards):
++            if screen_pos>=len(slots):
++                card.display('','',None,None,False,self.settings['style'],False)
++                continue
++            slot=slots[screen_pos]
++            symbol=self.settings['symbols'][slot]
+             key=(symbol,period)
+             data=self._data.get(key);error=self._errors.get(key)
+             if self.offline and symbol and data is None:error='NETWORK DISABLED'
+             card.display(symbol,self._names.get(symbol,symbol),data,error,
+-                         key in self._pending,self.settings['style'],i==self.active)
++                         key in self._pending,self.settings['style'],slot==self.active)
+             if symbol and data is None and error is None and key not in self._pending:
+                 if not self._eligible_sources(symbol,period) and not self.offline:
+                     self._errors[key]='NO ELIGIBLE SOURCE WITH CURRENT PERMISSIONS'
+                     self._audit_completed.add(key)
+                 else:self._request(symbol,period)
+         self._source_summary()
+-        self._resize_chart_view()
+-        self._layout_chart_cards(self._chart_columns)
+ 
+     def _request(self,symbol,period,force=False):
+         if self.offline or self._stopped or not self._visible:return
+@@ -951,8 +1041,8 @@
+ 
+         Never includes URLs, API keys or arbitrary upstream HTML bodies.
+         """
+-        index=min(self.active,len(self.cards)-1)
+-        if index<0:return 'No chart is visible.'
++        index=self.active
++        if not 0<=index<len(self.settings['symbols']):return 'No chart is selected.'
+         symbol=self.settings['symbols'][index]
+         period=self.settings['interval']
+         if not symbol:return 'No market assigned to the selected chart.'
+--- a/Marble Oracle - Official Build/Application/Tests/test_augurspex_chart_repair_0485.py
++++ b/Marble Oracle - Official Build/Application/Tests/test_augurspex_chart_repair_0485.py
+@@ -0,0 +1,131 @@
++"""Regression for reported AUGURSPEX 0.4.8.4 usability defects.
++
++Deterministic test observations only; no external market requests or fake
++market values introduced into production code.
++Run: xvfb-run -a python3 Application/Tests/test_augurspex_chart_repair_0485.py
++"""
++from __future__ import annotations
++
++from datetime import datetime, timedelta, timezone
++from pathlib import Path
++import json
++import sys
++import tempfile
++import tkinter as tk
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'Runtime' / 'Marble_Oracle_App'))
++from oracle_augurspex_tab import EmbeddedAugurspex, chart_grid_plan
++
++SYMBOLS=('AAPL','MSFT','NVDA','BTC-USD','ETH-USD','SOL-USD','RMD.AX','COH.AX','XRP-USD')
++
++
++def sample(symbol):
++    day=datetime(2026,8,1,tzinfo=timezone.utc)
++    candles=[]
++    for i in range(110):
++        val=50+i*0.5
++        candles.append({'time':(day+timedelta(days=i)).isoformat(),
++                        'open':val,'high':val+2,'low':val-2,'close':val+1})
++    return {'source':'TEST OBSERVATIONS / NOT LIVE', 'currency':'USD',
++            'latest_observation':candles[-1]['time'], 'candles':candles}
++
++
++def no_overlap(box1,box2):
++    if box1 is None or box2 is None:return True
++    return box1[2]<=box2[0] or box2[2]<=box1[0] or box1[3]<=box2[1] or box2[3]<=box1[1]
++
++
++def validate_axis(card):
++    c=card.canvas
++    c.update_idletasks()
++    w,h=c.winfo_width(),c.winfo_height()
++    assert w>=260 and h>=180,(w,h)
++    date_ids=c.find_withtag('date-axis-label')
++    prices=c.find_withtag('price-axis-label')
++    assert len(date_ids)>=2 and len(prices)>=3,(len(date_ids),len(prices))
++    for item in date_ids+prices:
++        bb=c.bbox(item)
++        assert bb and bb[0]>=-3 and bb[1]>=-3 and bb[2]<=w+3 and bb[3]<=h+3,(
++            'clipped',item,c.itemcget(item,'text'),bb,w,h)
++    for index,a in enumerate(date_ids):
++        for b in date_ids[index+1:]:
++            assert no_overlap(c.bbox(a),c.bbox(b)),('colliding dates',c.itemcget(a,'text'),c.itemcget(b,'text'))
++    for a in date_ids:
++        for b in prices:
++            assert no_overlap(c.bbox(a),c.bbox(b)),('date/price collision',c.itemcget(a,'text'),c.itemcget(b,'text'))
++    for index,a in enumerate(prices):
++        for b in prices[index+1:]:
++            assert no_overlap(c.bbox(a),c.bbox(b)),('price axis collision',c.itemcget(a,'text'),c.itemcget(b,'text'))
++
++
++def test_repairs():
++    assert chart_grid_plan(1,1,950,520)[2]>chart_grid_plan(9,9,950,520)[2]
++    with tempfile.TemporaryDirectory() as td:
++        config=Path(td)/'.config'/'augurspex'
++        config.mkdir(parents=True)
++        (config/'watchlist.json').write_text(json.dumps({'markets':[{'symbol':s,'name':s} for s in SYMBOLS]}))
++        (config/'settings.json').write_text(json.dumps({'layout':9,'symbols':list(SYMBOLS),'style':'2'}))
++        root=tk.Tk();root.geometry('1400x870+0+0')
++        holder=tk.Canvas(root);holder.pack(fill='both',expand=True)
++        tab=EmbeddedAugurspex(holder,lambda:None,home=td,offline=True)
++        tab.layout((0,0,1400,870))
++        root.update()
++        p=tab.frame
++        # Real-source-only mode, with deterministic known-good history across
++        # the *whole* saved 9-slot list, including last slot.
++        p.offline=False
++        p.sourced_only=True
++        for s in SYMBOLS:
++            p._data[(s,'D')]=sample(s)
++        sizes={}
++        for count in (1,2,4,6,9):
++            p._change_layout(str(count));root.update();root.update_idletasks()
++            assert int(p.settings['layout'])==count
++            assert len(p.cards)==count
++            assert len(p._chart_slots())==count
++            assert len([c for c in p.cards if c.winfo_ismapped()])==count
++            assert p._display_slots==list(range(count)), p._display_slots
++            assert f'{count} DISPLAYED / {count} REQUESTED' in p.display_count.cget('text')
++            chart=p.cards[0]
++            validate_axis(chart)
++            sizes[count]=(chart.canvas.winfo_width(),chart.canvas.winfo_height())
++            assert p.chart_canvas.winfo_width()>250
++        assert sizes[1][0]>sizes[4][0]*1.6,(sizes[1],sizes[4])
++        assert sizes[1][1]>sizes[9][1]*1.2,(sizes[1],sizes[9])
++        # A valid saved slot 9 remains visible even in one-chart mode. This was
++        # the user's bug: filtering the first N saved *indices* lost it.
++        p._data={(SYMBOLS[-1],'D'):sample(SYMBOLS[-1])}
++        p._change_layout('1');root.update()
++        assert p._display_slots==[8],p._display_slots
++        assert p.cards[0].symbol==SYMBOLS[-1]
++        assert p.cards[0].winfo_ismapped()
++        assert '1 DISPLAYED / 1 REQUESTED' in p.display_count.cget('text')
++        p._change_layout('9');root.update()
++        assert p._display_slots==[8]
++        assert '1 DISPLAYED / 9 REQUESTED' in p.display_count.cget('text')
++        # Reassignment targets original saved slot, not screen position zero.
++        p._select_chart(0)
++        assert p.active==8
++        assert p.settings['symbols'][8]==SYMBOLS[-1]
++        # Three desktop sizes; source-only view and all-markets view must remain
++        # accessible, without clipped date or price ticks.
++        p._data={(s,'D'):sample(s) for s in SYMBOLS}
++        for w,h in ((1400,870),(1000,650),(900,580)):
++            root.geometry(f'{w}x{h}+0+0');root.update()
++            tab.layout((0,0,w,h));root.update()
++            p._change_layout('9');root.update()
++            assert p.chart_canvas.winfo_height()>90
++            assert p.grid_frame.winfo_height()>p.chart_canvas.winfo_height()
++            assert p.option_parts[-1].winfo_ismapped()
++            assert p.watch.winfo_height()>40
++            validate_axis(p.cards[0])
++        # Source-only panel updates without deleting saved markets.
++        p._toggle_sourced();root.update()
++        assert len(p._chart_slots())==9 and len(p.cards)==9
++        assert len(p.settings['symbols'])==9
++        assert tab.shutdown()
++        root.destroy()
++    print('AUGURSPEX 0.4.8.5 REAL LAYOUT + SOURCE-SLOT + LABEL COLLISIONS: PASS')
++
++
++if __name__=='__main__':test_repairs()
+--- a/Marble Oracle - Official Build/Application/Tests/test_augurspex_sourced_layout_0484.py
++++ b/Marble Oracle - Official Build/Application/Tests/test_augurspex_sourced_layout_0484.py
+@@ -50,14 +50,15 @@
+         pump(root,lambda:p._market_verified('BTC-USD') and p._market_verified('ETH-USD') and ('AAPL','D') in p._errors)
+         root.update()
+         assert [row['symbol'] for row in p.rows]==['BTC-USD','ETH-USD'],p.rows
+-        assert [p.settings['symbols'][i] for i in p._chart_indices()]==['BTC-USD','ETH-USD']
++        assert [p.settings['symbols'][i] for i in p._chart_slots()]==['BTC-USD','ETH-USD']
+         assert p._chart_columns<=2
+         for i in p._chart_indices():
+             card=p.cards[i]
+             assert card.winfo_ismapped()
+             assert card.winfo_height()>=380,card.winfo_height()
+             assert card.canvas.winfo_width()>=260,card.canvas.winfo_width()
+-        assert not p.cards[1].winfo_ismapped() and not p.cards[2].winfo_ismapped()
++        assert p.cards[1].symbol=='ETH-USD' and p.cards[1].winfo_ismapped()
++        assert not p.cards[2].winfo_ismapped() and not p.cards[3].winfo_ismapped()
+         assert len(json.loads((cfg/'watchlist.json').read_text())['markets'])==4
+         p._toggle_sourced();root.update()
+         assert p.watch.size()==4
+--- a/Marble Oracle - Official Build/Application/Tests/test_augurspex_chart_axes_and_history.py
++++ b/Marble Oracle - Official Build/Application/Tests/test_augurspex_chart_axes_and_history.py
+@@ -65,7 +65,7 @@
+         chart.display(symbol,symbol,data,None,False,'1',True)
+         root.update()
+         texts=[chart.canvas.itemcget(i,'text') for i in chart.canvas.find_all() if chart.canvas.type(i)=='text']
+-        assert any('CLOSE-ONLY HISTORY' in item for item in texts)
++        assert chart.info.cget('text').startswith('CLOSE-ONLY HISTORY')
+         assert any('NOV' in item for item in texts),texts
+         lines=[i for i in chart.canvas.find_all() if chart.canvas.type(i)=='line' and float(chart.canvas.itemcget(i,'width'))>=3]
+         assert lines,'closing-only bars must be connected by a visibly thick line'
+--- a/Marble Oracle - Official Build/Application/Tests/test_augurspex_grid_contrast_0480.py
++++ b/Marble Oracle - Official Build/Application/Tests/test_augurspex_grid_contrast_0480.py
+@@ -46,7 +46,9 @@
+         assert len(chart_display_bars(candles,300,'1'))<len(candles)
+         assert chart_display_bars(candles,300,'1')[-1]['time']==candles[-1]['time']
+         labels=[canvas.itemcget(i,'text') for i in tagged(canvas,'all') if canvas.type(i)=='text']
+-        assert any('LAST ' in s and 'REAL BARS' in s for s in labels), labels
++        assert tagged(canvas,'date-axis-label'), 'Date-axis labels must remain visible'
++        assert 'bars' in card.info.cget('text'), 'Observation count now belongs in source/info strip'
++        assert not any('REAL BARS' in s for s in labels), 'Do not overprint a second caption below dates'
+         # A thick line outline is used in LINE mode even if CANDLES is default.
+         card.display('NVDA','NVIDIA',data,None,False,'2',True)
+         root.update()
+--- a/Marble Oracle - Official Build/Application/Documentation/RELEASE_NOTES_MARBLE_ORACLE_0.4.8.5.md
++++ b/Marble Oracle - Official Build/Application/Documentation/RELEASE_NOTES_MARBLE_ORACLE_0.4.8.5.md
+@@ -0,0 +1,47 @@
++# Marble Oracle 0.4.8.5 — AUGURSPEX layout repair
++
++**13 November 2026 — targeted repair of user-reported defects in 0.4.8.4.**
++
++## What was actually changed
++
++1. **Chart selector now operates on sourced display positions rather than saved slots.** The user's nine assigned market slots remain untouched. When only saved slot nine has real history, choosing CHARTS = 1 shows that market in the first visible card, rather than leaving a blank viewport. CHARTS = 1/2/4/6/9 means the **maximum number of sourced charts to show**, not a promise that that number of markets can be fetched. The interface visibly says `X DISPLAYED / Y REQUESTED`.
++2. **Responsive sizing replaces the hard-coded 405px chart rows.** The pure `chart_grid_plan` function uses the actual chart viewport and visible count. One chart grows to the available height and width; wider windows support two columns; smaller views scroll vertically to keep full-size labels/axes.
++3. **Date and price labels now reserve distinct space.** Date labels are selected using actual font measurement with collision rejection, and the duplicate observation note was removed from the canvas. Observation counts remain in the source/info footer. Prices retain a separate right-axis band.
++4. **Source detail and assignment remain tied to saved market slot IDs.** Changing the screen order does not reassign the user's persisted markets. Sourced-only filtering still hides charts without verified real history and does not delete or alter the saved watchlist.
++5. **Status and provider labels fit compact windows.** Visible one-line status messages are shortened according to available width; untruncated diagnostic text is still in state/SOURCE DETAILS. The selector variable now updates even when the callback is invoked programmatically.
++6. **Close-only history remains explicitly labelled** in the chart source/info footer, with line plots rather than fabricated OHLC candles.
++
++## Measured, rendered fixture results
++
++At **1400×870** (actual chart canvas sizes, pixels):
++
++| Requested charts | First chart plot |
++|---|---|
++| 1 | 1046×496 |
++| 4 | 508×218 |
++| 9 | 508×215 |
++
++At **900×580**, one chart plot is 546×237; the nine-chart arrangement uses 546×229 plots and scrolls. All measurements used synthetic, clearly labelled GUI fixtures, not live financial data.
++
++Additional fixture: with only saved slot nine having valid history, the one-chart setting renders that slot and reports `1 DISPLAYED / 1 REQUESTED`; the nine-chart setting renders the same one chart and reports `1 DISPLAYED / 9 REQUESTED`.
++
++## Verification performed
++
++- `test_augurspex_chart_repair_0485.py` — chart-count selection, sparse saved indices, persistence, actual pixel dimensions, 3 window sizes, chart text bounding-box collisions, no deleted watchlist: **PASS**.
++- `test_augurspex_sourced_layout_0484.py` — updated previous test for the new distinction between screen index and saved slot index: **PASS**.
++- `test_augurspex_readability_0481.py`, `test_augurspex_scrollable_0483.py`, `test_augurspex_native_tab.py`, `test_augurspex_grid_contrast_0480.py`, `test_augurspex_chart_axes_and_history.py`, `test_augurspex_source_details_gui_0478.py`, `test_tab_layout.py`, `test_no_news_or_markets.py`, `test_augurspex_integration.py`, and `test_augurspex_home_carousel.py` — focused checks run (see final handover for statuses).
++- Release manifest, SHA-256 inventory and critical assets revalidated using `Application/Tools/verify_release.py`. ZIP verified from clean extraction.
++
++**What has not been proven:** Actual user monitor DPI/font rendering on Linux Mint and Windows; unrestricted ASX/JPX/KRX/US price history; physical GPU/FFmpeg hardware regressions. External providers and converter engines were **not modified**.
++
++## Important files
++
++- `Application/Runtime/Marble_Oracle_App/oracle_augurspex_tab.py`
++- `Application/Tests/test_augurspex_chart_repair_0485.py`
++- `Application/Tests/test_augurspex_sourced_layout_0484.py`
++- `Application/Tests/test_augurspex_chart_axes_and_history.py`
++- `Application/Tests/test_augurspex_grid_contrast_0480.py`
++
++## Maintainer handoff
++
++Continue from `fix/augurspex-chart-layout-0485-20261113`, not `main`. Keep the prior draft PR #2 as a handover record; do not merge either branch until the user approves. Full packaged Windows/Linux ZIP remains the authoritative deployable build; `~/.config/augurspex` personal state is not included.
+--- a/Marble Oracle - Official Build/Application/Documentation/CLAUDE_HANDOVER_AUGURSPEX_0.4.8.5.md
++++ b/Marble Oracle - Official Build/Application/Documentation/CLAUDE_HANDOVER_AUGURSPEX_0.4.8.5.md
+@@ -0,0 +1,41 @@
++# Claude handover — Marble Oracle AUGURSPEX 0.4.8.5
++
++**Branch:** `fix/augurspex-chart-layout-0485-20261113`
++
++**Base:** GitHub's existing `handover/augurspex-0484-layout-20261113` draft PR #2. Never merge PR #2 as if it were the fix. The 0.4.8.4 source snapshot is in that handover branch's `handoffs/augurspex-0.4.8.4/` folder. The repaired portable 0.4.8.5 ZIP is delivered through the ChatGPT artifact link separately. The source snapshot by itself lacks many binary suite assets.
++
++## Previously blocking user reports
++
++- Text overlap/clipping, especially date/price labels and status strips.
++- CHARTS 1/2/4/6/9 selector appeared not to work when `sourced_only` was enabled.
++- Chart height remained ~405px even with a single market.
++
++## Fixes included
++
++- `oracle_augurspex_tab.py`: `chart_grid_plan` pure layout model; `CHART_PAD_R/B` reserved bands; measured date label intersection rejection; observation note removed from chart canvas; Close-only history message kept in footer.
++- `AugurspexPanel._chart_slots()`: sourced display draws from all nine persistent assignments, not just the first N. Limits display to selected count, but never deletes slots or market data.
++- `_display_slots` maps current card position to the persisted slot index. `_select_chart` uses that mapping so a market displayed in card 0 can legitimately be saved as slot 8. `_source_details_text()` continues using the saved active slot.
++- `_layout_chart_cards` derives row height from true viewport and visible count; adaptive one/two columns; scroll only as required. `_layout_signature` suppresses redundant grid rebuilding during `Configure` cascades.
++- New indicator `X DISPLAYED / Y REQUESTED` explains why nine requested charts may show one when only one source is verified. A transient failure hides a card rather than deleting the saved selection.
++- `_fit_status_strips` shortens the visible status/footer at narrower widths without losing full diagnostic text in state and SOURCE DETAILS.
++
++## Acceptance evidence
++
++- `Application/Tests/test_augurspex_chart_repair_0485.py` uses deterministic local fixture observations and asserts actual pixel dimensions, no date/price label bounding-box overlap, proper chart-count behavior, persisted slot-9 visibility at CHARTS=1, and scrolling at 900×580.
++- At 1400×870: single = 1046×496 px; four = 508×218; nine = 508×215. At 900×580: single = 546×237; nine = 546×229, with vertical scroll.
++- Screenshot PNGs named `MARBLE_ORACLE_AUGURSPEX_0485_*_CH_TEST.png` are **synthetic test data, not live market prices**.
++- The suite remains entirely native Tk and retains the darker Oggcultist texture, thick grid/candle/line strokes, six-tab order HOME–OGGCULTIST–EIDOLITH–AUGURSPEX–PASSPHRASE–TOUCH TYPE, and HOME watchlist carousel.
++
++## Next steps for Claude
++
++1. Check out the 0.4.8.5 fix branch. Restore the full original 0.4.8.4 source snapshot first if necessary, then overlay the source and test changes from the fix branch/patch. Do not accidentally replace newer contributors' work.
++2. Reproduce with actual Linux Mint GTK session, Windows 11 Tk, and different DPI/font scaling. Use the 900×580 and 1400×870 screenshots to compare.
++3. Test long translated company names, extremely large/small index price levels, very narrow chart canvases, and different Tk font fallback behavior. Address any remaining display clipping.
++4. Verify keyboard accessibility to the OptionMenu, scroll wheel, and show-all/show-sourced toggle. Implement a clear market-assignment UI for an empty sourced-only view if necessary.
++5. Run the 0.4.8.5 regression plus previous test suite. Recheck EIDOLITH queue/full conversion and physical FFmpeg hardware where possible; those components were not changed here.
++6. Do not claim unavailable exchanges are fixed by the layout repair. API keys, exchange entitlements, and free provider outages still apply. Do not fabricate OHLC bars or proxy an unrelated stock.
++7. Leave the new PR unmerged for user review. Do not commit API keys, `~/.config/augurspex`, provider caches, or quoted price data.
++
++## Verification limitations
++
++Automated tests are Linux Xvfb synthetic fixtures. No physical Windows/Linux Mint graphical session or live-provider check was run for this fix. `verify_release.py` checks packaging hashes/assets, not real-world UI correctness. Screenshot visual checks supplement, rather than replace, automated bounds tests.
