@@ -73,7 +73,7 @@ def gui_tests():
         root.update()
         scene.resized(1216,848)
         root.update()
-        assert len(scene.nav_tabs)==5
+        assert len(scene.nav_tabs)==6
         assert 'tab_touch_type' in scene.nav_tabs
         scene.act('tab_touch_type')
         root.update()
@@ -141,7 +141,7 @@ def gui_tests():
             x,y=root.winfo_rootx(),root.winfo_rooty()
             ImageGrab.grab(bbox=(x,y,x+root.winfo_width(),y+root.winfo_height())).save(
                 str(HERE/'TOUCH_TYPE_SMALL.png'))
-        print('TOUCH TYPE UI: overlay, 5 tabs, pause, restore, modes, resize PASS')
+        print('TOUCH TYPE UI: overlay, 6 tabs, pause, restore, modes, resize PASS')
     finally:
         app.quit()
 

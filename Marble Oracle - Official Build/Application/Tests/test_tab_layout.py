@@ -18,14 +18,14 @@ def go(flags):
     root.update()
     scene.resized(1216, 848)
     root.update()
-    expected = {'tab_home','tab_passphrase','tab_oggcultist','tab_touch_type','tab_eidolith','next','word','deal','view'}
-    assert len(scene.nav_tabs) == 5, scene.nav_tabs
+    expected = {'tab_home','tab_passphrase','tab_oggcultist','tab_touch_type','tab_eidolith','tab_augurspex','next','word','deal','view'}
+    assert len(scene.nav_tabs) == 6, scene.nav_tabs
     assert expected.issubset({h[4] for h in scene.hot})
-    # Workspace order, left to right: HOME, OGGCULTIST, EIDOLITH, PASSPHRASE, TOUCH TYPE.
+    # Workspace order, left to right: HOME, OGGCULTIST, EIDOLITH, AUGURSPEX, PASSPHRASE, TOUCH TYPE.
     # Check coordinates, not just dictionary insertion order, so hit areas match visuals.
-    nav_actions = {'tab_home','tab_oggcultist','tab_eidolith','tab_passphrase','tab_touch_type'}
+    nav_actions = {'tab_home','tab_oggcultist','tab_eidolith','tab_passphrase','tab_touch_type','tab_augurspex'}
     left_to_right = [h[4] for h in sorted((h for h in scene.hot if h[4] in nav_actions), key=lambda h: h[0])]
-    assert left_to_right == ['tab_home','tab_oggcultist','tab_eidolith','tab_passphrase','tab_touch_type'], left_to_right
+    assert left_to_right == ['tab_home','tab_oggcultist','tab_eidolith','tab_augurspex','tab_passphrase','tab_touch_type'], left_to_right
     assert OGG_MAIN.is_file()
     # All four former menu actions are now inside their assigned panel.
     for section, action in [('trans','next'),('lex','word'),('cards','deal'),('status','view')]:
@@ -44,7 +44,7 @@ def go(flags):
     status = scene.rect['status']
     grade = next(h for h in scene.hot if h[4] == 'view')
     assert (grade[0] + grade[2]) / 2 > (status[0] + status[2]) / 2, (grade, status)
-    for action in ('tab_home','tab_oggcultist','tab_eidolith','tab_passphrase','tab_touch_type'):
+    for action in ('tab_home','tab_oggcultist','tab_eidolith','tab_passphrase','tab_touch_type','tab_augurspex'):
         h = next(h for h in scene.hot if h[4] == action)
         assert scene.hit((h[0]+h[2])/2,(h[1]+h[3])/2)[4] == action
     assert scene._which_overlay() is None
@@ -72,7 +72,7 @@ def go(flags):
     assert scene.dk.frame.engine.check(scene.dk.phrase)
     scene.dk.frame.home_button.invoke()
     assert scene.dk is None
-    assert len(scene.nav_tabs) == 5
+    assert len(scene.nav_tabs) == 6
     # Screenshot if configured; headless screenshot is diagnostic only.
     if os.environ.get('CAPTURE_ORACLE'):
         try:
