@@ -1,0 +1,27 @@
+{
+  "module_id": "org.marbleoracle.augurspex",
+  "display_name": "AUGURSPEX \u2014 Market Observatory",
+  "version": "1.2.0",
+  "integration_version": "1.0.0",
+  "target_suite": "Marble Oracle EIDOLITH 0.4.7 no-news-no-markets",
+  "mode": "companion app window launched from sixth navigation tab",
+  "external_debian_package_required": false,
+  "authentication_required": false,
+  "key_required": false,
+  "python_dependencies": "stdlib only",
+  "state": "~/.config/augurspex",
+  "files_sha256": {
+    "payload/oracle_augurspex_bridge.py": "b99906c4eddabdd988b38345bc2e3f59fee33fc01ced1cac11b335aadd5eb7fb",
+    "payload/Augurspex/run.py": "5a9d63f34524c9246f08025b5f51387f88578fb3fca9aad076a574ddcd896a89",
+    "payload/Augurspex/augurspex/__main__.py": "3426a85442b716f88c2cf9132f4a1b0b4b90d768920c2f9d809695c5b28e93ed",
+    "payload/Augurspex/augurspex/providers.py": "b063840d55033a70249aa92684f41c20e7d5ab83b2ff9d6f17ffc95a7f4f2d8d",
+    "payload/Augurspex/augurspex/default_watchlist.json": "ff3cd01b41c673e6f03e29541f9b10ba31bfdbd5ac169e8472db29332988dd15",
+    "payload/Augurspex/augurspex/server.py": "2f6472b11fd2b9cf1f1370c7bd24408f63a780d3896cdc606d6cf2b2adf4b071",
+    "payload/Augurspex/augurspex/index.html": "7d377b2d966cf3d3ff3dcbde2a16a4603eb27236657ccb1f750d18ca40e52cbc",
+    "payload/Augurspex/augurspex/app.js": "b2609fe9c3b23455a1c75f5ba6cd852ed7e911a941f846f56a574616749a6d80",
+    "payload/Augurspex/augurspex/__init__.py": "007dc8daf776c68e8c28446f4f83b81e9b15f54713dfab69b40e50ba1e58c782",
+    "payload/Augurspex/augurspex/style.css": "7ccc8fb55745b10bb41aefeefe84037114d05e855794065d0c6c7a19d539546c",
+    "payload/Augurspex/augurspex/core.py": "c68c8b4c7a07ac990456326493a8ac41f0bb977b78821a9700508545059fc744",
+    "payload/Augurspex/augurspex/icon.svg": "fc6d1050fef793a05029211a9f8e0d64bc5578785a2fd7ce98f3ea15d3a21d0d"
+  }
+}

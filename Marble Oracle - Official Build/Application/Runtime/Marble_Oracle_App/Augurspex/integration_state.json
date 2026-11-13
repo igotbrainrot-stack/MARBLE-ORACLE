@@ -1,0 +1,9 @@
+{
+  "version": "1.2.0",
+  "installed_utc": "2026-11-11T06:43:47.816937+00:00",
+  "patched_checksums": {
+    "marble_oracle.py": "71b8c0ee1ed1cb93ef1cd6cc60c5a75bfa109d9431b736877faef2265dc6061e",
+    "oracle_chrome.py": "9b9f1798268ac6a8f401e406f41b6e2337d7176c2ab7cdfb8d5e3c7652f18f8f"
+  },
+  "bridge_sha256": "75a04a24253d249b3f42ceb4e40a1b96ca977ccc49ba453f1d72392ff153b0f2"
+}

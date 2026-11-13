@@ -1,6 +1,6 @@
 {
- "release": "Marble Oracle / EIDOLITH 0.4 conversion reliability",
- "generated_utc": "2026-11-10",
+ "release": "Marble Oracle 0.4.8.5 — AUGURSPEX chart count, size and text fit",
+ "generated_utc": "2026-11-13",
  "schema": "sha256-inventory-v1",
  "excluded_from_hashes": [
   "Application/Documentation/AUDIT_REPORT.md",
@@ -8,8 +8,8 @@
   "Application/Documentation/FILE_INVENTORY.json",
   "Application/Documentation/VERIFICATION_REPORT.md"
  ],
- "inventory_file_count": 366,
- "inventory_total_bytes": 114526013,
+ "inventory_file_count": 442,
+ "inventory_total_bytes": 115441107,
  "files": [
   {
    "path": "Application/.gitignore",
@@ -27,6 +27,16 @@
    "sha256": "4f37ba093ef796b2c23a7a1c4a093437e6131cccabcc28f50bbce6f17a880b69"
   },
   {
+   "path": "Application/Documentation/AUGURSPEX_MODULE_INTEGRATION.md",
+   "bytes": 3091,
+   "sha256": "976cc3622241f14eff0fd599e38c3182a582d7c7735ddcc86f2be4a55f674a2b"
+  },
+  {
+   "path": "Application/Documentation/AUGURSPEX_PROVIDER_RESEARCH_IMPLEMENTATION_0.4.8.2.md",
+   "bytes": 7573,
+   "sha256": "c806bd119bf54bf9810a0b2600bc653bd1d63d61636e1874c9554b2aa15a890e"
+  },
+  {
    "path": "Application/Documentation/CONSOLE_FREE_LAUNCH.md",
    "bytes": 1459,
    "sha256": "93dfc051afe280236fb60d4c4245bb5b215aab085500124deae9c84d9e53583c"
@@ -35,6 +45,16 @@
    "path": "Application/Documentation/DOCUMENTATION_INDEX.md",
    "bytes": 2162,
    "sha256": "ddff33afb759aa232ec7484b42b885180b4a27da3f214880d716468bc3d31710"
+  },
+  {
+   "path": "Application/Documentation/EIDOLITH_0_4_7_DASHBOARD_SIMPLIFICATION.md",
+   "bytes": 1372,
+   "sha256": "c558c47f8b3b0aa0c3a57f174a59264f7b352eaa3305e366b56c60ba0040f868"
+  },
+  {
+   "path": "Application/Documentation/EIDOLITH_NATIVE_FILE_SELECTION_0_4_7.md",
+   "bytes": 1260,
+   "sha256": "6073db6bf7cf7768bbe16d38120905c197217d5994c8e20e7cc734cb0291a3b8"
   },
   {
    "path": "Application/Documentation/EIDOLITH_PLAYER_WORKSPACES_AND_SELECT_ALL.md",
@@ -302,6 +322,81 @@
    "sha256": "daf645988263cdd73e1f1e19d07a44758c38791982dd094cac6dbb593e75d28c"
   },
   {
+   "path": "Application/Documentation/RELEASE_NOTES_0.4.8.2_AUGURSPEX_RESEARCH.md",
+   "bytes": 2523,
+   "sha256": "f90675cc05b56723182c3def05f2d512445b6132500e6a07f4782e781d609f54"
+  },
+  {
+   "path": "Application/Documentation/RELEASE_NOTES_0.4.8.3_AUGURSPEX_SCROLL_LAYOUT.md",
+   "bytes": 3849,
+   "sha256": "d678fa628e153727f3a97f94a886c9f38325f3f768c87fd8ce8abfb827afc426"
+  },
+  {
+   "path": "Application/Documentation/RELEASE_NOTES_0.4.8.4_AUGURSPEX_SPACIOUS_SOURCED.md",
+   "bytes": 3735,
+   "sha256": "77c07ba95fa08b6c038171e1e9720996ec8bc9ed9f1b6a3be1b7e5b2d97fdae6"
+  },
+  {
+   "path": "Application/Documentation/RELEASE_NOTES_0.4.8.5_AUGURSPEX_CHART_LAYOUT.md",
+   "bytes": 6514,
+   "sha256": "7b4bd004e0fcaba4cfd571ee2098f630ad80ac79d5385ac7f893d1ec7ff063eb"
+  },
+  {
+   "path": "Application/Documentation/RELEASE_NOTES_EIDOLITH_0.4.7.1_AUGURSPEX.md",
+   "bytes": 5278,
+   "sha256": "c0dcf703ffa157ae59225f59c3750f4b245928e6eff2fa0f95c4b8e3908b051b"
+  },
+  {
+   "path": "Application/Documentation/RELEASE_NOTES_EIDOLITH_0.4.7.2_AUGURSPEX_MARKET_PULSE.md",
+   "bytes": 4353,
+   "sha256": "5f80a7b448f13fbb971b1d30c2b35dedc42e2cb8e331d1a4038b7ececeee6afa"
+  },
+  {
+   "path": "Application/Documentation/RELEASE_NOTES_EIDOLITH_0.4.7.3_AUGURSPEX_NATIVE.md",
+   "bytes": 5269,
+   "sha256": "b73cf3f6b7805f202838e7d94a49601d2c709f4d59b6565990d96453d40fc9e0"
+  },
+  {
+   "path": "Application/Documentation/RELEASE_NOTES_EIDOLITH_0.4.7.4_AUGURSPEX_TEXTURE_AND_HISTORY.md",
+   "bytes": 2436,
+   "sha256": "52377950a9acab53788355fa7a97e6bbc128f1a935f869ae1f9b1391f0ab52e8"
+  },
+  {
+   "path": "Application/Documentation/RELEASE_NOTES_EIDOLITH_0.4.7.5_AUGURSPEX_SIDEBAR_AND_STOCK_HISTORY.md",
+   "bytes": 3412,
+   "sha256": "fc73c5c7ffee9e9e621fbacdffefcb3fe3e05dddca341ef4b01aab6887d9fd7e"
+  },
+  {
+   "path": "Application/Documentation/RELEASE_NOTES_EIDOLITH_0.4.7.6_AUGURSPEX_CHARTS_AND_HISTORY.md",
+   "bytes": 4425,
+   "sha256": "7b9842aefc4079cd5d73a00f5600fa1736e071b2a5072da3dde47ae9c0616eb9"
+  },
+  {
+   "path": "Application/Documentation/RELEASE_NOTES_EIDOLITH_0.4.7.7_AUGURSPEX_SOURCE_RELIABILITY.md",
+   "bytes": 5226,
+   "sha256": "c5fd0076f3610c1dfae7ce209008f2503d51e48daacb684e5d70631ea58dce80"
+  },
+  {
+   "path": "Application/Documentation/RELEASE_NOTES_EIDOLITH_0.4.7.8_AUGURSPEX_SELF_REVIEW.md",
+   "bytes": 5320,
+   "sha256": "cf4bf307348c78d16568c21539fa8c80279a478bbb0c120ca4f7bc748c1bd217"
+  },
+  {
+   "path": "Application/Documentation/RELEASE_NOTES_EIDOLITH_0.4.7.9_AUGURSPEX_TAB_ORDER.md",
+   "bytes": 1069,
+   "sha256": "9849f3519755c8fb512dae349594cb3b2aa4aba6db118ccae8a50da54db04f91"
+  },
+  {
+   "path": "Application/Documentation/RELEASE_NOTES_EIDOLITH_0.4.8.0_AUGURSPEX_GRID.md",
+   "bytes": 3168,
+   "sha256": "ad36f653866b7621e0e40938f30a8b40979b11d856a2a371e06152f01c980e72"
+  },
+  {
+   "path": "Application/Documentation/RELEASE_NOTES_EIDOLITH_0.4.8.1_AUGURSPEX_READABILITY.md",
+   "bytes": 3672,
+   "sha256": "db5fee4fcd9f4866eb78b32b8c4d82dd1b89b2fe3d90fc3cac826907e18e34bd"
+  },
+  {
    "path": "Application/Documentation/RUNE_PANEL_EXPANSION.md",
    "bytes": 1717,
    "sha256": "c0ba3efc5ab19cc553de0873ecac28ed22a5d91b30cf4f0b219d904d15119c87"
@@ -318,8 +413,8 @@
   },
   {
    "path": "Application/README.md",
-   "bytes": 9030,
-   "sha256": "1a0d8fcc98a02d2f6142df6468ccc12924feb899b0ac027e189a3bd9a9670010"
+   "bytes": 10978,
+   "sha256": "33e79a08fddd08532e6af115fb0b1fa0afd9d31696c54587fca17ecdcf974dfd"
   },
   {
    "path": "Application/Runtime/Launch_Marble_Oracle.vbs",
@@ -335,6 +430,86 @@
    "path": "Application/Runtime/Marble_Oracle.pyw",
    "bytes": 1071,
    "sha256": "89bd514e5efd803aa78e955edd4b4d180e68dde77bd58cd416af84735b8182cf"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Augurspex/augurspex/__init__.py",
+   "bytes": 73,
+   "sha256": "007dc8daf776c68e8c28446f4f83b81e9b15f54713dfab69b40e50ba1e58c782"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Augurspex/augurspex/__main__.py",
+   "bytes": 50,
+   "sha256": "3426a85442b716f88c2cf9132f4a1b0b4b90d768920c2f9d809695c5b28e93ed"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Augurspex/augurspex/app.js",
+   "bytes": 49738,
+   "sha256": "ed6b26b6cd9b7649b6919f110ab92f223b2caced826b1d1236160d3adfc9b952"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Augurspex/augurspex/core.py",
+   "bytes": 12429,
+   "sha256": "bf59893dab89cb71af6f5a5225bb4c99000764d37963bf5ee655143df7153028"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Augurspex/augurspex/default_watchlist.json",
+   "bytes": 7997,
+   "sha256": "ff3cd01b41c673e6f03e29541f9b10ba31bfdbd5ac169e8472db29332988dd15"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Augurspex/augurspex/icon.svg",
+   "bytes": 671,
+   "sha256": "fc6d1050fef793a05029211a9f8e0d64bc5578785a2fd7ce98f3ea15d3a21d0d"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Augurspex/augurspex/index.html",
+   "bytes": 10138,
+   "sha256": "7e938f88237c32739df08cf60eb0fe454c367a9c72b521fccd7a4bf666c5e8cb"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Augurspex/augurspex/providers.py",
+   "bytes": 55018,
+   "sha256": "0f9915909788651a6805b45fd3f04cbca8202b1c41f95d80c3dfcb37053b7229"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Augurspex/augurspex/server.py",
+   "bytes": 9570,
+   "sha256": "9cf6b08940fe339250f29dc97ab138c4ef62c17dde46524df4ce4dd6ad88c16c"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Augurspex/augurspex/style.css",
+   "bytes": 20085,
+   "sha256": "7ccc8fb55745b10bb41aefeefe84037114d05e855794065d0c6c7a19d539546c"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Augurspex/integration_backup/BUILD_MANIFEST.json",
+   "bytes": 5871,
+   "sha256": "3e7117c6a14d14f3d01b65e572435f2f474a57668f6162c6c8212de0e8daa613"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Augurspex/integration_backup/FILE_INVENTORY.json",
+   "bytes": 75983,
+   "sha256": "78e506f7d905e2a0fcc79a4eac59cc6f37d00197c70b8c8b0e527a57e32ccaf9"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Augurspex/integration_backup/marble_oracle.py",
+   "bytes": 188702,
+   "sha256": "bfa32b7ff3fa2a87631ebcf5375bf675ac73b397305016f2c4f4694830433046"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Augurspex/integration_backup/oracle_chrome.py",
+   "bytes": 63321,
+   "sha256": "b86667b3027dc7b8f17c59092cd3bb627abc4b5c3d85ec7cb3b721fc234cf601"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Augurspex/integration_state.json",
+   "bytes": 380,
+   "sha256": "115cfab82b7a386821178a10e565b58e53869b1cfe578716c75777545ea25123"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/Augurspex/run.py",
+   "bytes": 242,
+   "sha256": "5a9d63f34524c9246f08025b5f51387f88578fb3fca9aad076a574ddcd896a89"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/INSTALL_LINUX_MINT_MENU.sh",
@@ -1413,8 +1588,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/marble_oracle.py",
-   "bytes": 192420,
-   "sha256": "8812ccf7425732860fe64986e206f7bd879c1b66b62d3dcba92c3423e2f2aaca"
+   "bytes": 199131,
+   "sha256": "e636cac65f9452e0070c5db98e5efc33870691b825cdb0bfdace9123a95d05a2"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/marble_oracle_window.ico",
@@ -1472,14 +1647,29 @@
    "sha256": "59e32962b11323e99a0eee3c04a721ac5cd200ad789c094389312fff72219a12"
   },
   {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_augurspex_bridge.py",
+   "bytes": 3261,
+   "sha256": "75a04a24253d249b3f42ceb4e40a1b96ca977ccc49ba453f1d72392ff153b0f2"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_augurspex_home.py",
+   "bytes": 5980,
+   "sha256": "7ebb474fea35682daf541ef4ea62addc664a1f492a2ef2c1400dba104d1956e8"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_augurspex_tab.py",
+   "bytes": 72728,
+   "sha256": "4718904bc88219a2cab525db2357dc7e62da90c0e914ed89e1fb8b3643f89c41"
+  },
+  {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_bootstrap.py",
    "bytes": 6443,
    "sha256": "ca662d5af80b0a12805a168013141dd649bc51871b5c948c4359f3c418bd8dc0"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_chrome.py",
-   "bytes": 64033,
-   "sha256": "2d2e5f60ae0c7a459921928185dbcbee4cc304ba42803466e51a7feec8ff6423"
+   "bytes": 63452,
+   "sha256": "18fd8289dae14cbd0c0e27c46b20dbeac8da504d45add61013d837aa5cd87b94"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_crt_v2.py",
@@ -1493,8 +1683,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith.py",
-   "bytes": 66610,
-   "sha256": "595154a907eb34a5e422732262e67c71c972956a0fecfcda5ae8e7b6211ad299"
+   "bytes": 66559,
+   "sha256": "b8a7ce186905fc7205449a4b93b340ad8bb2f757792cb8738d03f4cba60e7942"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_core.py",
@@ -1530,6 +1720,11 @@
    "path": "Application/Runtime/Marble_Oracle_App/oracle_media.py",
    "bytes": 15245,
    "sha256": "d184d847dd776d4bb7fcecf7ee648ffafc131d555df7c9b4e028c3b590185c82"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_native_files.py",
+   "bytes": 2743,
+   "sha256": "dfd24d1493349e1d5a1959d6543fac22c0c7fecfe90e892a3e999ac323b01d70"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_nixie.py",
@@ -1694,7 +1889,7 @@
   {
    "path": "Application/Tests/test_actual_mode.py",
    "bytes": 1584,
-   "sha256": "8fd45a7567cabec204f8706ee3c134e2048c97fd57011da3153320af5066b6ab"
+   "sha256": "f7c766ee8423d2e39c24548ce4d237da1e2a8434e6cff57579efe6062c92e9fa"
   },
   {
    "path": "Application/Tests/test_ascii_visibility.py",
@@ -1707,6 +1902,91 @@
    "sha256": "bb326dcd2c44f6ef759d734d7784d54440e9722478472909ab54f30918ac129f"
   },
   {
+   "path": "Application/Tests/test_augurspex_chart_axes_and_history.py",
+   "bytes": 4157,
+   "sha256": "5e3b4d852703cdb5faffa8ba510be1d4f718d6f9023ec432eb8056d33a99997d"
+  },
+  {
+   "path": "Application/Tests/test_augurspex_charts_layout_0485.py",
+   "bytes": 21186,
+   "sha256": "fed872696341815204b0b674ca5559df47b7b63aa926aaf0508e7b40f09e1f6b"
+  },
+  {
+   "path": "Application/Tests/test_augurspex_grid_contrast_0480.py",
+   "bytes": 3299,
+   "sha256": "76d0b756dae258bfe31c4399928da0d5f66e84e93955bd7a2cfb8971ff3f1b5b"
+  },
+  {
+   "path": "Application/Tests/test_augurspex_home_carousel.py",
+   "bytes": 4129,
+   "sha256": "a5a004368bd427fce5e603285ae0b30df5eb3636178cfe67c48ae098136413de"
+  },
+  {
+   "path": "Application/Tests/test_augurspex_home_gui.py",
+   "bytes": 2652,
+   "sha256": "fec0f8f79d9abc8ccc6b7e952958510d184ce9a70a993f1f0bc08bcb0ec76cf9"
+  },
+  {
+   "path": "Application/Tests/test_augurspex_integration.py",
+   "bytes": 6300,
+   "sha256": "08217dfcc4fc148fff386e3c17503876f466b1b5a7061fb0be463bc24e2ba24d"
+  },
+  {
+   "path": "Application/Tests/test_augurspex_intervals_0477.py",
+   "bytes": 3118,
+   "sha256": "46732b058ffa8fdad0cd8081ec9e8745d5fde344370d7f39ebf6f3e77d5663fa"
+  },
+  {
+   "path": "Application/Tests/test_augurspex_multisource_0477.py",
+   "bytes": 5439,
+   "sha256": "ada7dffc79c1232ff7098248d176715aa0121751fee84ce6687fa099a2f2abd2"
+  },
+  {
+   "path": "Application/Tests/test_augurspex_native_tab.py",
+   "bytes": 4801,
+   "sha256": "f10f85650efbdde90a217d4d49e6064a25cd8a8c106907b5d650359f8c187701"
+  },
+  {
+   "path": "Application/Tests/test_augurspex_provider_mappings.py",
+   "bytes": 1064,
+   "sha256": "9e476ceed70740574f848ca45549444c1f5f55533c51f81054c2ec8504a345c9"
+  },
+  {
+   "path": "Application/Tests/test_augurspex_readability_0481.py",
+   "bytes": 3843,
+   "sha256": "af8d675624220e9cb66e103702ef92d116d2750af350b2ff97e4e1e24640b5c3"
+  },
+  {
+   "path": "Application/Tests/test_augurspex_research_0482.py",
+   "bytes": 7685,
+   "sha256": "5cc47f5b036f385804d9cdf11d62b8145627711de9dd9043a43f80c2c7fd453c"
+  },
+  {
+   "path": "Application/Tests/test_augurspex_review_0478.py",
+   "bytes": 8092,
+   "sha256": "ebd379b14b17a355731b091b0796ae1bffd9ce21adaead8df8dbb82a53eeabb0"
+  },
+  {
+   "path": "Application/Tests/test_augurspex_scrollable_0483.py",
+   "bytes": 3566,
+   "sha256": "f49752bc5424ec8bc078ed59a313f8ed32c8b5f25a9169352506c4b0176c9074"
+  },
+  {
+   "path": "Application/Tests/test_augurspex_source_details_gui_0478.py",
+   "bytes": 2448,
+   "sha256": "acb85881ba76f93eccc3724f279482e6ec72537214667b091906b58f271471c9"
+  },
+  {
+   "path": "Application/Tests/test_augurspex_sourced_layout_0484.py",
+   "bytes": 4021,
+   "sha256": "4b34f11e9e77f56543f83ebc6b9a98c56a339c659c388b13fd7560d8feac1edf"
+  },
+  {
+   "path": "Application/Tests/test_augurspex_stock_fallback.py",
+   "bytes": 5152,
+   "sha256": "9456249bfb3d36061e1a9f26c7e577f79ebdd5ec21fd6540e4a86313389403c1"
+  },
+  {
    "path": "Application/Tests/test_console_free_launch.py",
    "bytes": 3001,
    "sha256": "42e9ef73cf3ba3d88bdd5731beb2cedf23a3b9100c9f6662b8b1b47a0cdd66ea"
@@ -1715,6 +1995,11 @@
    "path": "Application/Tests/test_eidolith_naming_regression.py",
    "bytes": 7011,
    "sha256": "29779bcfe6900cd4efe33a589712d5c2c6b48dcc67b953250ed02f3f8db73594"
+  },
+  {
+   "path": "Application/Tests/test_eidolith_native_file_dialogs.py",
+   "bytes": 2279,
+   "sha256": "35b0d6357419e1f5626f7477255aed52ec134e432500e8d250d79c4aee873fdc"
   },
   {
    "path": "Application/Tests/test_eidolith_queue_reliability.py",
@@ -1750,6 +2035,11 @@
    "path": "Application/Tests/test_media_setup.py",
    "bytes": 6371,
    "sha256": "75333611d9c24c0918d49bebff1fea7229d2a6fe2b1ceedc4087540bcbafd323"
+  },
+  {
+   "path": "Application/Tests/test_no_news_or_markets.py",
+   "bytes": 1649,
+   "sha256": "0f0283eb95c02c6735061cbdd443f4f4be0c88f67d0dc7d4eddc01817e3e4646"
   },
   {
    "path": "Application/Tests/test_ogg206_embedded.py",
@@ -1788,13 +2078,103 @@
   },
   {
    "path": "Application/Tests/test_tab_layout.py",
-   "bytes": 4715,
-   "sha256": "c63b62dac1d7431fb5d36da3c7b7d39d0e730fab73526ed777ffca0a9ea99982"
+   "bytes": 4790,
+   "sha256": "109548525d1d1a17d5d9e17e20d6d86740d530375f955ef8b4d9e14665fbba62"
   },
   {
    "path": "Application/Tests/test_touch_type.py",
    "bytes": 5546,
-   "sha256": "cc27bbe59c02145a377a4c085cd3d652b3ba21dbc2593a13c1bae5439e1ff82e"
+   "sha256": "5d0525faa5a179ba1429e9bdb871bd8931641f471b6a7c48ebe5a3af8719088e"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/MODULE_MANIFEST.json",
+   "bytes": 1858,
+   "sha256": "1d359132723d15e0a0660f41e9dc968580af8e080b9f7e123fe37370f4ad761e"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/README.md",
+   "bytes": 3094,
+   "sha256": "eb20744df3928ca427235c1d218fd7263e6b7e718f748128156388dfb72ccc48"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/SUITE_INTEGRATION.md",
+   "bytes": 3091,
+   "sha256": "976cc3622241f14eff0fd599e38c3182a582d7c7735ddcc86f2be4a55f674a2b"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/install_into_suite.py",
+   "bytes": 9799,
+   "sha256": "8d88061fd995d5def0dd9763f5d3d6fb04684190cc2a058fb50f13b47db9b667"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/payload/Augurspex/augurspex/__init__.py",
+   "bytes": 73,
+   "sha256": "007dc8daf776c68e8c28446f4f83b81e9b15f54713dfab69b40e50ba1e58c782"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/payload/Augurspex/augurspex/__main__.py",
+   "bytes": 50,
+   "sha256": "3426a85442b716f88c2cf9132f4a1b0b4b90d768920c2f9d809695c5b28e93ed"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/payload/Augurspex/augurspex/app.js",
+   "bytes": 49738,
+   "sha256": "ed6b26b6cd9b7649b6919f110ab92f223b2caced826b1d1236160d3adfc9b952"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/payload/Augurspex/augurspex/core.py",
+   "bytes": 12429,
+   "sha256": "bf59893dab89cb71af6f5a5225bb4c99000764d37963bf5ee655143df7153028"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/payload/Augurspex/augurspex/default_watchlist.json",
+   "bytes": 7997,
+   "sha256": "ff3cd01b41c673e6f03e29541f9b10ba31bfdbd5ac169e8472db29332988dd15"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/payload/Augurspex/augurspex/icon.svg",
+   "bytes": 671,
+   "sha256": "fc6d1050fef793a05029211a9f8e0d64bc5578785a2fd7ce98f3ea15d3a21d0d"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/payload/Augurspex/augurspex/index.html",
+   "bytes": 10138,
+   "sha256": "7e938f88237c32739df08cf60eb0fe454c367a9c72b521fccd7a4bf666c5e8cb"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/payload/Augurspex/augurspex/providers.py",
+   "bytes": 15004,
+   "sha256": "b063840d55033a70249aa92684f41c20e7d5ab83b2ff9d6f17ffc95a7f4f2d8d"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/payload/Augurspex/augurspex/server.py",
+   "bytes": 9372,
+   "sha256": "c97eccc3863cf5f2f74d55953b3cbbc220e92254687bc013adebc165c9f2292e"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/payload/Augurspex/augurspex/style.css",
+   "bytes": 20085,
+   "sha256": "7ccc8fb55745b10bb41aefeefe84037114d05e855794065d0c6c7a19d539546c"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/payload/Augurspex/run.py",
+   "bytes": 242,
+   "sha256": "5a9d63f34524c9246f08025b5f51387f88578fb3fca9aad076a574ddcd896a89"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/payload/oracle_augurspex_bridge.py",
+   "bytes": 3261,
+   "sha256": "75a04a24253d249b3f42ceb4e40a1b96ca977ccc49ba453f1d72392ff153b0f2"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/tests/test_install.py",
+   "bytes": 4110,
+   "sha256": "e7c05b42572d5078771cc9ab081c04de5ac0bf364de39d6c5fb1ea092679d820"
+  },
+  {
+   "path": "Application/Tools/AUGURSPEX_Module/uninstall_from_suite.py",
+   "bytes": 2575,
+   "sha256": "a81980233dc07d600f26facf59e7cf23a662c563e6cec95541d6fb24683edb0e"
   },
   {
    "path": "Application/Tools/Rune-24-New-Stones.png",

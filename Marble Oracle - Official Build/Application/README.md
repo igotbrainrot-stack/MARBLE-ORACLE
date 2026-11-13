@@ -1,6 +1,6 @@
 # MARBLE ORACLE — Integrated Desktop Suite
 
-**Release:** EIDOLITH 0.4 conversion-reliability edition · 10 November 2026 (see `Documentation/EIDOLITH_RELIABILITY_0_4.md`)  
+**Release:** Marble Oracle 0.4.8.5 — EIDOLITH + integrated AUGURSPEX · 13 November 2026 (latest changes: `Documentation/RELEASE_NOTES_0.4.8.5_AUGURSPEX_CHART_LAYOUT.md`)  
 **Supported launch targets:** Windows 11, Linux Mint (x86-64 desktop)  
 **Application:** Python/Tkinter, local-first media features
 
@@ -15,13 +15,22 @@
 
 | Tab | Purpose |
 |---|---|
-| **HOME** | Wire, market ticker, Latin, 14 ASCII statues, Tarot and enlarged Rune animations |
+| **HOME** | Oracle dashboard with rotating AUGURSPEX market history, Latin, ASCII statues, Tarot and Rune animations |
 | **OGGCULTIST** | Embedded Oggcultist 2.0.6 audio player, library and audio converter |
 | **EIDOLITH** | Local video player, conversion profiles, video inspection, fail-and-continue queue with progress/ETA and per-job logs, standard TV/movie filenames |
 | **PASSPHRASE** | Five-card Marble Passphrase Studio |
 | **TOUCH TYPE** | Four touch-typing mini-games with finger guidance and saved scores |
+| **AUGURSPEX** | Native multi-market watchlist and historical charts inside the suite; no browser tab launch. **CHARTS** shows N chart spaces sized to the available area. Each shows its saved market when it has data, otherwise another watchlist market with data, labelled AUTO-FILLED. Each chart has a **LINE / CANDLES** switch that it remembers; **ALL CHARTS** sets every chart at once. Line by default |
 
 All tabs retain the established dark Oggcultist-inspired visual style and bundled Uberata Clear font.
+
+### AUGURSPEX history sources (0.4.7.8)
+
+- Native charts use price observations returned by public providers: Coinbase/Kraken (cryptocurrency), Yahoo Chart, Stooq, Nasdaq.com website history and Naver (best-effort stock history). Several stock endpoints are unofficial and may refuse requests; they are **not** guaranteed real-time market feeds. TradingView hosted charts remain separate from the Tk-native history canvas.
+- If already entitled to documented API access, you can optionally set `AUGURSPEX_ALPHA_VANTAGE_KEY` or `AUGURSPEX_TWELVE_DATA_KEY` in the operating system environment before launching. These are **not required** to run Marble Oracle, not bundled in the ZIP, and must not be committed to public Git repositories. Keys are never written to the settings file.
+- Twelve Data uses the exact market ticker and explicit MIC for Australian (XASX), Japanese (XJPX) and Korean (XKRX/XKOS) securities. **Access to ASX markets generally requires paid exchange-specific entitlement/add-ons**, not the provider's free tier.
+- HOME and the AUGURSPEX tab share request cooldowns to avoid duplicate provider hammering. Charts label cached or stale history; the native tab's **SOURCE DETAILS** button shows attempted providers and the retry delay.
+
 
 ## EIDOLITH media notes
 
@@ -35,7 +44,7 @@ All tabs retain the established dark Oggcultist-inspired visual style and bundle
   - A newer FFmpeg (SVT-AV1 2.3 or later) makes the CPU AV1 profiles faster.
 - **Default profile** is now **Fast AV1 (preset 8)**. The old default is still available as **Balanced archive** (much slower, smaller files); a saved choice is kept.
 - Upright phone video keeps its shape when resized, interlaced sources (DVD, old TV captures) are deinterlaced automatically, and a job is refused up front when the output folder has under 200 MB free.
-- **Network use:** the HOME screen fetches market prices (CoinGecko, Frankfurter) and news headlines (BBC, Guardian, Al Jazeera, NPR) unless the app is started with `--no-network`. Video and audio conversion never use the network.
+- **Network use:** the scrolling news runner and old Bitcoin/gold market panel are removed. HOME uses the AUGURSPEX watchlist for a rotating historical chart, and the native AUGURSPEX tab retrieves market history when networking is enabled. These are public or optionally configured API feeds, which may be delayed, rate-limited or unavailable; `--no-network` disables automatic market requests. Video and audio conversion never use the network.
 - **Windows:** if `START MARBLE ORACLE - WINDOWS.vbs` is blocked (VBScript disabled), use `START MARBLE ORACLE - WINDOWS (if the VBS launcher is blocked).bat`. This fallback has not been run on a real Windows machine yet.
 - **PASSPHRASE:** a copied passphrase is cleared from the clipboard after 60 seconds (clipboard-history tools may still keep it).
 - **SLIM OUTPUT** (on by default) keeps only the video and the main audio track. It drops extra audio tracks (dubs, commentary), subtitles, cover art, fonts, chapters and title metadata, and lists every drop in the job log. Untick it to keep everything. Most of the saving comes from extra audio tracks; subtitles, cover art and metadata are usually under 1 MB together. For the biggest audio saving, also set **AUDIO** to `opus`.
