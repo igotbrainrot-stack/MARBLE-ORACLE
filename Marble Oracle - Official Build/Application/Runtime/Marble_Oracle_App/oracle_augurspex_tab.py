@@ -13,7 +13,7 @@ import threading
 import time
 import tkinter as tk
 from tkinter import messagebox
-from tkinter import font as tkfont
+from tkinter import font as tkfont  # noqa: F401  (kept for importers)
 from oracle_ogg_texture import frame as ogg_frame, FILES as OGG_TEXTURE_FILES
 from concurrent.futures import ThreadPoolExecutor
 from collections import deque
@@ -63,6 +63,24 @@ def palette(theme=None):
                 ink=theme.get('txt','#F2E8DE'), muted=theme.get('marble','#B9A99B'),
                 weak=theme.get('dim','#928174'), green=theme.get('lime','#93CC7F'),
                 red=theme.get('red','#FF6A55'))
+
+
+class FontMeasure:
+    """Measure text in a Tk font without a tkinter.font.Font object.
+
+    Font objects delete their Tk font in __del__. Python's garbage collector
+    may run that on a market-data worker thread; if the font's interpreter is
+    gone, the call never returns and the worker (and its chart) hangs. This
+    keeps no Tk resource, so there is nothing to delete.
+    """
+    __slots__ = ('_tk', '_spec')
+
+    def __init__(self, widget, spec):
+        self._tk = widget.tk
+        self._spec = spec
+
+    def measure(self, text):
+        return int(self._tk.call('font', 'measure', self._spec, str(text)))
 
 
 def fit_text_pixels(text, font, max_width):
@@ -236,7 +254,7 @@ class PriceChart(tk.Frame):
     """A chart card, rendered entirely by Tk Canvas in the suite palette."""
     def __init__(self, master, colours, index, click):
         self.p=colours;self.index=index;self.symbol='';self.name='';self.result=None
-        self.error=None;self.loading=False;self.selected=False;self.style='1'
+        self.error=None;self.loading=False;self.selected=False;self.style='2'
         super().__init__(master,bg=self.p['panel'],highlightbackground=self.p['border'],highlightthickness=1)
         head=tk.Frame(self,bg=self.p['panel'])
         head.pack(fill='x', padx=10,pady=(7,2))
@@ -253,8 +271,8 @@ class PriceChart(tk.Frame):
         self.company.pack(fill='x',pady=(1,0))
         self._company_text=''
         self._info_text=''
-        self._company_font=tkfont.Font(self,font=(FAMILY,11))
-        self._info_font=tkfont.Font(self,font=(FAMILY,10))
+        self._company_font=FontMeasure(self,(FAMILY,11))
+        self._info_font=FontMeasure(self,(FAMILY,10))
         self.bind('<Configure>',lambda _e:self._fit_card_labels(),add='+')
         # The info strip must claim its space BEFORE the expandable canvas.
         # Packing the canvas first made its requested height squeeze the info
@@ -523,10 +541,7 @@ class AugurspexPanel(tk.Frame):
             width=label.winfo_width()
             if width<=1:width=label.winfo_reqwidth()
         width=max(20,int(width)-2*int(label.cget('padx') or 0)-2)
-        fonts=self.__dict__.setdefault('_fit_fonts',{})
-        spec=label.cget('font')
-        font=fonts.get(spec) or fonts.setdefault(spec,tkfont.Font(self,font=spec))
-        fitted=fit_text_pixels(text,font,width)
+        fitted=fit_text_pixels(text,FontMeasure(self,label.cget('font')),width)
         if label.cget('text')!=fitted:label.configure(text=fitted)
 
     def _build_ui(self):
@@ -603,7 +618,7 @@ class AugurspexPanel(tk.Frame):
             ('WORKSPACE',self.workspace_var,WORKSPACES,self._change_workspace),
             ('CHARTS',self.layout_var,tuple(map(str,LAYOUTS)),self._change_layout),
             ('PERIOD',self.interval_var,INTERVALS,self._change_interval),
-            ('DISPLAY',self.style_var,('CANDLES','LINE'),self._change_style),
+            ('DISPLAY',self.style_var,('LINE','CANDLES'),self._change_style),
         ]:
             part=ogg_frame(opts,bg='#1D1714');part._oracle_bg=self.p['bg']
             self._label(part,label,'muted',11,True).pack(side='left',padx=(0,3))
@@ -795,7 +810,7 @@ class AugurspexPanel(tk.Frame):
                    (filt!='stocks' or not row['symbol'].endswith('-USD')) and
                    (not term or term in (row['symbol']+' '+row['name']).lower())]
         self.watch.delete(0,'end')
-        self._watch_font=tkfont.Font(self,font=(FAMILY,13,'bold')) if not hasattr(self,'_watch_font') else self._watch_font
+        self._watch_font=FontMeasure(self,(FAMILY,13,'bold')) if not hasattr(self,'_watch_font') else self._watch_font
         for i,item in enumerate(self.rows):
             tag='★ ' if item['symbol'] in fav else '  '
             display=tag+item['symbol']
@@ -990,8 +1005,7 @@ class AugurspexPanel(tk.Frame):
             chip.grid(row=k//per_row,column=k%per_row,sticky='ew',padx=2,pady=2)
             # The status is the point of the tab: keep it whole, shorten the name.
             status=' · '+self._slot_status(i)
-            fonts=self.__dict__.setdefault('_fit_fonts',{})
-            measure=fonts.get(chip.cget('font')) or fonts.setdefault(chip.cget('font'),tkfont.Font(self,font=chip.cget('font')))
+            measure=FontMeasure(self,chip.cget('font'))
             room=cell-2*6-4-measure.measure(status)
             name=fit_text_pixels(f'{i+1:02d} {symbol}',measure,max(measure.measure(f'{i+1:02d}…'),room))
             self._fit(chip,name+status,cell)

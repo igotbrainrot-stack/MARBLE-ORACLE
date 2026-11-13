@@ -2,7 +2,7 @@
 
 Date: 13 November 2026 · Baseline: 0.4.8.4 (ZIP SHA-256 `9505949117c4ccd36d3ab6c73cb803f689dec42f4c192350b3048f604ddd1209`)
 
-Scope: `oracle_augurspex_tab.py` only, plus one new test. EIDOLITH, OGGCULTIST, PASSPHRASE, TOUCH TYPE, HOME,
+Scope: `oracle_augurspex_tab.py`, the AUGURSPEX settings default in `Augurspex/augurspex/core.py` and `app.js` (and their identical installer copies under `Tools/AUGURSPEX_Module/payload`), plus one new test. EIDOLITH, OGGCULTIST, PASSPHRASE, TOUCH TYPE, HOME,
 the market providers, assets and launchers are unchanged.
 
 ## Defects reproduced in 0.4.8.4
@@ -29,10 +29,18 @@ Synthetic data labelled `TEST FIXTURE, NOT LIVE`, served by a fake router; no ne
   - Relayout is debounced to one pass per geometry change.
 - **Text fit:** the status line, footer note, sidebar counter, count badge and slot tabs are fitted to their measured pixel width with an ellipsis. The selected market name wraps to the real panel width instead of a fixed 660 px.
 - All nine saved slots, the watchlist, favourites and settings are preserved; CHARTS changes never delete them.
+- **Line graphs by default.**
+  - New installs draw line graphs. Settings saved by earlier versions are converted to line once, including saved workspaces: they recorded candles only because that was the default.
+  - CANDLES remains under DISPLAY. Choosing it afterwards is saved and kept (marker `line_default_0485`).
+  - LINE is listed first. The standalone browser AUGURSPEX uses line for new workspaces too.
+  - The HOME chart was already a line.
+- **Hang fix:** text is measured through Tk directly instead of `tkinter.font.Font` objects.
+  - A Font object deletes its Tk font when garbage-collected, and the collector can run on a market-data worker thread. If that font's window was already closed, the worker hung and its chart stayed on "CHECKING…" forever.
+  - Found by the new test, which opens many windows in one process. Not observed in normal single-window use.
 
 ## Tests
 
-New: `Application/Tests/test_augurspex_charts_layout_0485.py`, **498/498** checks. It fails on 0.4.8.4 (104 of 334 checks at that time).
+New: `Application/Tests/test_augurspex_charts_layout_0485.py`, **509/509** checks, including line default, one-time conversion of old candle settings and a remembered CANDLES choice. It fails on 0.4.8.4 (104 of 334 checks at that time).
 
 | Area | What is checked |
 |---|---|

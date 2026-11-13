@@ -395,7 +395,7 @@ function useWorkspace(name){
   state.settings.workspace=name;
   let snap=state.settings.workspaces[name];
   if(!snap){
-    snap={layout:4,interval:'D',style:'1',symbols:[...(PRESET_SLOTS[name]||DEFAULT)]};
+    snap={layout:4,interval:'D',style:'2',symbols:[...(PRESET_SLOTS[name]||DEFAULT)]};
     state.settings.workspaces[name]=structuredClone(snap);
   }
   Object.assign(state.settings,copySnapshot(snap));state.active=0;state.focus=null;

@@ -174,7 +174,8 @@ def gui_tests():
         for size in SIZES:
             with tempfile.TemporaryDirectory() as home:
                 root, tab, p = open_panel(home, TestRouter(ok), size)
-                pump_until(root, lambda: all(p._market_verified(SYMS[i]) for i in ok_slots), 10)
+                ready = pump_until(root, lambda: all(p._market_verified(SYMS[i]) for i in ok_slots), 30)
+                check(f'fixture data loaded for slots {[i + 1 for i in ok_slots]} at {size}', ready)
                 pump(root, .4)
                 label = f'data in slots {[i + 1 for i in ok_slots]} at {size[0]}x{size[1]}'
                 areas = {}
@@ -263,15 +264,79 @@ def restart_test():
         tab.shutdown()
         root.destroy()
         root, tab, p = open_panel(home, router, (1400, 870))
-        pump_until(root, lambda: p._market_verified(SYMS[1]), 8)
+        pump_until(root, lambda: p._market_verified(SYMS[0]) and p._market_verified(SYMS[1]), 30)
         pump(root, .5)
+        if mapped_cards(p) != [0, 1]:
+            import traceback, threading as _th
+            frames = sys._current_frames()
+            for t in _th.enumerate():
+                if 'augurspex' in t.name and t.ident in frames:
+                    print('THREAD', t.name, ''.join(traceback.format_stack(frames[t.ident])[-4:]).replace('\n', ' | ')[:900])
         check('restart: CHARTS=2 restored with both charts shown', p.settings['layout'] == 2
-              and mapped_cards(p) == [0, 1], (p.settings['layout'], mapped_cards(p)))
+              and mapped_cards(p) == [0, 1], (p.settings['layout'], mapped_cards(p), sorted(p._data),
+                                              p._errors.get((SYMS[0], 'D')), p._pending,
+                                              'queue', p._pool._work_queue.qsize(), 'threads',
+                                              [t.is_alive() for t in p._pool._threads], 'results', p._results.qsize(),
+                                              'visible', p._visible, 'after', p._after))
+        tab.shutdown()
+        root.destroy()
+
+
+def drawn(panel, tag):
+    return any(panel.cards[i].canvas.find_withtag(tag) for i in mapped_cards(panel))
+
+
+def line_style_tests():
+    router = TestRouter({SYMS[0]})
+    # Fresh install: line graphs.
+    with tempfile.TemporaryDirectory() as home:
+        root = tk.Tk()
+        root.geometry('1400x870+0+0')
+        canvas = tk.Canvas(root, width=1400, height=870, highlightthickness=0)
+        canvas.pack(fill='both', expand=True)
+        tab = EmbeddedAugurspex(canvas, lambda: None, home=home, router=router)
+        tab.layout((0, 0, 1400, 870))
+        p = tab.frame
+        pump_until(root, lambda: p._market_verified(SYMS[0]), 8)
+        pump(root, .4)
+        check('line: fresh install draws line graphs', p.settings['style'] == '2' and p.style_var.get() == 'LINE'
+              and drawn(p, 'price-line') and not drawn(p, 'candle-body'), p.settings['style'])
+        tab.shutdown()
+        root.destroy()
+    # Settings saved by 0.4.8.4 (candles were only the default) convert once.
+    with tempfile.TemporaryDirectory() as home:
+        cfg = Path(home) / '.config' / 'augurspex'
+        cfg.mkdir(parents=True)
+        (cfg / 'settings.json').write_text(json.dumps({
+            'layout': 1, 'symbols': SYMS, 'style': '1', 'interval': 'D', 'workspace': 'Overview',
+            'workspaces': {'Healthcare': {'layout': 4, 'interval': 'D', 'style': '1', 'symbols': SYMS}}}))
+        root, tab, p = open_panel(home, router, (1400, 870))
+        pump_until(root, lambda: p._market_verified(SYMS[0]), 8)
+        pump(root, .4)
+        saved = json.loads((cfg / 'settings.json').read_text()) if (cfg / 'settings.json').exists() else {}
+        check('line: 0.4.8.4 candle settings convert to line graphs', p.settings['style'] == '2'
+              and p.style_var.get() == 'LINE' and drawn(p, 'price-line') and not drawn(p, 'candle-body'))
+        check('line: saved workspaces convert too',
+              p.settings['workspaces'].get('Healthcare', {}).get('style') == '2', p.settings['workspaces'])
+        # Choosing CANDLES afterwards is respected and remembered.
+        p.style_var.set('CANDLES')
+        p._change_style('CANDLES')
+        pump(root, .3)
+        check('line: CANDLES can still be chosen', drawn(p, 'candle-body'))
+        tab.shutdown()
+        root.destroy()
+        root, tab, p = open_panel(home, router, (1400, 870))
+        pump_until(root, lambda: p._market_verified(SYMS[0]), 8)
+        pump(root, .4)
+        saved = json.loads((cfg / 'settings.json').read_text())
+        check('line: a CANDLES choice survives a restart', p.settings['style'] == '1' and p.style_var.get() == 'CANDLES'
+              and drawn(p, 'candle-body') and saved.get('line_default_0485') is True, saved.get('style'))
         tab.shutdown()
         root.destroy()
 
 
 if __name__ == '__main__':
+    line_style_tests()
     plan_tests()
     gui_tests()
     restart_test()

@@ -10,6 +10,7 @@ MAX_ITEMS = 300
 LAYOUTS = (1, 2, 4, 6, 9)
 INTERVALS = ('1', '5', '15', '60', '240', 'D', 'W', 'M')
 CHART_TYPES = ('1', '2')  # TradingView: candles, line
+DEFAULT_STYLE = '2'        # 0.4.8.5: line graphs by default; CANDLES stays selectable
 DEFAULT_SLOTS = ['BTC-USD', '4568.T', 'NVDA', 'COH.AX', '005930.KS', 'ETH-USD',
                  'RMD.AX', 'CSL.AX', '4519.T']
 
@@ -130,8 +131,8 @@ def clean_snapshot(raw):
     if type(layout) is not int or layout not in LAYOUTS: layout = 4
     interval = str(raw.get('interval', 'D')).upper()
     if interval not in INTERVALS: interval = 'D'
-    style = str(raw.get('style', '1'))
-    if style not in CHART_TYPES: style = '1'
+    style = str(raw.get('style', DEFAULT_STYLE))
+    if style not in CHART_TYPES: style = DEFAULT_STYLE
     symbols = raw.get('symbols', [])
     if not isinstance(symbols, list): symbols = []
     symbols = [str(s).strip().upper() if isinstance(s, str) else '' for s in symbols[:9]]
@@ -157,6 +158,13 @@ def sanitize_settings(raw):
     if not isinstance(workspaces, dict): workspaces = {}
     workspaces = {key:clean_snapshot(workspaces[key]) for key in WORKSPACES
                   if key in workspaces and clean_snapshot(workspaces[key]) is not None}
+    # One-time switch to line graphs: settings saved before 0.4.8.5 recorded
+    # candles only because that was the default. A later CANDLES choice is
+    # kept, because the marker is then present.
+    if raw.get('line_default_0485') is not True:
+        snapshot['style'] = DEFAULT_STYLE
+        for snap in workspaces.values():
+            snap['style'] = DEFAULT_STYLE
     workspace = raw.get('workspace', 'Overview')
     if workspace not in WORKSPACES: workspace = 'Overview'
     chart_size = raw.get('chart_size', 'comfortable')
@@ -164,7 +172,7 @@ def sanitize_settings(raw):
     watch_filter = raw.get('watch_filter', 'all')
     if watch_filter not in FILTERS: watch_filter = 'all'
     return {**snapshot, 'added': added_clean, 'hidden': hidden_clean, 'favorites': favorites,
-            'workspaces': workspaces, 'workspace': workspace,
+            'workspaces': workspaces, 'workspace': workspace, 'line_default_0485': True,
             'chart_size': chart_size, 'watch_filter': watch_filter,
             'sidebar_collapsed': raw.get('sidebar_collapsed', False) is True,
             'chart_provider': raw.get('chart_provider') if raw.get('chart_provider') in DATA_MODES else 'auto',

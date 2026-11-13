@@ -9,7 +9,7 @@
   "Application/Documentation/VERIFICATION_REPORT.md"
  ],
  "inventory_file_count": 442,
- "inventory_total_bytes": 115423158,
+ "inventory_total_bytes": 115429462,
  "files": [
   {
    "path": "Application/.gitignore",
@@ -338,8 +338,8 @@
   },
   {
    "path": "Application/Documentation/RELEASE_NOTES_0.4.8.5_AUGURSPEX_CHART_LAYOUT.md",
-   "bytes": 4117,
-   "sha256": "76bdaace4c3f1e9812e23a921c2bf00fe9ffbed6c193d51c55bede0ce9be5890"
+   "bytes": 5247,
+   "sha256": "fa6239aa238018302349a3cf7b542b6de83251954bae54ce73b12f24236dc915"
   },
   {
    "path": "Application/Documentation/RELEASE_NOTES_EIDOLITH_0.4.7.1_AUGURSPEX.md",
@@ -413,8 +413,8 @@
   },
   {
    "path": "Application/README.md",
-   "bytes": 10832,
-   "sha256": "333990324a3a759ae5506f1927705f6c4b07130ff649ab5249c8f58719a02774"
+   "bytes": 10912,
+   "sha256": "3da669b1f66f8513b88a31666f3e89de8b4fcaa3fbc3e750597849ff89b3eac1"
   },
   {
    "path": "Application/Runtime/Launch_Marble_Oracle.vbs",
@@ -444,12 +444,12 @@
   {
    "path": "Application/Runtime/Marble_Oracle_App/Augurspex/augurspex/app.js",
    "bytes": 49738,
-   "sha256": "b2609fe9c3b23455a1c75f5ba6cd852ed7e911a941f846f56a574616749a6d80"
+   "sha256": "ed6b26b6cd9b7649b6919f110ab92f223b2caced826b1d1236160d3adfc9b952"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/Augurspex/augurspex/core.py",
-   "bytes": 11530,
-   "sha256": "9f754104e4ec6628c9b3315931209addae5088c6b4bc489455542818a8eb6a66"
+   "bytes": 12038,
+   "sha256": "86945f5e808f7dab8f9de72c598505ef1d7566e0f470dbeb9563044c9be64b4e"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/Augurspex/augurspex/default_watchlist.json",
@@ -1658,8 +1658,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_augurspex_tab.py",
-   "bytes": 68053,
-   "sha256": "07fcf39abb9bbcf5b69c4533bb3d459afdbcb275141821998e3ab9c751665a6e"
+   "bytes": 68422,
+   "sha256": "ddd1e49081fb977e97f591180631bfba92f45084bddebb270121dd4e97b2a670"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_bootstrap.py",
@@ -1908,8 +1908,8 @@
   },
   {
    "path": "Application/Tests/test_augurspex_charts_layout_0485.py",
-   "bytes": 12654,
-   "sha256": "71ef7396953917de7046390a2964f9b850de8a1d0dee315fb7356b2adb91760b"
+   "bytes": 16363,
+   "sha256": "09c14d2d3b9063cc0c9b6e74642a7c5ac5aa516e2c53fde16d685bfea41de049"
   },
   {
    "path": "Application/Tests/test_augurspex_grid_contrast_0480.py",
@@ -2119,12 +2119,12 @@
   {
    "path": "Application/Tools/AUGURSPEX_Module/payload/Augurspex/augurspex/app.js",
    "bytes": 49738,
-   "sha256": "b2609fe9c3b23455a1c75f5ba6cd852ed7e911a941f846f56a574616749a6d80"
+   "sha256": "ed6b26b6cd9b7649b6919f110ab92f223b2caced826b1d1236160d3adfc9b952"
   },
   {
    "path": "Application/Tools/AUGURSPEX_Module/payload/Augurspex/augurspex/core.py",
-   "bytes": 11530,
-   "sha256": "9f754104e4ec6628c9b3315931209addae5088c6b4bc489455542818a8eb6a66"
+   "bytes": 12038,
+   "sha256": "86945f5e808f7dab8f9de72c598505ef1d7566e0f470dbeb9563044c9be64b4e"
   },
   {
    "path": "Application/Tools/AUGURSPEX_Module/payload/Augurspex/augurspex/default_watchlist.json",
