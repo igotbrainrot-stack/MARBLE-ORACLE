@@ -29,6 +29,10 @@ Synthetic data labelled `TEST FIXTURE, NOT LIVE`, served by a fake router; no ne
   - Relayout is debounced to one pass per geometry change.
 - **Text fit:** the status line, footer note, sidebar counter, count badge and slot tabs are fitted to their measured pixel width with an ellipsis. The selected market name wraps to the real panel width instead of a fixed 660 px.
 - All nine saved slots, the watchlist, favourites and settings are preserved; CHARTS changes never delete them.
+- **LINE / CANDLES switch on every chart**, as in other market viewers.
+  - Each chart remembers its own choice, per workspace and across restarts (`slot_styles` in settings).
+  - The selector formerly labelled DISPLAY is now **ALL CHARTS**: it sets every chart at once and clears per-chart choices.
+  - The switch sits between the chart's name and its price and fits at 900×580 and in 2-column layouts.
 - **Line graphs by default.**
   - New installs draw line graphs. Settings saved by earlier versions are converted to line once, including saved workspaces: they recorded candles only because that was the default.
   - CANDLES remains under DISPLAY. Choosing it afterwards is saved and kept (marker `line_default_0485`).
@@ -40,7 +44,7 @@ Synthetic data labelled `TEST FIXTURE, NOT LIVE`, served by a fake router; no ne
 
 ## Tests
 
-New: `Application/Tests/test_augurspex_charts_layout_0485.py`, **509/509** checks, including line default, one-time conversion of old candle settings and a remembered CANDLES choice. It fails on 0.4.8.4 (104 of 334 checks at that time).
+New: `Application/Tests/test_augurspex_charts_layout_0485.py`, **519/519** checks, including the per-chart switch (only the clicked chart changes; kept across workspace switch and restart; ALL CHARTS sets every chart; header fits), line default, one-time conversion of old candle settings and a remembered CANDLES choice. It fails on 0.4.8.4 (104 of 334 checks at that time).
 
 | Area | What is checked |
 |---|---|

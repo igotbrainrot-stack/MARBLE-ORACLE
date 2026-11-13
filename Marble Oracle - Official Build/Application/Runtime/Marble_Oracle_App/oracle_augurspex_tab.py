@@ -252,8 +252,9 @@ def format_price(value):
 
 class PriceChart(tk.Frame):
     """A chart card, rendered entirely by Tk Canvas in the suite palette."""
-    def __init__(self, master, colours, index, click):
+    def __init__(self, master, colours, index, click, on_style=None):
         self.p=colours;self.index=index;self.symbol='';self.name='';self.result=None
+        self.on_style=on_style
         self.error=None;self.loading=False;self.selected=False;self.style='2'
         super().__init__(master,bg=self.p['panel'],highlightbackground=self.p['border'],highlightthickness=1)
         head=tk.Frame(self,bg=self.p['panel'])
@@ -266,6 +267,16 @@ class PriceChart(tk.Frame):
         self.price=tk.Label(headline,text='',bg=self.p['panel'],fg=self.p['green'],
                             font=(FAMILY,14,'bold'))
         self.price.pack(side='right',padx=(6,0))
+        # Per-chart LINE / CANDLES switch, as in other market viewers.
+        self.style_toggle=tk.Frame(headline,bg=self.p['border'])
+        self.style_toggle.pack(side='right',padx=(6,0))
+        self.style_buttons={}
+        for code,text in (('2','LINE'),('1','CANDLES')):
+            button=tk.Label(self.style_toggle,text=text,font=(FAMILY,9,'bold'),padx=6,pady=1,cursor='hand2',
+                            bg=self.p['control'],fg=self.p['muted'])
+            button.pack(side='left',padx=(0 if code=='2' else 1,0),pady=1)
+            button.bind('<Button-1>',lambda _e,c=code:self._choose_style(c))
+            self.style_buttons[code]=button
         self.company=tk.Label(head,text='',anchor='w',bg=self.p['panel'],fg=self.p['muted'],
                               font=(FAMILY,11),height=1)
         self.company.pack(fill='x',pady=(1,0))
@@ -285,6 +296,17 @@ class PriceChart(tk.Frame):
         for widget in (self,self.canvas,head,headline,self.title,self.company,self.price,self.info):
             widget.bind('<Button-1>',lambda _e, i=index:click(i),add='+')
         self.canvas.bind('<Configure>',lambda _e:self.redraw())
+
+    def _choose_style(self, code):
+        if self.on_style is not None:
+            self.on_style(self.index, code)
+        return 'break'
+
+    def _paint_style_toggle(self):
+        for code,button in self.style_buttons.items():
+            on=code==self.style
+            button.configure(bg=self.p['active'] if on else self.p['control'],
+                             fg=self.p['accent'] if on else self.p['muted'])
 
     def _fit_card_labels(self):
         width=max(80,self.winfo_width()-24)
@@ -358,6 +380,7 @@ class PriceChart(tk.Frame):
     def display(self,symbol,name,data,error,loading,style,selected):
         self.symbol=symbol;self.name=name;self.result=data;self.error=error
         self.loading=loading;self.style=style;self.selected=selected
+        self._paint_style_toggle()
         self.configure(highlightbackground=self.p['accent'] if selected else self.p['border'],
                        highlightthickness=2 if selected else 1)
         self.title.configure(text=f'{self.index+1:02d}  {symbol or "EMPTY SLOT"}')
@@ -618,7 +641,7 @@ class AugurspexPanel(tk.Frame):
             ('WORKSPACE',self.workspace_var,WORKSPACES,self._change_workspace),
             ('CHARTS',self.layout_var,tuple(map(str,LAYOUTS)),self._change_layout),
             ('PERIOD',self.interval_var,INTERVALS,self._change_interval),
-            ('DISPLAY',self.style_var,('LINE','CANDLES'),self._change_style),
+            ('ALL CHARTS',self.style_var,('LINE','CANDLES'),self._change_style),
         ]:
             part=ogg_frame(opts,bg='#1D1714');part._oracle_bg=self.p['bg']
             self._label(part,label,'muted',11,True).pack(side='left',padx=(0,3))
@@ -902,16 +925,18 @@ class AugurspexPanel(tk.Frame):
         target=self.settings['workspaces'].get(value)
         self.settings['workspace']=value
         if target:
-            for key in ('symbols','layout','interval','style'):
-                self.settings[key]=target[key] if key!='symbols' else list(target[key])
+            for key in ('symbols','layout','interval','style','slot_styles'):
+                value=target.get(key,['']*9 if key=='slot_styles' else None)
+                if value is None:continue
+                self.settings[key]=list(value) if key in ('symbols','slot_styles') else value
         self.layout_var.set(str(self.settings['layout']))
         self.interval_var.set(self.settings['interval'])
         self.style_var.set('CANDLES' if self.settings['style']=='1' else 'LINE')
         self.active=0;self._render_grid();self._save();self._refresh_charts()
 
     def _snapshot(self):
-        return {key:list(self.settings[key]) if key=='symbols' else self.settings[key]
-                for key in ('layout','interval','style','symbols')}
+        return {key:list(self.settings.get(key) or ['']*9) if key in ('symbols','slot_styles') else self.settings[key]
+                for key in ('layout','interval','style','symbols','slot_styles')}
 
     def _change_layout(self,value):
         self.settings['layout']=int(value);self.active=min(self.active,int(value)-1)
@@ -921,8 +946,21 @@ class AugurspexPanel(tk.Frame):
     def _change_interval(self,value):
         self.settings['interval']=value;self._save();self._refresh_charts();self._prepare_audit()
 
+    def _slot_style(self,i):
+        styles=self.settings.get('slot_styles') or []
+        return (styles[i] if i<len(styles) else '') or self.settings['style']
+
+    def _set_slot_style(self,i,code):
+        """Per-chart LINE/CANDLES toggle; remembered per slot and workspace."""
+        styles=(list(self.settings.get('slot_styles') or [])+['']*9)[:9]
+        styles[i]=code
+        self.settings['slot_styles']=styles
+        self._save();self._refresh_charts()
+
     def _change_style(self,value):
+        # DISPLAY applies to every chart; per-chart choices reset to follow it.
         self.settings['style']='1' if value=='CANDLES' else '2'
+        self.settings['slot_styles']=['']*9
         self._save();self._refresh_charts()
 
     def _save(self):
@@ -1066,7 +1104,7 @@ class AugurspexPanel(tk.Frame):
     def _render_grid(self):
         for child in self.grid_frame.winfo_children():child.destroy()
         count=self.settings['layout']
-        self.cards=[PriceChart(self.grid_frame,self.p,i,self._select_chart) for i in range(count)]
+        self.cards=[PriceChart(self.grid_frame,self.p,i,self._select_chart,self._set_slot_style) for i in range(count)]
         self._chart_columns=0;self._layout_sig=None;self._chip_sig=None
         self._resize_chart_view()
         self._schedule_layout()
@@ -1081,7 +1119,7 @@ class AugurspexPanel(tk.Frame):
             data=self._data.get(key);error=self._errors.get(key)
             if self.offline and symbol and data is None:error='NETWORK DISABLED'
             card.display(symbol,self._names.get(symbol,symbol),data,error,
-                         key in self._pending,self.settings['style'],i==self.active)
+                         key in self._pending,self._slot_style(i),i==self.active)
             if symbol and data is None and error is None and key not in self._pending:
                 if not self._eligible_sources(symbol,period) and not self.offline:
                     self._errors[key]='NO ELIGIBLE SOURCE WITH CURRENT PERMISSIONS'

@@ -194,7 +194,7 @@
   "source_audit_and_restore": "fixture tests passed",
   "spacious_scrollable_charts": "virtual GUI tests passed",
   "physical_os_market_providers": "not tested",
-  "test_augurspex_charts_layout_0485.py": "PASS 509/509 (fails on 0.4.8.4)",
+  "test_augurspex_charts_layout_0485.py": "PASS 519/519 (fails on 0.4.8.4)",
   "full_suite_0485": "43/43 test scripts pass on a clean copy"
  },
  "provenance_note": "Built from standalone AUGURSPEX 1.2.0 module and locally accessible 0.4.7 native-picker/no-news/no-markets archive; uploaded integrated ZIP unavailable for byte comparison.",
@@ -240,5 +240,5 @@
   "release": "0.4.8.4",
   "zip_sha256": "9505949117c4ccd36d3ab6c73cb803f689dec42f4c192350b3048f604ddd1209"
  },
- "augurspex_chart_style": "Line graphs by default; one-time conversion of pre-0.4.8.5 saved candle settings; CANDLES selectable and remembered"
+ "augurspex_chart_style": "Per-chart LINE / CANDLES switch remembered per slot and workspace; ALL CHARTS sets every chart; line by default with one-time conversion of pre-0.4.8.5 settings"
 }

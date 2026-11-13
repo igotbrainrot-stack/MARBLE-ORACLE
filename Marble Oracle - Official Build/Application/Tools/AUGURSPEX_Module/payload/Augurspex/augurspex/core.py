@@ -137,8 +137,12 @@ def clean_snapshot(raw):
     if not isinstance(symbols, list): symbols = []
     symbols = [str(s).strip().upper() if isinstance(s, str) else '' for s in symbols[:9]]
     symbols = [s if tv_symbol(s) else '' for s in symbols]
+    # Per-chart LINE/CANDLES choice ('' = follow the workspace style).
+    slot_styles = raw.get('slot_styles', [])
+    if not isinstance(slot_styles, list): slot_styles = []
+    slot_styles = [str(v) if str(v) in CHART_TYPES else '' for v in slot_styles[:9]]
     return {'layout': layout, 'interval': interval, 'style': style,
-            'symbols': (symbols + [''] * 9)[:9]}
+            'symbols': (symbols + [''] * 9)[:9], 'slot_styles': (slot_styles + [''] * 9)[:9]}
 
 
 def sanitize_settings(raw):
@@ -163,8 +167,10 @@ def sanitize_settings(raw):
     # kept, because the marker is then present.
     if raw.get('line_default_0485') is not True:
         snapshot['style'] = DEFAULT_STYLE
+        snapshot['slot_styles'] = [''] * 9
         for snap in workspaces.values():
             snap['style'] = DEFAULT_STYLE
+            snap['slot_styles'] = [''] * 9
     workspace = raw.get('workspace', 'Overview')
     if workspace not in WORKSPACES: workspace = 'Overview'
     chart_size = raw.get('chart_size', 'comfortable')

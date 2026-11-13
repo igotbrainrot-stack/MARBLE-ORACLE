@@ -335,7 +335,75 @@ def line_style_tests():
         root.destroy()
 
 
+def styles_drawn(panel, slots):
+    return ['candles' if panel.cards[i].canvas.find_withtag('candle-body') else
+            'line' if panel.cards[i].canvas.find_withtag('price-line') else '?' for i in slots]
+
+
+def header_fits(card):
+    """Title, LINE/CANDLES switch and price fit side by side in the card header."""
+    title, toggle, price = card.title, card.style_toggle, card.price
+    if not (title.winfo_ismapped() and toggle.winfo_ismapped()):
+        return False
+    title_ok = title.winfo_width() >= title.winfo_reqwidth() - 1
+    left_of = title.winfo_rootx() + title.winfo_width() <= toggle.winfo_rootx() + 1
+    inside_card = toggle.winfo_rootx() + toggle.winfo_width() <= price.winfo_rootx() + 1 and \
+        price.winfo_rootx() + price.winfo_width() <= card.winfo_rootx() + card.winfo_width()
+    return title_ok and left_of and inside_card
+
+
+def per_chart_toggle_tests():
+    router = TestRouter({SYMS[0], SYMS[1], SYMS[2], SYMS[3]})
+    with tempfile.TemporaryDirectory() as home:
+        root, tab, p = open_panel(home, router, (1400, 870), layout=4)
+        pump_until(root, lambda: all(p._market_verified(x) for x in SYMS[:4]), 30)
+        pump(root, .5)
+        check('toggle: every chart has a LINE / CANDLES switch', all(c.style_toggle.winfo_ismapped() for c in p.cards))
+        check('toggle: charts start as line graphs', styles_drawn(p, range(4)) == ['line'] * 4, styles_drawn(p, range(4)))
+        button = p.cards[0].style_buttons['1']
+        button.event_generate('<Button-1>', x=3, y=3)
+        pump(root, .4)
+        check('toggle: clicking CANDLES on chart 1 changes only chart 1',
+              styles_drawn(p, range(4)) == ['candles', 'line', 'line', 'line'], styles_drawn(p, range(4)))
+        check('toggle: the active choice is highlighted',
+              p.cards[0].style_buttons['1'].cget('fg') == p.p['accent']
+              and p.cards[1].style_buttons['2'].cget('fg') == p.p['accent'])
+        for size in ((900, 580), (1400, 870)):
+            root.geometry(f'{size[0]}x{size[1]}')
+            tab.layout((0, 0) + size)
+            pump(root, .6)
+            shown = mapped_cards(p)
+            check(f'toggle: header title, switch and price fit at {size[0]}x{size[1]}',
+                  shown and all(header_fits(p.cards[i]) for i in shown), shown)
+        # Survives a workspace switch and a restart.
+        p._change_workspace('Healthcare')
+        pump(root, .3)
+        p._change_workspace('Overview')
+        pump(root, .5)
+        check('toggle: per-chart choice kept across a workspace switch',
+              styles_drawn(p, range(4))[:2] == ['candles', 'line'], styles_drawn(p, range(4)))
+        tab.shutdown()
+        root.destroy()
+        root, tab, p = open_panel(home, router, (1400, 870))
+        pump_until(root, lambda: all(p._market_verified(x) for x in SYMS[:4]), 30)
+        pump(root, .5)
+        check('toggle: per-chart choice kept after a restart',
+              styles_drawn(p, range(4)) == ['candles', 'line', 'line', 'line'], styles_drawn(p, range(4)))
+        # DISPLAY still sets every chart at once.
+        p.style_var.set('CANDLES')
+        p._change_style('CANDLES')
+        pump(root, .4)
+        check('toggle: DISPLAY CANDLES sets every chart', styles_drawn(p, range(4)) == ['candles'] * 4)
+        p.style_var.set('LINE')
+        p._change_style('LINE')
+        pump(root, .4)
+        check('toggle: DISPLAY LINE sets every chart', styles_drawn(p, range(4)) == ['line'] * 4)
+        tab.shutdown()
+        root.destroy()
+
+
 if __name__ == '__main__':
+    per_chart_toggle_tests()
     line_style_tests()
     plan_tests()
     gui_tests()
