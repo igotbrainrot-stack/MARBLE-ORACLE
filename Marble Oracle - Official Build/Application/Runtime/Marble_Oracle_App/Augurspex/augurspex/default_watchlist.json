@@ -1,0 +1,144 @@
+{
+  "version": "0.4.8.8",
+  "curated": "popular_markets_2026-11-13",
+  "stocks": [
+    {
+      "symbol": "BTC-USD",
+      "long_name": "Bitcoin / US Dollar",
+      "quote_type": "CRYPTOCURRENCY",
+      "sector": "Crypto"
+    },
+    {
+      "symbol": "ETH-USD",
+      "long_name": "Ethereum / US Dollar",
+      "quote_type": "CRYPTOCURRENCY",
+      "sector": "Crypto"
+    },
+    {
+      "symbol": "SOL-USD",
+      "long_name": "Solana / US Dollar",
+      "quote_type": "CRYPTOCURRENCY",
+      "sector": "Crypto"
+    },
+    {
+      "symbol": "XRP-USD",
+      "long_name": "XRP / US Dollar",
+      "quote_type": "CRYPTOCURRENCY",
+      "sector": "Crypto"
+    },
+    {
+      "symbol": "BNB-USD",
+      "long_name": "BNB / US Dollar · aggregate history",
+      "quote_type": "CRYPTOCURRENCY",
+      "sector": "Crypto"
+    },
+    {
+      "symbol": "DOGE-USD",
+      "long_name": "Dogecoin / US Dollar · aggregate history",
+      "quote_type": "CRYPTOCURRENCY",
+      "sector": "Crypto"
+    },
+    {
+      "symbol": "FX:EURUSD",
+      "long_name": "Euro / US Dollar · daily reference",
+      "quote_type": "CURRENCY",
+      "sector": "FX"
+    },
+    {
+      "symbol": "FX:USDJPY",
+      "long_name": "US Dollar / Japanese Yen · daily reference",
+      "quote_type": "CURRENCY",
+      "sector": "FX"
+    },
+    {
+      "symbol": "FX:GBPUSD",
+      "long_name": "British Pound / US Dollar · daily reference",
+      "quote_type": "CURRENCY",
+      "sector": "FX"
+    },
+    {
+      "symbol": "FX:AUDUSD",
+      "long_name": "Australian Dollar / US Dollar · daily reference",
+      "quote_type": "CURRENCY",
+      "sector": "FX"
+    },
+    {
+      "symbol": "FX:USDCAD",
+      "long_name": "US Dollar / Canadian Dollar · daily reference",
+      "quote_type": "CURRENCY",
+      "sector": "FX"
+    },
+    {
+      "symbol": "FX:USDCHF",
+      "long_name": "US Dollar / Swiss Franc · daily reference",
+      "quote_type": "CURRENCY",
+      "sector": "FX"
+    },
+    {
+      "symbol": "FX:USDAUD",
+      "long_name": "US Dollar / Australian Dollar · daily reference",
+      "quote_type": "CURRENCY",
+      "sector": "FX"
+    },
+    {
+      "symbol": "AAPL",
+      "long_name": "Apple Inc.",
+      "quote_type": "EQUITY",
+      "sector": "Stocks"
+    },
+    {
+      "symbol": "MSFT",
+      "long_name": "Microsoft Corporation",
+      "quote_type": "EQUITY",
+      "sector": "Stocks"
+    },
+    {
+      "symbol": "NVDA",
+      "long_name": "NVIDIA Corporation",
+      "quote_type": "EQUITY",
+      "sector": "Stocks"
+    },
+    {
+      "symbol": "AMZN",
+      "long_name": "Amazon.com Inc.",
+      "quote_type": "EQUITY",
+      "sector": "Stocks"
+    },
+    {
+      "symbol": "TSLA",
+      "long_name": "Tesla Inc.",
+      "quote_type": "EQUITY",
+      "sector": "Stocks"
+    },
+    {
+      "symbol": "META",
+      "long_name": "Meta Platforms Inc.",
+      "quote_type": "EQUITY",
+      "sector": "Stocks"
+    },
+    {
+      "symbol": "GOOG",
+      "long_name": "Alphabet Inc. Class C",
+      "quote_type": "EQUITY",
+      "sector": "Stocks"
+    },
+    {
+      "symbol": "AMD",
+      "long_name": "Advanced Micro Devices Inc.",
+      "quote_type": "EQUITY",
+      "sector": "Stocks"
+    },
+    {
+      "symbol": "SPY",
+      "long_name": "SPDR S&P 500 ETF Trust",
+      "quote_type": "EQUITY",
+      "sector": "Stocks"
+    },
+    {
+      "symbol": "QQQ",
+      "long_name": "Invesco QQQ Trust",
+      "quote_type": "EQUITY",
+      "sector": "Stocks"
+    }
+  ]
+}

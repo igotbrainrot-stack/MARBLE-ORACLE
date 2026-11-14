@@ -689,23 +689,17 @@ class ChromeMixin(PhotoBezelMixin):
         # ---- status area: sunken ticker field, HOLD + status fields
         sx0, sy0, sx1, sy1 = r["status"]
         self.B((3, sy0, W - 3, H - 3), G, None, "chrome")
-        fh = int(24 * self.sy)
-        tk_box = (8, sy0 + 3, W - 8, sy0 + 3 + fh)
-        self.bevel(tk_box, False, G)
-        self.mono_w = max(1, self.font(13).measure("M"))
-        self.tick_n = max(10, int((tk_box[2] - tk_box[0] - 12) / self.mono_w))
-        self.tick_id = self.T(tk_box[0] + 6, (tk_box[1] + tk_box[3]) / 2, "", 13, "#000000", "w", "chrome", True)
-        ry0 = tk_box[3] + 5
-        ry1 = H - 8
+        # No market/news runner: one footer status field remains for brief messages.
+        ry0, ry1 = sy0 + 4, H - 8
         ry = (ry0 + ry1) / 2
-        self.hold_id = self.T(8, ry, "", 14, "#000000", "w", "chrome", True)      # 1053: the HOLD well is gone; the id stays, empty
-        sb = (8, ry0, W - 8, ry1)
-        self.bevel(sb, False, G)
-        self.stat_id = self.T((sb[0] + sb[2]) / 2, ry, "", 12, "#404040", "center", "chrome", False, False)
-        self.tick_full = ""
+        self.bevel((8, ry0, W - 8, ry1), False, G)
+        self.tick_id = self.T(8, ry, "", 12, "#404040", "w", "chrome")
+        self.hold_id = self.T(8, ry, "", 12, "#404040", "w", "chrome")
+        self.stat_id = self.T(W / 2, ry, "", 12, "#404040", "center", "chrome", False, False)
+        self.tick_n, self.tick_full = 0, ""
 
     def _primary_tabs(self, x):
-        """Five persistent workspace tabs in the header, including CRT modes.
+        """Six persistent workspace tabs in the header, including CRT modes.
 
         Keep all navigation within the previous menu row. Layout presets and
         the independent panels do not move when switching tabs.
@@ -714,8 +708,8 @@ class ChromeMixin(PhotoBezelMixin):
         c = self.c
         _, y0, x1, y1 = self.rect["menu"]
         tabs = (("HOME", "tab_home"), ("OGGCULTIST", "tab_oggcultist"),
-                ("EIDOLITH", "tab_eidolith"), ("PASSPHRASE", "tab_passphrase"),
-                ("TOUCH TYPE", "tab_touch_type"))
+                ("EIDOLITH", "tab_eidolith"), ("AUGURSPEX", "tab_augurspex"),
+                ("PASSPHRASE", "tab_passphrase"), ("TOUCH TYPE", "tab_touch_type"))
         if self.case_on():
             # The physical CRT's nixie module protrudes over the inner glass
             # at the extreme upper left. Keep HOME visible inside the aperture.
@@ -739,7 +733,7 @@ class ChromeMixin(PhotoBezelMixin):
             # A smaller font is chosen for tight CRT aperture scales.
             fs = min(12, max(8, round(12 * scale)))
             if font.measure(label) * fs / 12.0 > w - 8:
-                label = {"PASSPHRASE": "PASS", "OGGCULTIST": "OGG", "TOUCH TYPE": "TYPE", "EIDOLITH": "EIDO"}.get(label, label)
+                label = {"PASSPHRASE": "PASS", "OGGCULTIST": "OGG", "TOUCH TYPE": "TYPE", "EIDOLITH": "EIDO", "AUGURSPEX": "AUGUR"}.get(label, label)
             tid = self.T((x0+x2)/2, y + h/2, label, fs, "txt", "center", "chrome", True, False)
             self.hot.append((x0, y0, x2, y1, action))
             self.nav_tabs[action] = (panel, tid)
@@ -750,7 +744,8 @@ class ChromeMixin(PhotoBezelMixin):
         active = "tab_passphrase" if getattr(self, "dk", None) is not None else (
             "tab_oggcultist" if getattr(self, "ogg", None) is not None else (
             "tab_touch_type" if getattr(self, "touch", None) is not None else (
-            "tab_eidolith" if getattr(self, "eido", None) is not None else "tab_home")))
+            "tab_eidolith" if getattr(self, "eido", None) is not None else (
+            "tab_augurspex" if getattr(self, "aug", None) is not None else "tab_home"))))
         for action, pair in getattr(self, "nav_tabs", {}).items():
             on = action == active
             try:
@@ -973,20 +968,14 @@ class ChromeMixin(PhotoBezelMixin):
         c.create_rectangle(0, sy0, W, H, fill=under, outline="", tags="chrome")
         c.create_line(0, sy0, W, sy0, fill=hexmix(under, "#ffffff", 0.07), tags="chrome")
         m = px(10, k)
-        fh = int(24 * self.sy)
-        tk_box = (m, sy0 + px(5, k), W - m, sy0 + px(5, k) + fh)
-        self.skin_well(tk_box, "chrome", under=under)
-        self.mono_w = max(1, self.font(13).measure("M"))
-        self.tick_n = max(10, int((tk_box[2] - tk_box[0] - 24) / self.mono_w))
-        self.tick_id = self.T(tk_box[0] + px(10, k), (tk_box[1] + tk_box[3]) / 2, "", 13, "dim" if clean else "txt", "w", "chrome", True)     # 1050: teletype in both
-        ry0 = tk_box[3] + px(5, k)
-        ry1 = H - px(6, k)
-        ry = (ry0 + ry1) / 2
-        self.hold_id = self.T(m, ry, "", 14, "txt" if clean else "gold", "w", "chrome", True)      # 1053: the HOLD well is gone; the id stays, empty
-        sb = (m, ry0, W - m, ry1)
+        # Only a temporary status message is shown; the scrolling ticker is gone.
+        sb = (m, sy0 + px(5, k), W - m, H - px(6, k))
         self.skin_well(sb, "chrome", under=under)
+        ry = (sb[1] + sb[3]) / 2
+        self.tick_id = self.T(m, ry, "", 12, "dim", "w", "chrome")
+        self.hold_id = self.T(m, ry, "", 12, "dim", "w", "chrome")
         self.stat_id = self.T((sb[0] + sb[2]) / 2, ry, "", 12, "dim", "center", "chrome", False, False)
-        self.tick_full = ""
+        self.tick_n, self.tick_full = 0, ""
 
     def _crt(self):
         """CRT layer: fine scanlines plus a little static.  It covers the WHOLE Windows-98 window (frame, title bar,

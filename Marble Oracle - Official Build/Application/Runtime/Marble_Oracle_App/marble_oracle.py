@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Marble_Oracle -- a 90s-CRT desktop toy.  Python 3 + tkinter + stdlib only.
 
-v4.0 "TRANSMISSION" layout: flat dark sci-fi panels (title bar, menu + glitching
-wordmark, MARBLE ARCHIVE, LEXICON, TRANSMISSION, MARKETS, THREE CARDS,
-ticker).  Everything optional (marketdata, oracle_dicekey, *.zip
+v4.0 "TRANSMISSION" layout: flat dark sci-fi panels (title bar, menu,
+MARBLE ARCHIVE, LEXICON, TRANSMISSION, AUGURSPEX HISTORY, THREE CARDS).  Everything optional (marketdata, oracle_dicekey, *.zip
 assets) degrades silently; a broken plug-in never stops startup.
 
 Hotkeys: SPACE next   ENTER speak   N word   T deal   K Passphrase Studio tab
@@ -43,6 +42,7 @@ from oracle_assets import rgba_png  # noqa: E402,F401
 from oracle_chrome import (DECK_TAB_OFF, DECK_TAB_ON, DK_TAB_OFF, DK_TAB_ON, LD_TAB_OFF, LD_TAB_ON, TAB_INK, TAB_EDGE, TAB_SLOPE, tab_ink, TAB_GAP, TAB_MIN_PX,  # noqa: E402,F401
                            THEMES, THEME_NAMES, noise_tile_png, scan_tile_png, hexrgb, mix, ChromeMixin, bezel_geometry, bezel_step)
 from oracle_skin import SkinMixin, hexmix  # noqa: E402
+from oracle_augurspex_home import MarketCarousel
 from oracle_feeds import MarketFeed, NEWS_FEEDS, parse_headlines, WireFeed  # noqa: E402,F401
 from oracle_audio import respell, synth_wav, VoiceBank, Sfx  # noqa: E402,F401
 try:
@@ -59,29 +59,31 @@ from oracle_media import (MAJOR, SUITS, RANKS, tarot_card, TarotImages,   # noqa
 # 1058: THE LIEN's strip ("prog") is gone from every layout (1052 dropped it at build time; drop_lien is retired).  LOW and MIRROR LOW
 # only moved that strip, so they are now CLASSIC and MIRROR again; the names stay for --layout and saved views.  The gutters are 8 again
 # (drop_lien's stretch left 10 and 11, so the flush PANES look showed a 3 px seam between stacked panels).
-_CLASSIC = dict(arch=(8, 86, 300, 497), lex=(8, 505, 300, 772), trans=(308, 86, 792, 772), mkt=(800, 86, 1208, 379), cards=(800, 387, 1208, 772))
-# the side columns swap: markets and cards on the left, the statue and lexicon on the right
-_MIRROR = dict(mkt=(8, 86, 416, 379), cards=(8, 387, 416, 772), trans=(424, 86, 908, 772), arch=(916, 86, 1208, 497), lex=(916, 505, 1208, 772))
+# Home dashboard: one small AUGURSPEX chart replaces the retired static market panel.
+# The old news marquee remains removed. GRADE also repositions this live-data chart.
+_CLASSIC = dict(arch=(8, 86, 300, 497), lex=(8, 505, 300, 772), trans=(308, 86, 792, 772), aug=(800, 86, 1208, 379), cards=(800, 387, 1208, 772))
+# the side columns swap: chart and cards on the left, the statue and lexicon on the right
+_MIRROR = dict(aug=(8, 86, 416, 379), cards=(8, 387, 416, 772), trans=(424, 86, 908, 772), arch=(916, 86, 1208, 497), lex=(916, 505, 1208, 772))
 LAYOUTS = {
     "CLASSIC": _CLASSIC,
     "MIRROR": _MIRROR,
     "LOW": _CLASSIC,
     "MIRROR LOW": _MIRROR,
-    # each column turns over: the lexicon above the statue, the cards above the markets
-    "SWAP": dict(lex=(8, 86, 300, 353), arch=(8, 361, 300, 772), trans=(308, 86, 792, 772), cards=(800, 86, 1208, 470), mkt=(800, 478, 1208, 772)),
+    # each column turns over: the lexicon above the statue, the cards above the AUGURSPEX chart
+    "SWAP": dict(lex=(8, 86, 300, 353), arch=(8, 361, 300, 772), trans=(308, 86, 792, 772), cards=(800, 86, 1208, 470), aug=(800, 478, 1208, 772)),
     # 1059: THE WIRE moves to an edge, each panel keeping its size
-    "WIRE LEFT": dict(trans=(8, 86, 492, 772), arch=(500, 86, 792, 497), lex=(500, 505, 792, 772), mkt=(800, 86, 1208, 379), cards=(800, 387, 1208, 772)),
-    "WIRE RIGHT": dict(mkt=(8, 86, 416, 379), cards=(8, 387, 416, 772), arch=(424, 86, 716, 497), lex=(424, 505, 716, 772), trans=(724, 86, 1208, 772)),
+    "WIRE LEFT": dict(trans=(8, 86, 492, 772), arch=(500, 86, 792, 497), lex=(500, 505, 792, 772), aug=(800, 86, 1208, 379), cards=(800, 387, 1208, 772)),
+    "WIRE RIGHT": dict(aug=(8, 86, 416, 379), cards=(8, 387, 416, 772), arch=(424, 86, 716, 497), lex=(424, 505, 716, 772), trans=(724, 86, 1208, 772)),
 }
 # 1034: the clean look's GRADE cycle; 1050: NEON; 1051: NEON first, the default.  1059 (the owner: "make OLED look default and remove every
 # other option", then "remove the colour changes from grade options and just shuffle arund the sectios"): one scheme, NEON on OLED black;
 # GRADE only moves the panels.
 CLEAN_THEME = "EMBER"
 # 1064 (the owner: "make it so that the ascii art marble statues shift in the grad options to be the same size as the WIRE section"): the
-# clean look's GRADE layouts give PLATE VAULT and THE WIRE twin full-height columns; THE TICKER, DEAD TONGUE and THREE CUTS stack in the
+# clean look's GRADE layouts give PLATE VAULT and THE WIRE twin full-height columns; AUGURSPEX, DEAD TONGUE and THREE CUTS stack in the
 # third.  --retro and --flat keep LAYOUTS.
-_COL = dict(mkt=(86, 290), lex=(298, 500), cards=(508, 772))
-_COL_TURNED = dict(cards=(86, 350), lex=(358, 560), mkt=(568, 772))
+_COL = dict(aug=(86, 290), lex=(298, 500), cards=(508, 772))
+_COL_TURNED = dict(cards=(86, 350), lex=(358, 560), aug=(568, 772))
 _TWIN = dict(arch=396, trans=396, col=392)            # column widths: the twins match wherever they stand
 
 
@@ -105,19 +107,18 @@ CLEAN_LAYOUTS = dict(LAYOUTS)
 CLEAN_LAYOUTS.update({
     "CLASSIC": _CLASSIC,                                                    # THE WIRE large
     "STATUE": _twins(("arch", "trans", "col")),                             # PLATE VAULT large, THE WIRE's size
-    "TICKER": dict(arch=(8, 86, 300, 497), lex=(8, 505, 300, 772), mkt=(308, 86, 792, 772), trans=(800, 86, 1208, 470),
+    "TICKER": dict(arch=(8, 86, 300, 497), lex=(8, 505, 300, 772), aug=(308, 86, 792, 772), trans=(800, 86, 1208, 470),
                    cards=(800, 478, 1208, 772)),
     "TONGUE": dict(arch=(8, 86, 300, 772), lex=(308, 86, 792, 470), cards=(308, 478, 792, 772), trans=(800, 86, 1208, 497),
-                   mkt=(800, 505, 1208, 772)),
+                   aug=(800, 505, 1208, 772)),
     "CUTS": dict(arch=(8, 86, 300, 497), lex=(8, 505, 300, 772), cards=(308, 86, 868, 772), trans=(876, 86, 1208, 497),
-                 mkt=(876, 505, 1208, 772)),
+                 aug=(876, 505, 1208, 772)),
 })
 for _n in ("STATUE", "TICKER", "TONGUE", "CUTS"):
     LAYOUTS.setdefault(_n, _CLASSIC)                                        # --retro and --flat: the names parse, CLASSIC shows
 CLEAN_PRESETS = tuple((CLEAN_THEME, lay) for lay in ("CLASSIC", "STATUE", "TICKER", "TONGUE", "CUTS"))
 VIEW_PRESETS = (("ONE", "CLASSIC"), ("TWO", "CLASSIC"), ("PHOSPHOR", "MIRROR"), ("AMBER", "LOW"),
                 ("ARCTIC", "SWAP"), ("ORCHID", "MIRROR LOW"), ("TWO", "MIRROR"), ("ONE", "LOW"))
-
 
 
 def is_retro(opts):
@@ -784,7 +785,7 @@ class Scene(ChromeMixin, SkinMixin):
     # passes sit over ordinary content, but the ASCII statue is a protected
     # foreground ink layer.  Popup, chrome and bezel still render above it.
     # Both fringing glyphs and marble ramp ink share the "statue" canvas tag.
-    LAYERS = ("content", "fx", "crt", "pixel-crt", "glare", "statue", "rune-art", "overlaywin", "dkwin", "oggwin", "touchwin", "chrome", "popup", "bezel")
+    LAYERS = ("content", "fx", "crt", "pixel-crt", "glare", "statue", "rune-art", "overlaywin", "dkwin", "oggwin", "touchwin", "augwin", "chrome", "popup", "bezel")
 
     def __init__(self, root, canvas, opts, host=None):
         import tkinter as tkmod
@@ -813,8 +814,9 @@ class Scene(ChromeMixin, SkinMixin):
         self.frame_no = 0
         self.deck = build_deck(self.rng)
         self.qi = 0
-        self.markets = MarketFeed(not opts.get("no_markets"), not (opts.get("no_network") or opts.get("no_markets")))
-        self.news = WireFeed(opts.get("wire"), not opts.get("no_network"))            # 1031: the headline feed; self.wire is THE WIRE scene (1025 reused the name, so the ticker and the live context raised)
+        self.markets = MarketFeed(False, False)  # old fixed Bitcoin/gold ticker retired
+        self.augurspex_chart = MarketCarousel(enabled=not opts.get('no_network', False) and not opts.get('no_markets', False))
+        self.news = WireFeed(enabled=False)  # bottom news runner removed: no RSS networking
         self.voice = VoiceBank()
         saved = load_json("voice.json", {})
         vol = saved.get("vol") if isinstance(saved, dict) else None
@@ -863,6 +865,8 @@ class Scene(ChromeMixin, SkinMixin):
         self._touch_cached = None  # keep lessons and in-progress games when changing tabs
         self.eido = None
         self._eido_cached = None  # preserve source list / queue when switching tabs
+        self.aug = None
+        self._aug_cached = None  # preserve AUGURSPEX workspace across tab switches
         self._load_dicekey()
 
     # ------------------------------------------------------------------ plumbing
@@ -1035,8 +1039,8 @@ class Scene(ChromeMixin, SkinMixin):
         self._arch()
         self._lex()
         self._trans()
-        self._mkt()
         self._cards()
+        self._augurspex_panel()
         self._section_actions()
         # Old home passphrase strip removed; use the Passphrase tab.
         self._crt()
@@ -1622,6 +1626,103 @@ class Scene(ChromeMixin, SkinMixin):
         self.c.delete("thdr")
         self.T(x1 - (max(1, int(round(10 * self.k))) if self.skin_on() else 8), y0 + self.q_hh // 2, "%d / %d" % (self.qi % len(self.deck) + 1, len(self.deck)), 11, "dim", "e", ("content", "thdr"))
 
+    def _augurspex_panel(self):
+        """HOME's original market-panel footprint, now a real rotating AUGURSPEX history chart."""
+        self.panel(self.rect['aug'], 'AUGURSPEX')
+        x0, y0, x1, y1 = self.rect['aug']
+        hh = self.hdr_h()
+        # The tiny header arrows allow navigation without opening the companion tab.
+        self.hot.append((x1 - 82 * self.k, y0, x1 - 50 * self.k, y0 + hh, 'aug_previous'))
+        self.hot.append((x1 - 35 * self.k, y0, x1 - 3 * self.k, y0 + hh, 'aug_next'))
+        self.draw_augurspex_chart()
+
+    def draw_augurspex_chart(self):
+        """Paint local historical candles as a line. Never fabricate values or call network from Tk."""
+        if 'aug' not in getattr(self, 'rect', {}):
+            return
+        c = self.c
+        c.delete('aug-chart')
+        x0, y0, x1, y1 = self.rect['aug']
+        hh = self.hdr_h()
+        chart = self.augurspex_chart.snapshot()
+        tag = ('content', 'aug-chart')
+        width = x1 - x0
+        n = chart['total']
+        self.T(x1 - 63 * self.k, y0 + hh / 2, '<', 13, 'txt', 'center', tag, True)
+        self.T(x1 - 40 * self.k, y0 + hh / 2, str(chart['index'] + 1) + '/' + str(n) if n else '0/0', 10, 'dim', 'center', tag)
+        self.T(x1 - 16 * self.k, y0 + hh / 2, '>', 13, 'txt', 'center', tag, True)
+        if not n:
+            self.T((x0+x1)/2, (y0+hh+y1)/2, 'NO AUGURSPEX WATCHLIST MARKETS', 11,
+                   'dim', 'center', tag)
+            return
+        sym = chart['symbol']
+        name = chart['name']
+        self.T(x0 + 12*self.k, y0+hh+17*self.k,
+               fit(name, self.font(14, True), width-25*self.k), 14, 'cyan', 'w', tag, True)
+        self.T(x0 + 12*self.k, y0+hh+38*self.k, sym, 12, 'txt', 'w', tag)
+        plot_l = x0 + 15*self.k
+        plot_r = x1 - 15*self.k
+        plot_t = y0 + hh + 54*self.k
+        plot_b = max(plot_t + 8, y1 - 45*self.k)
+        if chart['state'] != 'data':
+            note = {'loading':'LOADING HISTORICAL PRICES', 'offline':'NETWORK DISABLED',
+                    'unavailable':'HISTORY UNAVAILABLE', 'idle':'AWAITING MARKET HISTORY'}.get(chart['state'], 'WAITING')
+            self.T((x0+x1)/2, (plot_t+plot_b)/2, note, 12, 'dim', 'center', tag)
+            if chart['state'] == 'unavailable':
+                self.T((x0+x1)/2, plot_b+12*self.k, 'SEE FULL CHART IN AUGURSPEX TAB', 9, 'dim', 'center', tag)
+            return
+        candles = chart['candles']
+        # Keep only finite numeric close values; the unaltered provider payload
+        # supplies observation times and candle data. Nothing simulated.
+        closes = [float(row['close']) for row in candles
+                  if isinstance(row, dict) and isinstance(row.get('close'), (int,float))
+                  and math.isfinite(row['close'])]
+        if len(closes) < 2:
+            self.T((x0+x1)/2, (plot_t+plot_b)/2, 'INSUFFICIENT PRICE HISTORY', 11, 'dim', 'center', tag)
+            return
+        low, high = min(closes), max(closes)
+        span = (high-low) or max(abs(high)*.01, 1e-9)
+        # A real grid, shared visual language with the full AUGURSPEX tab:
+        # dark-but-distinct reference guides remain behind the price trace.
+        grid=self.col('edge2')
+        c.create_rectangle(plot_l,plot_t,plot_r,plot_b,
+                           outline=grid,width=max(1,round(1.2*self.k)),tags=tag)
+        for portion in (.25, .5, .75):
+            y = plot_t + (plot_b-plot_t)*portion
+            c.create_line(plot_l,y,plot_r,y,fill=grid,
+                          width=max(1,round(self.k)),dash=(3,5),tags=tag)
+        for portion in (.25, .5, .75):
+            x = plot_l+(plot_r-plot_l)*portion
+            c.create_line(x,plot_t,x,plot_b,fill=grid,
+                          width=max(1,round(self.k)),dash=(3,5),tags=tag)
+        points=[]
+        for i, price in enumerate(closes):
+            points.extend((plot_l+(plot_r-plot_l)*i/(len(closes)-1),
+                           plot_b-(price-low)/span*(plot_b-plot_t)))
+        positive = closes[-1]>=closes[0]
+        colour = self.col('lime' if positive else 'red')
+        c.create_line(*points, fill=self.col('bg'), width=max(3,round(6*self.k)),
+                      joinstyle='round', capstyle='round', tags=tag)
+        c.create_line(*points, fill=colour, width=max(2,round(3.6*self.k)),
+                      joinstyle='round', capstyle='round', tags=tag)
+        c.create_oval(points[-2]-4*self.k, points[-1]-4*self.k,
+                      points[-2]+4*self.k, points[-1]+4*self.k,
+                      fill=colour, outline=self.col('bg'), width=max(1,self.k), tags=tag)
+        change = (closes[-1]/closes[0]-1)*100 if closes[0] else None
+        price_text = ('%.4g' % closes[-1]) if abs(closes[-1]) > 1e6 else ('%.2f' % closes[-1])
+        change_text = ('  %+0.2f%%' % change) if change is not None else ''
+        self.T(plot_l, y1-29*self.k, price_text+change_text, 13,
+               'lime' if positive else 'red', 'w', tag, True)
+        provider = chart['source'].upper()
+        cache = chart.get('cache','')
+        observed = str(chart.get('observed') or '')[:16]
+        label = provider + (' / CACHED' if cache == 'stale' else ' / HISTORY')
+        if observed:
+            label += ' / ' + observed
+        # Delayed/EOD stock prices are intentionally not labelled live.
+        self.T(plot_l, y1-12*self.k,
+               fit(label, self.font(10), width-26*self.k), 10, 'dim', 'w', tag)
+
     def _mkt(self):
         b = self.rect["mkt"]
         self.mkt_hdr = self.panel(b, "THE TICKER", "AUD")[1]
@@ -2131,6 +2232,8 @@ class Scene(ChromeMixin, SkinMixin):
             pass  # The independent Oggcultist window owns its own update loop.
         elif self.touch:
             pass  # Touch Type is a native Tk frame with its own lightweight timer.
+        elif self.aug:
+            pass  # AUGURSPEX owns its Tk charts and async market-data polling.
         else:
             self._dyn(now, dt)
         self._fx(now, dt)
@@ -2168,10 +2271,13 @@ class Scene(ChromeMixin, SkinMixin):
                     y = self.rail_y
                     c.coords(r, xa, y - 14 * self.sy, xb, y)
                     c.coords(wd, xa + 4, y - 11 * self.sy, xb - 4, y - 7 * self.sy)
-        # markets / daily roll
+        # Fetch on a daemon worker, rotate after 12 seconds, and redraw only
+        # when the selected symbol or its history actually changes.
+        if self.augurspex_chart.tick():
+            self.draw_augurspex_chart()
+        # daily roll
         if now - self.mk_last > 1.5:
             self.mk_last = now
-            self.refresh_markets()
             if self.draw.rolled() and self.c.itemcget(self.cards_hdr, "text") == "TODAY":
                 self.cards = self.draw.daily()
                 self.draw_cards()
@@ -2182,43 +2288,18 @@ class Scene(ChromeMixin, SkinMixin):
         self._status(now, dt)
 
     def _status(self, now, dt):
+        """Static, unobtrusive footer: no news ticker, market or network activity."""
         c = self.c
-        if now - getattr(self, "_tk_at", 0) > 4:
-            self._tk_at = now
-            if self.news.lines:                 # the ticker is the news: current world headlines only
-                parts = ["WORLD NEWS"] + list(self.news.lines)
-            else:                               # no feed (offline / blocked): say so, keep the old decoration
-                parts = ["NEWS FEED OFFLINE", "Marble_Oracle"] + self.rng.sample(WIRE, 3)
-            sep = "   +++   "                                     # 1034: a quiet dot in the clean look; 1050: +++ again
-            self.tick_full = sep.join(parts) + sep
-        if self.clean() and now < self.msg_until:                 # 1050: the marquee is back in the clean footer; a message takes the line
-            if getattr(self, "_tk_s", None) != "":
-                self._tk_s = ""
-                c.itemconfigure(self.tick_id, text="")
-        else:
-            self.tick_off += dt * 12
-            full = self.tick_full
-            if full:
-                o = int(self.tick_off) % len(full)
-                s = (full * (self.tick_n // len(full) + 2))[o:o + self.tick_n]
-                if s != getattr(self, "_tk_s", None):
-                    self._tk_s = s
-                    c.itemconfigure(self.tick_id, text=s)
-        txt = ""                                                  # 1053: no HOLD bar in any look, at the owner's word (the id stays, empty)
-        if txt != getattr(self, "_hd", None):
-            self._hd = txt
-            c.itemconfigure(self.hold_id, text=txt)
-        if now < self.msg_until:
-            st = self.msg
-        else:
-            live = "SIM" if self.markets.any_sim() else "LIVE"
-            voice = "bank" if self.voice.names else "synth"
-            st = "%s  ·  voice %s" % (live, voice) if self.clean() else "%s%s  %s" % (live + " ", "", "VOICE: %s" % voice)
-            if self.clean():                                      # 1046: the line is there only while a message is up
-                st = ""
+        if getattr(self, "_tk_s", None) != "":
+            self._tk_s = ""
+            c.itemconfigure(self.tick_id, text="")
+        if getattr(self, "_hd", None) != "":
+            self._hd = ""
+            c.itemconfigure(self.hold_id, text="")
+        st = self.msg if now < self.msg_until else ""
         if st != getattr(self, "_st_s", None):
             self._st_s = st
-            c.itemconfigure(self.stat_id, text=fit(st, self.font(12, False, False), self.W * (0.86 if self.clean() else 0.30)))
+            c.itemconfigure(self.stat_id, text=fit(st, self.font(12, False, False), self.W * 0.86))
 
     # ------------------------------------------------------------------ fx: sigil rain, stars
     def _fx(self, now, dt):
@@ -2300,7 +2381,7 @@ class Scene(ChromeMixin, SkinMixin):
                 max(r[2] for r in panels), max(self.rect["status"][1] - 6, max(r[3] for r in panels)))        # so no sliver of them shows above it
 
     # 1058: one overlay is left, PASSPHRASE (--retro and --flat); the dashboard is visible exactly when it is None
-    OVERLAY_NAMES = {"dk": "PASSPHRASE", "ogg": "OGGCULTIST", "touch": "TOUCH TYPE", "eido": "EIDOLITH"}
+    OVERLAY_NAMES = {"dk": "PASSPHRASE", "ogg": "OGGCULTIST", "touch": "TOUCH TYPE", "eido": "EIDOLITH", "aug": "AUGURSPEX"}
 
     def _which_overlay(self):
         if getattr(self, "dk", None):
@@ -2309,7 +2390,9 @@ class Scene(ChromeMixin, SkinMixin):
             return "ogg"
         if getattr(self, "touch", None):
             return "touch"
-        return "eido" if getattr(self, "eido", None) else None
+        if getattr(self, "eido", None):
+            return "eido"
+        return "aug" if getattr(self, "aug", None) else None
 
     def close_overlays(self, msg="", keep=None):
         """Close every overlay but `keep`: null the field first, then clear() (its own tag only), then the tab art, then
@@ -2318,7 +2401,8 @@ class Scene(ChromeMixin, SkinMixin):
         for name, attr, tag, after in (("dk", "dk", "dkwin", self._after_close_dk),
                                        ("ogg", "ogg", "oggwin", self._after_close_ogg),
                                        ("touch", "touch", "touchwin", self._after_close_touch),
-                                       ("eido", "eido", "eidowin", self._after_close_eido)):
+                                       ("eido", "eido", "eidowin", self._after_close_eido),
+                                       ("aug", "aug", "augwin", self._after_close_aug)):
             if name == keep:
                 continue
             sess = getattr(self, attr, None)
@@ -2331,6 +2415,8 @@ class Scene(ChromeMixin, SkinMixin):
                 self._touch_cached = sess
             elif name == 'eido':
                 self._eido_cached = sess
+            elif name == 'aug':
+                self._aug_cached = sess
             setattr(self, attr, None)
             try:
                 sess.clear()
@@ -2368,6 +2454,10 @@ class Scene(ChromeMixin, SkinMixin):
         if self.divination_mode == "runes":
             self.draw_cards()
 
+    def _after_close_aug(self):
+        if self.divination_mode == "runes":
+            self.draw_cards()
+
     def go_home(self):
         self.close_overlays()
         self._update_primary_tab_state()
@@ -2381,7 +2471,8 @@ class Scene(ChromeMixin, SkinMixin):
         missing = {"dk": (getattr(self, "dk_mod", None), "NO PASSPHRASE TOOL INSTALLED"),
                    "ogg": (True, "OGGCULTIST IS NOT AVAILABLE"),
                    "touch": (True, "TOUCH TYPE IS NOT AVAILABLE"),
-                   "eido": (True, "EIDOLITH IS NOT AVAILABLE")}[name]
+                   "eido": (True, "EIDOLITH IS NOT AVAILABLE"),
+                   "aug": (True, "AUGURSPEX IS NOT AVAILABLE")}[name]
         if not missing[0]:
             return self.say(missing[1])
         self.close_overlays()
@@ -2435,12 +2526,26 @@ class Scene(ChromeMixin, SkinMixin):
                 self.eido.layout(box)
                 self._hide_rune_art_widgets()
                 self._update_primary_tab_state()
+            elif name == "aug":
+                from oracle_augurspex_tab import EmbeddedAugurspex
+                if self._aug_cached is not None and self._aug_cached.frame.winfo_exists():
+                    self.aug = self._aug_cached
+                else:
+                    self.aug = EmbeddedAugurspex(
+                        self.c, on_home=self.go_home, theme=self.th,
+                        offline=bool(self.o.get('no_network') or self.o.get('no_markets')))
+                    self._aug_cached = self.aug
+                self.aug.frame.retheme(self.th)
+                self.aug.layout(box)
+                self._hide_rune_art_widgets()
+                self._update_primary_tab_state()
         except Exception as e:
             try:                                          # a Session that died half-built leaves nothing behind
                 self.c.delete("dkwin")
                 self.c.delete("oggwin")
                 self.c.delete("touchwin")
                 self.c.delete("eidowin")
+                self.c.delete("augwin")
             except Exception:
                 pass
             self.close_overlays("%s FAILED: %s" % (self.OVERLAY_NAMES[name], e))
@@ -2507,6 +2612,10 @@ class Scene(ChromeMixin, SkinMixin):
     def act(self, name, x=None):
         if name == "tab_home":
             return self.go_home()
+        if name in ('aug_next', 'aug_previous'):
+            self.augurspex_chart.advance(1 if name == 'aug_next' else -1)
+            self.draw_augurspex_chart()
+            return
         if name == "tab_passphrase":
             if self._which_overlay() != "dk":
                 self.toggle_overlay("dk")
@@ -2520,6 +2629,13 @@ class Scene(ChromeMixin, SkinMixin):
         if name == "tab_touch_type":
             if self._which_overlay() != "touch":
                 self.toggle_overlay("touch")
+            self._update_primary_tab_state()
+            return
+        if name == "tab_augurspex":
+            # AUGURSPEX is an embedded, palette-matched Tk workspace, like EIDOLITH.
+            # Never open a browser or start the former localhost companion server.
+            if self._which_overlay() != "aug":
+                self.toggle_overlay("aug")
             self._update_primary_tab_state()
             return
         if name == "tab_eidolith":
@@ -2608,6 +2724,12 @@ class Scene(ChromeMixin, SkinMixin):
                 saved["preset" if is_retro(self.o) else "clean"] = i          # 1034: each look remembers its own GRADE
                 save_json("view.json", saved)
             self.build(self.W, self.H)
+            if self.aug is not None:
+                try:
+                    self.aug.frame.retheme(self.th)
+                    self.aug.layout(self.overlay_box())
+                except Exception as ex:
+                    self._overlay_crashed('AUGURSPEX', ex)
             if self.host is not None and hasattr(self.host, "apply_look"):
                 self.host.apply_look()                     # 1036: a new scheme, a new see-through colour
             self.say("GRADE %d/%d  %s" % (i + 1, len(presets), view_label(self.o["theme"], self.o["layout"]) if is_retro(self.o) else self.o["layout"]))   # 1059: the clean GRADE is a layout only
@@ -2651,6 +2773,10 @@ class Scene(ChromeMixin, SkinMixin):
 
     def on_key(self, e):
         ks = e.keysym
+        if ks.lower() == 'f1':
+            from oracle_suite_guide import show_suite_guide
+            show_suite_guide(self)
+            return 'break'
         ov = self._which_overlay()
         if ov:                                        # the open overlay owns the keyboard
             sess = getattr(self, ov)
@@ -2792,6 +2918,11 @@ class Scene(ChromeMixin, SkinMixin):
                 self.eido.layout(self.overlay_box())
             except Exception as e:
                 self._overlay_crashed("EIDOLITH", e)
+        if self.aug:
+            try:
+                self.aug.layout(self.overlay_box())
+            except Exception as e:
+                self._overlay_crashed("AUGURSPEX", e)
 
 
 # --------------------------------------------------------------------------- window icon
@@ -3265,10 +3396,14 @@ class WindowApp:
             cached_touch = getattr(self.scene, '_touch_cached', None)
             if cached_touch is not None:
                 cached_touch.shutdown()
+            cached_aug = getattr(self.scene, '_aug_cached', None)
+            if cached_aug is not None:
+                cached_aug.shutdown()
             cached_eido = getattr(self.scene, '_eido_cached', None)
             if cached_eido is not None and not cached_eido.shutdown():
                 return   # protect an ongoing video conversion from accidental interruption
             self.scene.markets.stop()
+            self.scene.augurspex_chart.close()
             self.scene.close_overlays()
             # Release the reused Rune animation ZIP descriptor on exit.
             try:

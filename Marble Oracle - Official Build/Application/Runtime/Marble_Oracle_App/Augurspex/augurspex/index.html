@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>AUGURSPEX · Market Observatory</title>
+  <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+  <link rel="stylesheet" href="/style.css" />
+  <script defer src="/app.js"></script>
+</head>
+<body>
+<div class="shell" id="appShell">
+  <aside class="sidebar" id="sidebar" aria-label="Market watchlist">
+    <button type="button" id="closeSidebar" class="sidebar-close" aria-label="Close watchlist">×</button>
+    <div class="brand-row">
+      <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="25" height="25"><path d="M2 16 Q16 2 30 16 Q16 30 2 16Z" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="16" cy="16" r="5" fill="currentColor"/><circle cx="16" cy="16" r="2" fill="#15241f"/><path d="M16 0 V5 M16 27 V32" stroke="currentColor" stroke-width="1.5"/></svg></div>
+      <div class="brand-text"><strong>AUGURSPEX</strong><span>MARKET OBSERVATORY <b>1.2</b></span></div>
+    </div>
+    <div class="private-note"><span class="dot green"></span> Local watchlist <span class="muted">· No login</span></div>
+    <div class="side-title"><span>YOUR MARKETS</span><span id="watchCount" class="count">—</span></div>
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
+      <input id="watchSearch" type="search" placeholder="Find a market  /" autocomplete="off" aria-label="Find market in watchlist" />
+    </div>
+    <div class="watch-filters" role="group" aria-label="Watchlist filter">
+      <button type="button" data-filter="all" class="active">All</button>
+      <button type="button" data-filter="favorites">★ Saved</button>
+      <button type="button" data-filter="crypto">Crypto</button>
+      <button type="button" data-filter="stocks">Stocks</button>
+    </div>
+    <nav id="watchlist" class="watchlist" aria-label="Assets"></nav>
+    <div class="sidebar-bottom">
+      <label for="addSymbol" class="section-label">ADD A MARKET</label>
+      <form id="addForm" class="add-form">
+        <input id="addSymbol" type="text" maxlength="48" spellcheck="false" autocapitalize="characters" placeholder="ASX:BHP or 4568.T" aria-label="Ticker to add" />
+        <button type="submit" class="add-btn" title="Add market">+</button>
+      </form>
+      <div class="list-actions"><button type="button" id="openImport" class="btn-quiet">⇧ Import list</button><button type="button" id="exportCSV" class="btn-quiet">⇩ CSV</button><button type="button" id="exportJSON" class="btn-quiet">JSON</button></div>
+      <p id="importNotice" class="hint">Your market lists are kept locally.</p>
+    </div>
+  </aside>
+  <button type="button" class="sidebar-backdrop" id="sidebarBackdrop" aria-label="Close watchlist" hidden></button>
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-heading">
+        <button type="button" id="menuToggle" class="btn-icon menu-toggle" aria-label="Show or hide the watchlist" title="Toggle watchlist">☰</button>
+        <div><h1>AUGURSPEX</h1><p class="subheading">Market Observatory · Independent charts · No account</p></div>
+      </div>
+      <div class="top-right">
+        <span class="status-chip"><span class="dot green"></span> Local app</span>
+        <span class="clock" id="localClock" title="Your computer's local time">--:--</span>
+        <button type="button" id="quitButton" class="btn-quiet">Quit</button>
+      </div>
+    </header>
+    <section class="live-bar" aria-label="Crypto price updates">
+      <div class="stream-state"><span class="stream-dot" id="streamDot"></span><div><strong>Multi-venue crypto</strong><span id="streamStatus">Connecting public feeds…</span></div></div>
+      <div id="liveQuotes" class="live-quotes" aria-label="Latest confirmed venue-specific cryptocurrency trades"></div>
+      <span class="live-source">USD spot trades · venue labelled</span>
+    </section>
+    <section class="toolbar" aria-label="Dashboard controls">
+      <div class="toolbar-primary">
+        <div class="field"><label for="workspace">WORKSPACE</label><select id="workspace" class="select"><option value="Overview">Overview</option><option value="Healthcare">Healthcare</option><option value="Crypto">Crypto</option></select></div>
+        <div class="field"><span class="field-title">CHARTS</span><div id="layouts" class="segmented" role="group" aria-label="Number of charts"><button type="button" data-count="1">1</button><button type="button" data-count="2">2</button><button type="button" data-count="4">4</button><button type="button" data-count="6">6</button><button type="button" data-count="9">9</button></div></div>
+        <div class="field"><label for="interval">INTERVAL</label><select id="interval" class="select"><option value="1">1m</option><option value="5">5m</option><option value="15">15m</option><option value="60">1h</option><option value="240">4h</option><option value="D">1D</option><option value="W">1W</option><option value="M">1M</option></select></div>
+        <div class="field"><label for="chartStyle">STYLE</label><select id="chartStyle" class="select"><option value="1">Candles</option><option value="2">Lines</option></select></div>
+        <div class="field"><label for="sourceMode">CHART DATA</label><select id="sourceMode" class="select"><option value="auto">Auto</option><option value="hosted">Hosted widgets</option><option value="public">Public OHLC</option></select></div>
+        <div class="field"><label for="quoteProvider">LIVE PRICE</label><select id="quoteProvider" class="select"><option value="auto">Newest trade</option><option value="kraken">Kraken only</option><option value="coinbase">Coinbase only</option></select></div>
+        <div class="field"><label for="chartSize">SIZE</label><select id="chartSize" class="select"><option value="comfortable">Normal</option><option value="large">Tall</option></select></div>
+      </div>
+      <div class="toolbar-actions">
+        <button type="button" id="saveWorkspace" class="btn-quiet" title="Save the current dashboard as this workspace">Save view</button>
+        <button type="button" id="exitFocus" class="btn-quiet" hidden>← All charts</button>
+        <button type="button" id="reloadAll" class="btn-primary" title="Reconnect the embedded widgets only; they normally update without reloading">↻ Reconnect</button>
+      </div>
+    </section>
+    <div class="notice-row"><span><span class="dot amber"></span> <strong>Data integrity:</strong> stock widgets may be delayed; public stock history is end-of-day. Last-trade timestamps and exchange names are shown where available.</span><span id="statusText">Starting…</span></div>
+    <section class="source-panel" aria-label="Market data sources"><div class="source-left"><span class="dot green"></span><strong>Provider health</strong><span id="providerStatus">Checking public data feeds…</span></div><div class="source-right"><span id="quoteVenueStatus">Kraken / Coinbase connecting</span><span id="fxReference">FX reference: loading…</span><button type="button" class="btn-quiet" id="providerDetails">Sources</button></div></section>
+    <section id="providerDrawer" class="provider-drawer" hidden aria-label="Source methodology"><h3>Where prices come from</h3><div id="providerDirectory"></div><p>No accounts, keys or personal IDs. Public data services see your IP address and requested tickers. Stock data may be delayed, end-of-day, restricted, or unavailable. The freshest observed cryptocurrency trade is venue-specific, not a consolidated market price. Local cache data is labelled stale when used.</p></section>
+    <section class="chart-grid layout-4" id="chartGrid" aria-label="Market charts"></section>
+    <footer class="footbar"><span>Chart sources: TradingView hosted widgets; public OHLC from Coinbase, Kraken, Stooq and Naver; live spot trades from Kraken and Coinbase; daily FX reference from Frankfurter. All data timestamped where available.</span><span>Account-free · Layouts stored on this computer</span></footer>
+  </main>
+</div>
+<dialog id="importDialog" class="market-dialog" aria-labelledby="importTitle">
+  <form method="dialog" class="import-shell">
+    <div class="dialog-top"><div><h2 id="importTitle">Import market list</h2><p>CSV, JSON or ticker TXT files. Stored only on this computer.</p></div><button type="submit" class="btn-icon" aria-label="Close import window">×</button></div>
+    <label class="upload-area" for="listFile"><strong>Choose your market list</strong><span>Supports AUGURSPEX export, Merkato JSON, CSV ticker/name, or one symbol per line</span><input id="listFile" type="file" accept=".csv,.json,.txt,text/csv,application/json,text/plain" /></label>
+    <div class="import-settings"><label><input type="radio" name="importMode" value="merge" checked /> Add / update existing markets</label><label><input type="radio" name="importMode" value="replace" /> Replace entire watchlist</label></div>
+    <div id="importPreview" class="import-preview" aria-live="polite">Select a file to preview its symbols before importing.</div>
+    <p class="import-safety">Portfolio quantities, purchase prices and account details are ignored. Only market symbols and optional company names are imported. Unknown unqualified tickers must include an exchange, for example <code>NASDAQ:AMD</code>.</p>
+    <div class="dialog-actions"><button type="button" class="btn-quiet" id="downloadTemplate">Download example CSV</button><div><button type="submit" class="btn-quiet">Cancel</button><button type="button" id="applyImport" class="btn-primary" disabled>Import markets</button></div></div>
+  </form>
+</dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="quitOverlay" class="quit-overlay" hidden><div><h2>AUGURSPEX has stopped</h2><p>You can close this window and launch it again from Marble Oracle or your app launcher.</p></div></div>
+</body>
+</html>
