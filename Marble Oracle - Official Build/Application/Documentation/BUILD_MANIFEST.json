@@ -1,136 +1,360 @@
 {
- "release": "Marble Oracle — EIDOLITH 0.4 Conversion Reliability",
- "release_date": "2026-11-10",
- "source_baseline": {
-  "filename": "Marble-Oracle-OFFICIAL-Audited-Cleaned-EIDOLITH-0.3-FULL-Windows-Linux.zip",
-  "sha256": "5b87d515188b9fa1722cb8bb18f9f598717178621d6d0e79e0eb716ee25319a9"
- },
- "platform_targets": [
-  "Windows 11",
-  "Linux Mint"
- ],
- "native_windows_verified": false,
- "physical_linux_mint_verified": false,
- "test_environment": "Ubuntu 24.04 container, Xvfb, Python 3.12.3 + Tk 8.6, FFmpeg 6.1.1 (libx264/libx265/libsvtav1 1.7.0), no GPU",
- "top_level": [
-  "START MARBLE ORACLE - WINDOWS.vbs",
-  "START MARBLE ORACLE - LINUX.sh",
-  "Application"
- ],
- "tabs": [
-  "HOME",
-  "OGGCULTIST",
-  "EIDOLITH",
-  "PASSPHRASE",
-  "TOUCH TYPE"
- ],
- "runtime_entry": "Application/Runtime/launch_suite.pyw",
- "core_application": "Application/Runtime/Marble_Oracle_App/marble_oracle.py",
- "media_features": [
-  "FFmpeg/FFprobe video conversion and probing",
-  "EIDOLITH preview player",
-  "SVT-AV1 CPU profiles",
-  "optional NVIDIA NVENC when compatible",
-  "TV/movie file naming and queue",
-  "Persisted fail-and-continue queue with per-job logs"
- ],
- "bundled_font": "Uberata Clear",
- "file_count_including_manifests": 370,
- "inventory_file_count_excluding_self_referential_reports": 366,
- "python_source_count": 167,
- "regression": {
-  "baseline_0_3_pass": 21,
-  "baseline_0_3_total": 21,
-  "eidolith_0_4_pass": 24,
-  "eidolith_0_4_total": 24,
-  "queue_reliability_checks": "103/103",
-  "previous_0_3_record": {
-   "baseline_0_3_pass": 21,
-   "baseline_0_3_total": 21,
-   "eidolith_0_4_pass": 24,
-   "eidolith_0_4_total": 24,
-   "queue_reliability_checks": "90/90",
-   "previous_0_3_record": {
+  "release": "Marble Oracle — EIDOLITH 0.4.9.2 / AUGURSPEX PDF Research Sources",
+  "release_date": "2026-11-14",
+  "source_baseline": {
+    "filename": "Marble-Oracle-OFFICIAL-Audited-Cleaned-EIDOLITH-0.3-FULL-Windows-Linux.zip",
+    "sha256": "5b87d515188b9fa1722cb8bb18f9f598717178621d6d0e79e0eb716ee25319a9"
+  },
+  "platform_targets": [
+    "Windows 11",
+    "Linux Mint"
+  ],
+  "native_windows_verified": false,
+  "physical_linux_mint_verified": false,
+  "test_environment": "Ubuntu 24.04 Xvfb, Python 3.12.3 / Tk 8.6; physical desktops not tested",
+  "top_level": [
+    "START MARBLE ORACLE - WINDOWS.vbs",
+    "START MARBLE ORACLE - LINUX.sh",
+    "Application"
+  ],
+  "tabs": [
+    "HOME",
+    "OGGCULTIST",
+    "EIDOLITH",
+    "AUGURSPEX",
+    "PASSPHRASE",
+    "TOUCH TYPE"
+  ],
+  "runtime_entry": "Application/Runtime/launch_suite.pyw",
+  "core_application": "Application/Runtime/Marble_Oracle_App/marble_oracle.py",
+  "media_features": [
+    "FFmpeg/FFprobe video conversion and probing",
+    "EIDOLITH preview player",
+    "SVT-AV1 CPU profiles",
+    "optional NVIDIA NVENC when compatible",
+    "TV/movie file naming and queue",
+    "Persisted fail-and-continue queue with per-job logs"
+  ],
+  "bundled_font": "Uberata Clear",
+  "file_count_including_manifests": 471,
+  "inventory_file_count_excluding_self_referential_reports": 467,
+  "python_source_count": 221,
+  "regression": {
     "baseline_0_3_pass": 21,
     "baseline_0_3_total": 21,
     "eidolith_0_4_pass": 24,
     "eidolith_0_4_total": 24,
-    "queue_reliability_checks": "83/83",
+    "queue_reliability_checks": "103/103",
     "previous_0_3_record": {
-     "baseline_0_3_pass": 21,
-     "baseline_0_3_total": 21,
-     "eidolith_0_4_pass": 23,
-     "eidolith_0_4_total": 23,
-     "queue_reliability_checks": "79/79",
-     "previous_0_3_record": {
       "baseline_0_3_pass": 21,
       "baseline_0_3_total": 21,
-      "eidolith_0_4_pass": 23,
-      "eidolith_0_4_total": 23,
-      "queue_reliability_checks": "72/72",
+      "eidolith_0_4_pass": 24,
+      "eidolith_0_4_total": 24,
+      "queue_reliability_checks": "90/90",
       "previous_0_3_record": {
-       "baseline_0_3_pass": 21,
-       "baseline_0_3_total": 21,
-       "eidolith_0_4_pass": 23,
-       "eidolith_0_4_total": 23,
-       "queue_reliability_checks": "62/62",
-       "previous_0_3_record": {
         "baseline_0_3_pass": 21,
         "baseline_0_3_total": 21,
-        "eidolith_0_4_pass": 23,
-        "eidolith_0_4_total": 23,
-        "queue_reliability_checks": "61/61",
+        "eidolith_0_4_pass": 24,
+        "eidolith_0_4_total": 24,
+        "queue_reliability_checks": "83/83",
         "previous_0_3_record": {
-         "baseline_0_3_pass": 21,
-         "baseline_0_3_total": 21,
-         "eidolith_0_4_pass": 23,
-         "eidolith_0_4_total": 23,
-         "queue_reliability_checks": "54/54 (x4)",
-         "previous_0_3_record": {
-          "baseline_pass": 9,
-          "baseline_total": 9,
-          "postcleanup_pass": 19,
-          "postcleanup_total": 19
-         }
+          "baseline_0_3_pass": 21,
+          "baseline_0_3_total": 21,
+          "eidolith_0_4_pass": 23,
+          "eidolith_0_4_total": 23,
+          "queue_reliability_checks": "79/79",
+          "previous_0_3_record": {
+            "baseline_0_3_pass": 21,
+            "baseline_0_3_total": 21,
+            "eidolith_0_4_pass": 23,
+            "eidolith_0_4_total": 23,
+            "queue_reliability_checks": "72/72",
+            "previous_0_3_record": {
+              "baseline_0_3_pass": 21,
+              "baseline_0_3_total": 21,
+              "eidolith_0_4_pass": 23,
+              "eidolith_0_4_total": 23,
+              "queue_reliability_checks": "62/62",
+              "previous_0_3_record": {
+                "baseline_0_3_pass": 21,
+                "baseline_0_3_total": 21,
+                "eidolith_0_4_pass": 23,
+                "eidolith_0_4_total": 23,
+                "queue_reliability_checks": "61/61",
+                "previous_0_3_record": {
+                  "baseline_0_3_pass": 21,
+                  "baseline_0_3_total": 21,
+                  "eidolith_0_4_pass": 23,
+                  "eidolith_0_4_total": 23,
+                  "queue_reliability_checks": "54/54 (x4)",
+                  "previous_0_3_record": {
+                    "baseline_pass": 9,
+                    "baseline_total": 9,
+                    "postcleanup_pass": 19,
+                    "postcleanup_total": 19
+                  }
+                }
+              }
+            }
+          }
         }
-       }
       }
-     }
     }
-   }
+  },
+  "migration_summary": {
+    "historical_docs_relocated": 40,
+    "prior_manifests_archived": 2,
+    "docs_rune_preview_copies_removed": 2,
+    "runtime_edit": "Linux .desktop Comment text only"
+  },
+  "documentation": [
+    "Application/README.md",
+    "Application/Documentation/DOCUMENTATION_INDEX.md",
+    "Application/Documentation/AUDIT_REPORT.md",
+    "Application/Documentation/VERIFICATION_REPORT.md",
+    "Application/Documentation/PROJECT_STRUCTURE.md",
+    "Application/Documentation/EIDOLITH_RELIABILITY_0_4.md",
+    "Application/Documentation/RELEASE_NOTES_EIDOLITH_0.4.7.9_AUGURSPEX_TAB_ORDER.md",
+    "Application/Documentation/RELEASE_NOTES_0.4.8.5_AUGURSPEX_CHART_LAYOUT.md"
+  ],
+  "asset_preservation": "All original runtime media archives, fonts, Oggcultist branding, art and source modules preserved unchanged.",
+  "hash_notes": "FILE_INVENTORY.json excludes itself, BUILD_MANIFEST.json and AUDIT/VERIFICATION_REPORT.md to avoid self-referential hashes.",
+  "nvidia_hardware_verified": false,
+  "eidolith_0_4_changes": [
+    "oracle_eidolith_jobs.py queue engine (fail-and-continue, stop vs cancel, explicit retry)",
+    "per-job FFmpeg logs, diagnostics export with folder redaction",
+    "progress panel: job n of m, %, elapsed, speed, ETA, last activity, indeterminate when unknown",
+    "cover art / subtitle / attachment / data stream plan with verification",
+    "persisted queue, interrupted-job reconciliation, owned-partial cleanup",
+    "spaced-name filename parser fix (Mr. Robot case)",
+    "RESOLUTION setting (1080p/720p/480p downscale, verified)",
+    "Fast AV1 (preset 8) profile",
+    "short output names by default; episode title and format tag opt-in",
+    "SLIM OUTPUT (video + main audio) default; Opus 5.1(side) fix",
+    "REMOVE SELECTED / CLEAR ALL queue removal",
+    "0.4.5 audit fixes: rotation, movie year, folder title, deinterlace, disk space, fetch caps, clipboard clear, default profile, .bat launcher",
+    "0.4.6: slim keep-English-subtitles / prefer-English-audio options, skip already converted",
+    "0.4.7: Turbo AV1, smart copy of compact AV1/HEVC, hardware test encode, QSV/AMF HEVC profiles (unverified on hardware)"
+  ],
+  "dashboard_change": "Removed bottom RSS runner and market panel; 4-panel grade layouts",
+  "dashboard_test_status": "Xvfb navigation and no-news/no-market regression passed",
+  "native_file_dialogs": "EIDOLITH uses OS dialog: GTK/KDE on Linux; Explorer-style on Windows; platform fallback Tk",
+  "augurspex_integration": {
+    "version": "1.2.0",
+    "mode": "portable companion window",
+    "entry": "Application/Runtime/Marble_Oracle_App/Augurspex/run.py",
+    "account_required": false,
+    "api_key_required": false,
+    "shared_user_config": "~/.config/augurspex",
+    "external_deb_required": false,
+    "reopen_existing_companion": true,
+    "blank_chart_slots_persist": true,
+    "rollback_tools": "Application/Tools/AUGURSPEX_Module/uninstall_from_suite.py"
+  },
+  "integration_patch": "0.4.9.2",
+  "regression_current_patch": {
+    "provider_multisource_fixtures": "6/6 pass",
+    "interval_integrity": "pass",
+    "index_mappings": "pass",
+    "crypto_and_stock_source_recovery": "pass",
+    "augurspex_native_tab": "PASS with new default",
+    "home_chart_and_no_news": "pass",
+    "navigation_default_retro_flat": "pass",
+    "augurspex_api_integration": "pass",
+    "physical_windows_linux": "not tested",
+    "real_upstream_market_provider_responses": "not tested; container network inaccessible",
+    "full_ffmpeg_regression": "not rerun; unchanged",
+    "augurspex_review_0478": "7/7 focused tests passed",
+    "augurspex_native_source_details": "GUI pass under Xvfb",
+    "augurspex_existing_regressions": "native tab, axes, intervals, multisource, HOME carousel, no-news, 6-tab navigation, provider mappings, texture, API security passed",
+    "eidolith_reliability_checks": "103/103 rerun on unmodified converter engine",
+    "live_market_providers_verified": false,
+    "native_windows_tested": false,
+    "physical_linux_mint_tested": false,
+    "augurspex_readability_0481": "pass — 3 viewport sizes, 5 layouts, full-name display and selector bounds",
+    "augurspex_chart_grid_0480": "pass",
+    "augurspex_history_axes": "pass",
+    "augurspex_stock_fallback": "pass",
+    "augurspex_source_details_gui": "pass",
+    "augurspex_home_carousel": "pass",
+    "native_full_scene_entry": "not completed; existing CPU-only photo-bezel decode dominated test runtime",
+    "research_provider_fixtures": "pass",
+    "federal_index_close_only": "pass",
+    "crypto_aggregate_fallback": "pass",
+    "identical_request_singleflight": "pass",
+    "native_suite_tab": "pass",
+    "chart_axes_and_readability": "pass",
+    "full_gui_suite": "incomplete; older no-news test timed out",
+    "live_stock_api": "not checked from physical target systems",
+    "augurspex_screenshot_1px_chart_repro": "reproduced then fixed",
+    "augurspex_scrollable_9_charts": "pass under Xvfb / actual suite aperture",
+    "native_tab_chart_axes_readability": "pass",
+    "external_market_provider_reliability": "not modified; live feed not verified",
+    "sourced_only_verified_charts": "fixture tests passed",
+    "source_audit_and_restore": "fixture tests passed",
+    "spacious_scrollable_charts": "virtual GUI tests passed",
+    "physical_os_market_providers": "not tested",
+    "test_augurspex_charts_layout_0485.py": "PASS 542/542 (fails on 0.4.8.4)",
+    "full_suite_0485": "43/43 test scripts pass on a clean copy",
+    "augurspex_all_charts_542_checks": "542/542 PASS (fixture dates updated; intentional style migration behavior re-specified)",
+    "augurspex_0486_regression": "PASS",
+    "augurspex_gui_nav": "PASS",
+    "eidolith_ffmpeg_queue": "103/103 PASS",
+    "augurspex_0487_second_pass": "PASS: real GUI 30/90/MAX BARS, cache data validity, full CSV",
+    "augurspex_0485_542_checks": "NOT CLAIMED: legacy expectations no longer applicable",
+    "augurspex_companion_regressions": "PASS",
+    "augurspex_0488_popular_markets": "PASS: fixture provider + Tk filters + migration + compact sidebar",
+    "augurspex_readability": "PASS with new default",
+    "market_atlas_pure": "PASS 2/2",
+    "market_atlas_gui": "PASS 3/3",
+    "augurspex_0488_curated_gui": "PASS 7/7",
+    "navigation": "PASS default/retro/flat",
+    "eidolith_queue_reliability": "PASS 103/103",
+    "augurspex_542_legacy": "NOT COMPLETE: timed out, not claimed",
+    "physical_windows_linux_testing": "NOT PERFORMED"
+  },
+  "provenance_note": "Built from standalone AUGURSPEX 1.2.0 module and locally accessible 0.4.7 native-picker/no-news/no-markets archive; uploaded integrated ZIP unavailable for byte comparison.",
+  "home_dashboard": "Rotating 12-second AUGURSPEX history chart over saved watchlist, replacing fixed Bitcoin/gold ticker; no news marquee",
+  "home_chart_verified_on_real_data": false,
+  "augurspex_suite_integration": "Native Tk workspace and HOME carousel sharing one process-wide provider cache and cooldown; no browser/server on tab selection",
+  "augurspex_browser_parity": "Not full: hosted TradingView widgets and live WebSocket tape remain standalone-only",
+  "full_ffmpeg_regression_verified": true,
+  "new_native_files": [
+    "Application/Runtime/Marble_Oracle_App/oracle_augurspex_tab.py",
+    "Application/Tests/test_augurspex_native_tab.py"
+  ],
+  "augurspex_native_refresh": "0.4.7.8: optional documented Twelve Data, provider cache timestamp integrity, shared HOME/native cooldowns, SOURCE DETAILS panel, HOME stale-label correction",
+  "augurspex_sidebar_and_provider_repair": "Fixed left-panel width, active AUGURSPEX nav highlight, Stooq to Yahoo (unofficial) stock fallback and provider-aware cache.",
+  "real_market_providers_tested_on_target_platform": false,
+  "stock_history_provider_privacy_note": "Keyless external feeds receive client IP and requested symbols; optional Alpha Vantage requires environment-provided key, never bundled or logged.",
+  "augurspex_native_charts": "Thicker 3.4px lines; dated X axis, labelled Y prices; close-only values always shown as a line",
+  "augurspex_stock_history": "Explicit Yahoo -> Nasdaq (US) -> optional Alpha Vantage key -> Stooq routes; Naver for Korea; Coinbase/Kraken for crypto; seven-day labelled stale fallback and rate-limit cooldowns",
+  "augurspex_interval_integrity": "Never fall back to daily bars for minute charts; real OHLC weekly/monthly and crypto 4-hour aggregation",
+  "tab_order_patch": {
+    "version": "0.4.7.9",
+    "scope": "navigation order only",
+    "tested_modes": [
+      "standard",
+      "retro",
+      "flat"
+    ],
+    "native_augurspex_tab_test": "pass",
+    "dashboard_regression": "pass"
+  },
+  "augurspex_chart_update": "High-contrast grid; outlined line and candlestick renderer; readable recent candle-window on narrow charts; HOME graph grid/outlines",
+  "chart_visual_regression": "Focused chart/grid, native workspace, axes, HOME graph, source details and news removal tests passed; physical desktop tests outstanding",
+  "augurspex_readability": "Larger chart market names, wider bold watchlist, full selected company name, readable chart notes and labels, responsive selectors and footer layout",
+  "augurspex_provider_update": "Massive, J-Quants v2, KRX, FRED optional official/documented providers; CoinGecko/CoinPaprika keyless close-only aggregated USD crypto; capability-aware source routing; coalescing",
+  "augurspex_unofficial_data_policy": "Off by default, opt-in with AUGURSPEX_ALLOW_UNOFFICIAL_SOURCES=1; keys and exchange entitlements user configured",
+  "augurspex_research_review": "Application/Documentation/AUGURSPEX_PROVIDER_RESEARCH_IMPLEMENTATION_0.4.8.2.md",
+  "augurspex_release_notes": "Application/Documentation/RELEASE_NOTES_0.4.8.5_AUGURSPEX_CHART_LAYOUT.md",
+  "live_provider_data_verified": false,
+  "physical_windows_linux_verified": false,
+  "augurspex_visual_update": "CHARTS N always shows N chart spaces sized by chart_grid_plan; own saved market first, else a labelled AUTO-FILLED watchlist market with data, else own status; live charts placed first; badge counts",
+  "augurspex_source_display": "Sourced-only by default with labelled auto-fill from the watchlist; SHOW ALL MARKETS shows own markets only; saved slots never changed",
+  "previous_baseline": {
+    "release": "0.4.8.4",
+    "zip_sha256": "9505949117c4ccd36d3ab6c73cb803f689dec42f4c192350b3048f604ddd1209"
+  },
+  "augurspex_chart_style": "Per-chart LINE / CANDLES switch remembered per slot and workspace; ALL CHARTS sets every chart; line by default with one-time conversion of pre-0.4.8.5 settings",
+  "augurspex_two_pass_0486": {
+    "phase1": [
+      "repair plot labels",
+      "correct source identity",
+      "reject stale history as verified",
+      "preserve saved chart styles",
+      "increase single-chart size on short viewports",
+      "cache history freshness results"
+    ],
+    "phase2": [
+      "hover-to-inspect actual observations",
+      "CSV export with data provenance and spreadsheet-formula protection"
+    ],
+    "documentation": "Application/Documentation/RELEASE_NOTES_0.4.8.6_AUGURSPEX_TWO_PASS_REPAIR.md"
+  },
+  "augurspex_second_pass_0487": {
+    "fixes": [
+      "validate observation timestamps against real usable OHLC rows",
+      "CSV exports all validated received observations, not only last 120",
+      "visible-window percent change",
+      "stronger spreadsheet-export string handling"
+    ],
+    "features": [
+      "persisted 30 / 90 / MAX bars chart window; does not fetch extra history"
+    ],
+    "testing": [
+      "542/542 geometry checks",
+      "0.4.8.7 focused regression",
+      "native/chart/provider regressions"
+    ],
+    "live_market_verified": false,
+    "doc": "Application/Documentation/RELEASE_NOTES_0.4.8.7_AUGURSPEX_SECOND_PASS.md"
+  },
+  "augurspex_popular_markets_0488": {
+    "markets": 23,
+    "stocks_etfs": 10,
+    "fx_reference_pairs": 7,
+    "crypto": 6,
+    "default_chart_count": 2,
+    "watchlist_one_time_backup": true,
+    "free_fx_history": "Frankfurter v2 D/W/M daily reference close only",
+    "optional_unofficial_stock_fallback": "off until user opt-in",
+    "regression": "focused fixture + Tk GUI pass; old 542 test not rerun successfully due intentional default-UI changes",
+    "live_data_verified": false,
+    "doc": "Application/Documentation/RELEASE_NOTES_0.4.8.8_AUGURSPEX_POPULAR_MARKETS.md"
+  },
+  "market_atlas_0489": {
+    "features": [
+      "sortable searchable multi-market table",
+      "full source and observation-date provenance",
+      "real-provider-observation table",
+      "keyboard candle crosshair navigation",
+      "CSV close-only accuracy",
+      "colour-coded market categories",
+      "in-suite F1 six-workspace guide"
+    ],
+    "network_requests_on_atlas_open": false,
+    "personal_watchlist_changes": false,
+    "provider_config_changes": false,
+    "new_api_keys_required": false,
+    "real_live_provider_response_verified": false,
+    "documentation": "Application/Documentation/RELEASE_NOTES_0.4.8.9_MARKET_ATLAS_AND_SUITE_GUIDE.md"
+  },
+  "augurspex_provider_update_0490": {
+    "new_keyless_fx": [
+      "ECB SDMX",
+      "Bank of Canada Valet"
+    ],
+    "new_keyless_crypto": [
+      "Gemini USD spot candles",
+      "CoinDesk Data/CryptoCompare best-effort aggregate USD"
+    ],
+    "new_stock_keys": [
+      "AUGURSPEX_FMP_KEY",
+      "AUGURSPEX_ALPACA_KEY_ID",
+      "AUGURSPEX_ALPACA_SECRET_KEY"
+    ],
+    "scope": "US stocks/ETFs, 7 FX pairs, 6 cryptos; legacy other markets unchanged",
+    "live_provider_responses_verified": false,
+    "notes": "Provider plan in SOURCE DETAILS; exchange access and quotas remain."
+  },
+  "stock_feed_repair_0491": {
+    "scope": "In-app personal stock API-key connection (session-only), stock CSV import/validation, source diagnostics, offline local charts",
+    "keyless_stock_history_restriction": "Stooq best effort and may be refused; no stock-data API keys bundled",
+    "automatically_populates_all_stocks": false,
+    "tests": "new stock history and GUI tests; focused native/provider/HOME/Atlas tests passed",
+    "live_stock_provider_tested": false,
+    "physical_windows_or_linux_tested": false
+  },
+  "augurspex_pdf_research": "Documented no-key Strasmore US equity/ETF EOD history adapter + conservative source-aware market signals and bundled PDF research.",
+  "stock_feed_repair_0492": {
+    "no_key_stock_source": "Strasmore public demo for US daily/weekly/monthly stock history with provider limits, then Stooq",
+    "pdf_research_inputs": [
+      "Application/Documentation/Research/Free No-Login Market Data Sources.pdf",
+      "Application/Documentation/Research/Equities & Exchange Data.pdf"
+    ],
+    "market_signals": "SMA20, SMA50 and RSI14 calculated from genuine received closes; no extra network",
+    "live_stock_provider_tested": false,
+    "physical_windows_or_linux_tested": false
   }
- },
- "migration_summary": {
-  "historical_docs_relocated": 40,
-  "prior_manifests_archived": 2,
-  "docs_rune_preview_copies_removed": 2,
-  "runtime_edit": "Linux .desktop Comment text only"
- },
- "documentation": [
-  "Application/README.md",
-  "Application/Documentation/DOCUMENTATION_INDEX.md",
-  "Application/Documentation/AUDIT_REPORT.md",
-  "Application/Documentation/VERIFICATION_REPORT.md",
-  "Application/Documentation/PROJECT_STRUCTURE.md",
-  "Application/Documentation/EIDOLITH_RELIABILITY_0_4.md"
- ],
- "asset_preservation": "All original runtime media archives, fonts, Oggcultist branding, art and source modules preserved unchanged.",
- "hash_notes": "FILE_INVENTORY.json excludes itself, BUILD_MANIFEST.json and AUDIT/VERIFICATION_REPORT.md to avoid self-referential hashes.",
- "nvidia_hardware_verified": false,
- "eidolith_0_4_changes": [
-  "oracle_eidolith_jobs.py queue engine (fail-and-continue, stop vs cancel, explicit retry)",
-  "per-job FFmpeg logs, diagnostics export with folder redaction",
-  "progress panel: job n of m, %, elapsed, speed, ETA, last activity, indeterminate when unknown",
-  "cover art / subtitle / attachment / data stream plan with verification",
-  "persisted queue, interrupted-job reconciliation, owned-partial cleanup",
-  "spaced-name filename parser fix (Mr. Robot case)",
-  "RESOLUTION setting (1080p/720p/480p downscale, verified)",
-  "Fast AV1 (preset 8) profile",
-  "short output names by default; episode title and format tag opt-in",
-  "SLIM OUTPUT (video + main audio) default; Opus 5.1(side) fix",
-  "REMOVE SELECTED / CLEAR ALL queue removal",
-  "0.4.5 audit fixes: rotation, movie year, folder title, deinterlace, disk space, fetch caps, clipboard clear, default profile, .bat launcher",
-  "0.4.6: slim keep-English-subtitles / prefer-English-audio options, skip already converted",
-  "0.4.7: Turbo AV1, smart copy of compact AV1/HEVC, hardware test encode, QSV/AMF HEVC profiles (unverified on hardware)"
- ]
 }

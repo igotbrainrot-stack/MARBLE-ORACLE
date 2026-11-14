@@ -1,0 +1,445 @@
+"""0.4.8.5: CHARTS count, chart sizing and text fit, measured in the real Tk panel.
+
+    xvfb-run -a python3 Application/Tests/test_augurspex_charts_layout_0485.py
+
+Synthetic candles labelled TEST FIXTURE are served by a fake router; no
+network is used and production code never fabricates data. Checks, for window
+sizes 900x580, 1000x650 and 1400x870 and CHARTS 1/2/4/6/9, with data only in
+saved slots 1/5/9 and then only in 4/8:
+
+* CHARTS N always shows N chart spaces. A space shows its own saved market
+  when that has real history; otherwise the next watchlist market with data,
+  labelled AUTO-FILLED; only when none is left does it show its own status;
+* one chart is substantially larger than each of four, and fills the view;
+* no text inside a chart overlaps other text or the canvas edge;
+* status, footer, counter, badge and slot-tab text fit their widgets;
+* controls stay inside the window; all nine saved slots survive CHARTS 1;
+* SHOW ALL MARKETS shows N full cards; CHARTS persists across a restart.
+"""
+from __future__ import annotations
+
+import itertools
+import json
+import sys
+import tempfile
+import time
+import tkinter as tk
+from tkinter import font as tkfont
+from pathlib import Path
+
+APP = Path(__file__).resolve().parents[1] / 'Runtime' / 'Marble_Oracle_App'
+sys.path.insert(0, str(APP))
+import oracle_augurspex_tab as tab_module  # noqa: E402
+from oracle_augurspex_tab import EmbeddedAugurspex  # noqa: E402
+
+SYMS = ['BTC-USD', '4568.T', 'NVDA', 'COH.AX', '005930.KS', 'ETH-USD', 'RMD.AX', 'CSL.AX', '4519.T']
+SIZES = ((900, 580), (1000, 650), (1400, 870))
+COUNTS = (1, 2, 4, 6, 9)
+RESULTS = []
+
+
+def check(name, ok, detail=''):
+    RESULTS.append((name, bool(ok)))
+    if not ok:
+        print(f'FAIL {name} — {detail}')
+
+
+def candles(n=120):
+    from datetime import datetime, timezone, timedelta
+    out, price = [], 100.0
+    start = datetime.now(timezone.utc) - timedelta(days=n)
+    for i in range(n):
+        o = price
+        price = price * (1 + ((i * 37) % 11 - 5) / 400)
+        out.append({'time': (start + timedelta(days=i)).strftime('%Y-%m-%d'), 'open': o,
+                    'high': max(o, price) * 1.01, 'low': min(o, price) * .99, 'close': price})
+    return out
+
+
+def datetime_now_fixture():
+    from datetime import datetime, timezone, timedelta
+    return (datetime.now(timezone.utc) - timedelta(days=1)).strftime('%Y-%m-%d')
+
+
+class TestRouter:
+    """Deterministic fixture router. Success only for the given symbols."""
+    def __init__(self, ok):
+        self.ok = set(ok)
+
+    def _routes(self, symbol, source, period='D'):
+        return ['test-only']
+
+    def fetch(self, symbol, period='D'):
+        if symbol not in self.ok:
+            raise ValueError('TEST: PROVIDER TIMEOUT')
+        return {'source': 'TEST FIXTURE, NOT LIVE', 'currency': 'USD',
+                'latest_observation': datetime_now_fixture(), 'candles': candles()}
+
+
+def pump(root, seconds):
+    end = time.monotonic() + seconds
+    while time.monotonic() < end:
+        root.update()
+        time.sleep(.02)
+
+
+def pump_until(root, predicate, limit=8):
+    end = time.monotonic() + limit
+    while time.monotonic() < end:
+        root.update()
+        if predicate():
+            return True
+        time.sleep(.02)
+    return False
+
+
+def text_items(canvas):
+    items = []
+    for item in canvas.find_all():
+        if canvas.type(item) == 'text' and canvas.itemcget(item, 'text').strip():
+            box = canvas.bbox(item)
+            if box:
+                items.append((box, canvas.itemcget(item, 'text')))
+    return items
+
+
+def canvas_text_problems(canvas):
+    boxes = text_items(canvas)
+    w, h = canvas.winfo_width(), canvas.winfo_height()
+    overlaps = [(a[1][:16], b[1][:16]) for a, b in itertools.combinations(boxes, 2)
+                if a[0][0] < b[0][2] and b[0][0] < a[0][2] and a[0][1] < b[0][3] and b[0][1] < a[0][3]]
+    clipped = [t[:16] for (x0, y0, x1, y1), t in boxes if x0 < 0 or y0 < 0 or x1 > w or y1 > h]
+    return overlaps, clipped
+
+
+def label_fits(label):
+    """The label's current text fits its on-screen width (no Tk cropping)."""
+    if not label.winfo_ismapped():
+        return True
+    text = label.cget('text')
+    if not text or '\n' in text or int(label.cget('wraplength') or 0):
+        return True
+    font = tkfont.Font(font=label.cget('font'))
+    return font.measure(text) <= label.winfo_width() - 2 * int(label.cget('padx') or 0)
+
+
+def inside(widget, root):
+    x = widget.winfo_rootx() - root.winfo_rootx()
+    y = widget.winfo_rooty() - root.winfo_rooty()
+    return (widget.winfo_ismapped() and x >= 0 and y >= 0 and
+            x + widget.winfo_width() <= root.winfo_width() + 1 and
+            y + widget.winfo_height() <= root.winfo_height() + 1)
+
+
+def open_panel(home, router, size, layout=9):
+    w, h = size
+    cfg = Path(home) / '.config' / 'augurspex'
+    cfg.mkdir(parents=True, exist_ok=True)
+    settings = cfg / 'settings.json'
+    if not settings.exists():
+        settings.write_text(json.dumps({'layout': layout, 'symbols': SYMS, 'style': '2', 'interval': 'D'}))
+    root = tk.Tk()
+    root.geometry(f'{w}x{h}+0+0')
+    root.update()
+    canvas = tk.Canvas(root, width=w, height=h, highlightthickness=0)
+    canvas.pack(fill='both', expand=True)
+    tab = EmbeddedAugurspex(canvas, lambda: None, home=home, router=router)
+    tab.layout((0, 0, w, h))
+    return root, tab, tab.frame
+
+
+def mapped_cards(panel):
+    return [i for i, card in enumerate(panel.cards) if card.winfo_ismapped()]
+
+
+def chip_slots(panel):
+    return sorted(getattr(panel, 'chip_slots', lambda: [])())
+
+
+def plan_tests():
+    plan = getattr(tab_module, 'chart_grid_plan', None)
+    check('plan: chart_grid_plan exists (pure layout function)', plan is not None)
+    if plan is None:
+        return
+    one = plan(1, 1078, 600)
+    four = plan(4, 1078, 600)
+    check('plan: one chart fills the viewport', one['cols'] == 1 and one['card_h'] >= 560 and not one['scroll'], one)
+    check('plan: one chart is far larger than each of four',
+          one['card_w'] * one['card_h'] > 2.5 * four['card_w'] * four['card_h'], (one, four))
+    check('plan: four charts use a 2x2 grid when wide enough', (four['cols'], four['rows']) == (2, 2), four)
+    nine = plan(9, 1078, 600)
+    check('plan: nine charts keep a legible minimum and scroll', nine['scroll']
+          and nine['card_h'] >= tab_module.MIN_CARD_H and nine['card_w'] >= tab_module.MIN_CARD_W, nine)
+    small = plan(1, 560, 300)
+    check('plan: one chart in a small view does not scroll needlessly', not small['scroll'], small)
+    check('plan: zero charts is safe', plan(0, 500, 300)['rows'] == 0)
+
+
+def expected_spaces(p, n):
+    """Independent model of what the N spaces should show: (symbol, auto)."""
+    fav = set(p.settings.get('favorites', []))
+    spare = [row['symbol'] for row in sorted(p.watchlist, key=lambda row: row['symbol'] not in fav)
+             if row['symbol'] not in SYMS[:n] and p._market_verified(row['symbol'])]
+    out = []
+    for i in range(n):
+        if p._market_verified(SYMS[i]):
+            out.append((SYMS[i], False))
+        elif spare:
+            out.append((spare.pop(0), True))
+        else:
+            out.append((SYMS[i], False))
+    return out
+
+
+def gui_tests():
+    for ok_slots, extra in (((0, 4, 8), ('SOL-USD', 'XRP-USD')), ((3, 7), ())):
+        ok = {SYMS[i] for i in ok_slots} | set(extra)
+        for size in SIZES:
+            with tempfile.TemporaryDirectory() as home:
+                root, tab, p = open_panel(home, TestRouter(ok), size)
+                ready = pump_until(root, lambda: all(p._market_verified(x) for x in ok), 30)
+                check(f'fixture data loaded for slots {[i + 1 for i in ok_slots]} at {size}', ready)
+                pump(root, .4)
+                label = (f'data in slots {[i + 1 for i in ok_slots]}' + (f' + {", ".join(extra)}' if extra else '')
+                         + f' at {size[0]}x{size[1]}')
+                areas = {}
+                for n in COUNTS:
+                    p.layout_var.set(str(n))
+                    p._change_layout(str(n))
+                    pump(root, .5)
+                    shown = mapped_cards(p)
+                    want = expected_spaces(p, n)
+                    got = [(p.cards[i].symbol, bool(getattr(p.cards[i], 'auto_note', ''))) for i in shown]
+                    check(f'{label} CHARTS={n}: {n} chart spaces shown', shown == list(range(n)), shown)
+                    check(f'{label} CHARTS={n}: own market first, then auto-fill from watchlist', got == want,
+                          (got, want))
+                    autos = [i for i in shown if getattr(p.cards[i], 'auto_note', '')]
+                    check(f'{label} CHARTS={n}: auto-filled charts are labelled',
+                          all(p.cards[i].company.cget('text').startswith('AUTO-FILLED') for i in autos))
+                    with_data = [i for i in shown if p._market_verified(p.cards[i].symbol)]
+                    for i in with_data:
+                        over, clip = canvas_text_problems(p.cards[i].canvas)
+                        check(f'{label} CHARTS={n} slot {i + 1}: no overlapping chart text', not over, over[:3])
+                        check(f'{label} CHARTS={n} slot {i + 1}: no chart text past the edge', not clip, clip[:3])
+                    if shown:
+                        card = p.cards[shown[0]]
+                        areas[n] = card.canvas.winfo_width() * card.canvas.winfo_height()
+                    for widget in (p.status_label, p.source_count, getattr(p, 'footer_note', None),
+                                   getattr(p, 'count_badge', None)):
+                        if widget is not None:
+                            check(f'{label} CHARTS={n}: "{widget.cget("text")[:24]}" fits its label',
+                                  label_fits(widget), (widget.cget('text'), widget.winfo_width()))
+                    for chip in getattr(p, 'chip_widgets', []):
+                        check(f'{label} CHARTS={n}: slot tab "{chip.cget("text")[:20]}" fits', label_fits(chip))
+                    badge = getattr(p, 'count_badge', None)
+                    autos_n = sum(a for _s, a in want)
+                    check(f'{label} CHARTS={n}: badge states requested, shown and auto-filled counts', badge is not None
+                          and f'{n} REQUESTED' in badge.cget('text') and f'{n} SHOWN' in badge.cget('text')
+                          and (not autos_n or f'{autos_n} AUTO-FILLED' in badge.cget('text')),
+                          badge.cget('text') if badge is not None else 'no badge')
+                    for name in ('BACK TO HOME', 'SOURCE DETAILS', 'REFRESH'):
+                        button = next((w for w in iter_widgets(p) if isinstance(w, tk.Button)
+                                       and w.cget('text') == name), None)
+                        check(f'{label} CHARTS={n}: {name} visible inside the window',
+                              button is not None and inside(button, root))
+                if 1 in areas:
+                    view = p.chart_canvas.winfo_width() * p.chart_canvas.winfo_height()
+                    check(f'{label}: a single chart uses most of the chart area', areas[1] > .55 * view,
+                          (areas[1], view))
+                if ok_slots == (3, 7):
+                    p._change_layout('1')
+                    pump(root, .4)
+                    check(f'{label}: CHARTS=1 with data only in later slots still shows a real chart',
+                          p.cards[0].symbol == SYMS[3] and p.cards[0].auto_note
+                          and bool(p.cards[0].canvas.find_withtag('price-mark')), p.cards[0].symbol)
+                saved = json.loads((Path(home) / '.config' / 'augurspex' / 'settings.json').read_text())
+                check(f'{label}: all nine saved slots survive CHARTS changes',
+                      saved.get('symbols', [])[:9] == SYMS, saved.get('symbols'))
+                p._toggle_sourced()
+                p._change_layout('4')
+                pump(root, .5)
+                check(f'{label}: SHOW ALL MARKETS shows four full cards for CHARTS=4',
+                      mapped_cards(p) == [0, 1, 2, 3], mapped_cards(p))
+                four = max(p.cards[i].canvas.winfo_width() * p.cards[i].canvas.winfo_height() for i in range(4))
+                scrolls = p.grid_frame.winfo_height() > p.chart_canvas.winfo_height()
+                p._change_layout('1')
+                pump(root, .5)
+                one = p.cards[0].canvas.winfo_width() * p.cards[0].canvas.winfo_height()
+                # Handover acceptance: clearly larger at 1400x870. In smaller
+                # windows the chart area is only ~300-370 px tall: one chart
+                # fills it and four sit at the legible minimum and scroll.
+                if size == (1400, 870):
+                    check(f'{label}: one chart is much larger than each of four shown charts',
+                          one > 1.8 * four, (one, four))
+                else:
+                    check(f'{label}: one chart is at least as large as each of four, four scroll',
+                          one >= four and scrolls, (one, four, scrolls))
+                tab.shutdown()
+                root.destroy()
+
+
+def iter_widgets(widget):
+    yield widget
+    for child in widget.winfo_children():
+        yield from iter_widgets(child)
+
+
+def restart_test():
+    with tempfile.TemporaryDirectory() as home:
+        router = TestRouter({SYMS[0], SYMS[1]})
+        root, tab, p = open_panel(home, router, (1400, 870))
+        pump_until(root, lambda: p._market_verified(SYMS[1]), 8)
+        p.layout_var.set('2')
+        p._change_layout('2')
+        pump(root, .4)
+        tab.shutdown()
+        root.destroy()
+        root, tab, p = open_panel(home, router, (1400, 870))
+        pump_until(root, lambda: p._market_verified(SYMS[0]) and p._market_verified(SYMS[1]), 30)
+        pump(root, .5)
+        if mapped_cards(p) != [0, 1]:
+            import traceback, threading as _th
+            frames = sys._current_frames()
+            for t in _th.enumerate():
+                if 'augurspex' in t.name and t.ident in frames:
+                    print('THREAD', t.name, ''.join(traceback.format_stack(frames[t.ident])[-4:]).replace('\n', ' | ')[:900])
+        check('restart: CHARTS=2 restored with both charts shown', p.settings['layout'] == 2
+              and mapped_cards(p) == [0, 1], (p.settings['layout'], mapped_cards(p), sorted(p._data),
+                                              p._errors.get((SYMS[0], 'D')), p._pending,
+                                              'queue', p._pool._work_queue.qsize(), 'threads',
+                                              [t.is_alive() for t in p._pool._threads], 'results', p._results.qsize(),
+                                              'visible', p._visible, 'after', p._after))
+        tab.shutdown()
+        root.destroy()
+
+
+def drawn(panel, tag):
+    return any(panel.cards[i].canvas.find_withtag(tag) for i in mapped_cards(panel))
+
+
+def line_style_tests():
+    router = TestRouter({SYMS[0]})
+    # Fresh install: line graphs.
+    with tempfile.TemporaryDirectory() as home:
+        root = tk.Tk()
+        root.geometry('1400x870+0+0')
+        canvas = tk.Canvas(root, width=1400, height=870, highlightthickness=0)
+        canvas.pack(fill='both', expand=True)
+        tab = EmbeddedAugurspex(canvas, lambda: None, home=home, router=router)
+        tab.layout((0, 0, 1400, 870))
+        p = tab.frame
+        pump_until(root, lambda: p._market_verified(SYMS[0]), 8)
+        pump(root, .4)
+        check('line: fresh install draws line graphs', p.settings['style'] == '2' and p.style_var.get() == 'LINE'
+              and drawn(p, 'price-line') and not drawn(p, 'candle-body'), p.settings['style'])
+        tab.shutdown()
+        root.destroy()
+    # Existing explicitly stored CANDLES selections are preserved during migration.
+    with tempfile.TemporaryDirectory() as home:
+        cfg = Path(home) / '.config' / 'augurspex'
+        cfg.mkdir(parents=True)
+        (cfg / 'settings.json').write_text(json.dumps({
+            'layout': 1, 'symbols': SYMS, 'style': '1', 'interval': 'D', 'workspace': 'Overview',
+            'workspaces': {'Healthcare': {'layout': 4, 'interval': 'D', 'style': '1', 'symbols': SYMS}}}))
+        root, tab, p = open_panel(home, router, (1400, 870))
+        pump_until(root, lambda: p._market_verified(SYMS[0]), 8)
+        pump(root, .4)
+        saved = json.loads((cfg / 'settings.json').read_text()) if (cfg / 'settings.json').exists() else {}
+        check('line: explicitly saved CANDLES settings are preserved', p.settings['style'] == '1'
+              and p.style_var.get() == 'CANDLES' and drawn(p, 'candle-body'))
+        check('line: saved workspace styles are preserved too',
+              p.settings['workspaces'].get('Healthcare', {}).get('style') == '1', p.settings['workspaces'])
+        # Choosing CANDLES afterwards is respected and remembered.
+        p.style_var.set('CANDLES')
+        p._change_style('CANDLES')
+        pump(root, .3)
+        check('line: CANDLES can still be chosen', drawn(p, 'candle-body'))
+        tab.shutdown()
+        root.destroy()
+        root, tab, p = open_panel(home, router, (1400, 870))
+        pump_until(root, lambda: p._market_verified(SYMS[0]), 8)
+        pump(root, .4)
+        saved = json.loads((cfg / 'settings.json').read_text())
+        check('line: a CANDLES choice survives a restart', p.settings['style'] == '1' and p.style_var.get() == 'CANDLES'
+              and drawn(p, 'candle-body') and saved.get('line_default_0485') is True, saved.get('style'))
+        tab.shutdown()
+        root.destroy()
+
+
+def styles_drawn(panel, slots):
+    return ['candles' if panel.cards[i].canvas.find_withtag('candle-body') else
+            'line' if panel.cards[i].canvas.find_withtag('price-line') else '?' for i in slots]
+
+
+def header_fits(card):
+    """Title, LINE/CANDLES switch and price fit side by side in the card header."""
+    title, toggle, price = card.title, card.style_toggle, card.price
+    if not (title.winfo_ismapped() and toggle.winfo_ismapped()):
+        return False
+    title_ok = title.winfo_width() >= title.winfo_reqwidth() - 1
+    left_of = title.winfo_rootx() + title.winfo_width() <= toggle.winfo_rootx() + 1
+    inside_card = toggle.winfo_rootx() + toggle.winfo_width() <= price.winfo_rootx() + 1 and \
+        price.winfo_rootx() + price.winfo_width() <= card.winfo_rootx() + card.winfo_width()
+    return title_ok and left_of and inside_card
+
+
+def per_chart_toggle_tests():
+    router = TestRouter({SYMS[0], SYMS[1], SYMS[2], SYMS[3]})
+    with tempfile.TemporaryDirectory() as home:
+        root, tab, p = open_panel(home, router, (1400, 870), layout=4)
+        pump_until(root, lambda: all(p._market_verified(x) for x in SYMS[:4]), 30)
+        pump(root, .5)
+        check('toggle: every chart has a LINE / CANDLES switch', all(c.style_toggle.winfo_ismapped() for c in p.cards))
+        check('toggle: charts start as line graphs', styles_drawn(p, range(4)) == ['line'] * 4, styles_drawn(p, range(4)))
+        button = p.cards[0].style_buttons['1']
+        button.event_generate('<Button-1>', x=3, y=3)
+        pump(root, .4)
+        check('toggle: clicking CANDLES on chart 1 changes only chart 1',
+              styles_drawn(p, range(4)) == ['candles', 'line', 'line', 'line'], styles_drawn(p, range(4)))
+        check('toggle: the active choice is highlighted',
+              p.cards[0].style_buttons['1'].cget('fg') == p.p['accent']
+              and p.cards[1].style_buttons['2'].cget('fg') == p.p['accent'])
+        for size in ((900, 580), (1400, 870)):
+            root.geometry(f'{size[0]}x{size[1]}')
+            tab.layout((0, 0) + size)
+            pump(root, .6)
+            shown = mapped_cards(p)
+            check(f'toggle: header title, switch and price fit at {size[0]}x{size[1]}',
+                  shown and all(header_fits(p.cards[i]) for i in shown), shown)
+        # Survives a workspace switch and a restart.
+        p._change_workspace('Healthcare')
+        pump(root, .3)
+        p._change_workspace('Overview')
+        pump(root, .5)
+        check('toggle: per-chart choice kept across a workspace switch',
+              styles_drawn(p, range(4))[:2] == ['candles', 'line'], styles_drawn(p, range(4)))
+        tab.shutdown()
+        root.destroy()
+        root, tab, p = open_panel(home, router, (1400, 870))
+        pump_until(root, lambda: all(p._market_verified(x) for x in SYMS[:4]), 30)
+        pump(root, .5)
+        check('toggle: per-chart choice kept after a restart',
+              styles_drawn(p, range(4)) == ['candles', 'line', 'line', 'line'], styles_drawn(p, range(4)))
+        # DISPLAY still sets every chart at once.
+        p.style_var.set('CANDLES')
+        p._change_style('CANDLES')
+        pump(root, .4)
+        check('toggle: DISPLAY CANDLES sets every chart', styles_drawn(p, range(4)) == ['candles'] * 4)
+        p.style_var.set('LINE')
+        p._change_style('LINE')
+        pump(root, .4)
+        check('toggle: DISPLAY LINE sets every chart', styles_drawn(p, range(4)) == ['line'] * 4)
+        tab.shutdown()
+        root.destroy()
+
+
+if __name__ == '__main__':
+    per_chart_toggle_tests()
+    line_style_tests()
+    plan_tests()
+    gui_tests()
+    restart_test()
+    passed = sum(ok for _, ok in RESULTS)
+    print(f'AUGURSPEX CHARTS COUNT / SIZE / TEXT FIT: {passed}/{len(RESULTS)} checks passed')
+    if passed != len(RESULTS):
+        raise SystemExit(1)

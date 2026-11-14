@@ -17,7 +17,8 @@ import subprocess
 import sys
 import time
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import messagebox
+from oracle_native_files import choose_directory, choose_video_files
 
 from marble_uberata import FAMILY
 from oracle_ogg_texture import frame as ogl_frame, label as ogl_label, install as ogl_install
@@ -733,8 +734,7 @@ class EidolithPanel(tk.Frame):
         })
 
     def open_files(self):
-        paths = filedialog.askopenfilenames(title='Open video files',
-                                            filetypes=[('Video files', '*.mp4 *.mkv *.mov *.avi *.webm *.m4v *.ts *.mts *.flv'), ('All files', '*.*')])
+        paths = choose_video_files(parent=self, title='Open video files')
         if not paths:
             return
         for p in paths:
@@ -744,7 +744,7 @@ class EidolithPanel(tk.Frame):
         self._set_status(f'Added {len(paths)} file(s).')
 
     def add_folder(self):
-        folder = filedialog.askdirectory(title='Add folder')
+        folder = choose_directory(parent=self, title='Add folder')
         if not folder:
             return
         count = 0
@@ -859,7 +859,7 @@ class EidolithPanel(tk.Frame):
 
     # ---------- conversion ----------
     def choose_output(self):
-        folder = filedialog.askdirectory(title='Choose output folder')
+        folder = choose_directory(parent=self, title='Choose output folder', initialdir=self.output_dir)
         if folder:
             self.output_var.set(folder)
             self.output_dir = folder
