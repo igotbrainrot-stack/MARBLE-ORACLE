@@ -24,7 +24,7 @@ Built on 0.4.9.2. No feature was removed from any workspace, no saved setting ch
 **EIDOLITH**
 - On Windows, stopping or cancelling ended only the launcher process when FFmpeg was installed through Chocolatey or Scoop; the real `ffmpeg.exe` kept running and kept the file locked. The whole process tree is now ended.
 - Every pause or seek in the viewer left a defunct helper process until the suite closed. Helpers are now collected (and killed if they ignore the request), which also releases the video file at once.
-- At 900x580 the QUEUE page lost CLEAR FINISHED, CLEAR ALL and RETRY SELECTED off the right edge and the whole conversion log off the bottom; CONVERT cut its explanations mid-sentence; PLAYER lost the volume control. All three pages now fit at every supported size (below).
+- At 900x580 the QUEUE page lost CLEAR FINISHED, CLEAR ALL and RETRY SELECTED off the right edge and the whole conversion log off the bottom; CONVERT cut its explanations mid-sentence and half-hid the status line; PLAYER lost the volume control. All three pages now fit at every supported size.
 
 **PASSPHRASE**
 - An internal error message could contain the generated phrase, and unhandled errors are written to the error log. The phrase no longer appears in any error text.
@@ -47,7 +47,7 @@ Built on 0.4.9.2. No feature was removed from any workspace, no saved setting ch
 - `test_augurspex_chart_repair_0485.py`: written for a function signature that 0.4.9.2 does not contain; it could not run.
 - Unused imports across the suite modules.
 
-Net effect on the source tree: about 10,500 lines removed, 3,200 added.
+Net effect on the source tree: about 10,500 lines removed, 3,900 added. The release ZIP is the same size (113 MB); it is almost entirely artwork archives, none of which were touched.
 
 ### Added: engineering
 

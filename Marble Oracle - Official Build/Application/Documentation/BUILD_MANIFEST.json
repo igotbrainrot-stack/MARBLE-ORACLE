@@ -1,0 +1,46 @@
+{
+  "release": "Marble Oracle 0.4.9.3",
+  "version": "0.4.9.3",
+  "title": "Refinement: honest market states, safer files, one design vocabulary",
+  "release_date": "2026-11-15",
+  "generated_utc": "2026-11-15T11:05:16+00:00",
+  "platform_targets": [
+    "Windows 11",
+    "Linux Mint"
+  ],
+  "entry_points": {
+    "windows": "START MARBLE ORACLE - WINDOWS.vbs",
+    "windows_fallback": "START MARBLE ORACLE - WINDOWS (if the VBS launcher is blocked).bat",
+    "linux": "START MARBLE ORACLE - LINUX.sh",
+    "requirements_checker": "Application/Runtime/launch_suite.pyw",
+    "application": "Application/Runtime/Marble_Oracle_App/marble_oracle.py"
+  },
+  "workspaces": [
+    "HOME",
+    "OGGCULTIST",
+    "EIDOLITH",
+    "AUGURSPEX",
+    "PASSPHRASE",
+    "TOUCH TYPE"
+  ],
+  "file_count": 471,
+  "inventory_file_count": 469,
+  "python_source_count": 222,
+  "test_script_count": 98,
+  "total_bytes": 115576257,
+  "previous_release": {
+    "version": "0.4.9.2",
+    "zip": "Marble-Oracle-0.4.9.2-PDF-RESEARCH-STOCK-FEEDS-Windows-Linux.zip",
+    "zip_sha256": "839970fe65eef4c77ec3e0edfbea6d4e4f7f501fe458158e1327719fac764945"
+  },
+  "verification": {
+    "see": "Application/Documentation/TESTING_REPORT.md",
+    "automated_linux_gui": "Ubuntu 24.04, Tk under Xvfb (GitHub Actions)",
+    "automated_windows_gui": "see TESTING_REPORT.md",
+    "physical_windows_11_verified": false,
+    "physical_linux_mint_verified": false,
+    "gpu_encoders_verified_on_hardware": false,
+    "live_provider_probe": "see Application/Documentation/PROVIDER_PROBE.md (dated evidence, not a guarantee)"
+  },
+  "history": "Earlier manifests are preserved in Application/Documentation/History/."
+}

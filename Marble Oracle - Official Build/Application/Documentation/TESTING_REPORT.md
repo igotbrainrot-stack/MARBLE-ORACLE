@@ -12,7 +12,7 @@ The development environment for this release had no Tk, so every graphical test 
 | **Windows** | GitHub's Windows Server runner, Python 3.12 from python.org with its native Tk, FFmpeg from Chocolatey, desktop set to 1920x1080 | Not Windows 11, not a physical PC |
 | **Linux, clock +60 days** | The AUGURSPEX tests with the system date moved forward | |
 
-## Results (code commit `0616b83`, run 43705102541)
+## Results (code commit `2cd6c00`, workflow run 43706364577)
 
 | Check | Linux | Windows |
 |---|---|---|
@@ -20,7 +20,7 @@ The development environment for this release had no Tk, so every graphical test 
 | AUGURSPEX scripts with the clock 60 days ahead | 30 passed, 0 failed | not run |
 | Byte-compile every source file | pass | not run |
 | Lint (`ruff.toml`) | pass | not run |
-| Screenshots of every workspace and page at 900x580, 1000x650, 1216x848, 1280x720, 1920x1080 | 71 captured and reviewed by eye | not captured |
+| Screenshots of every workspace and page at 900x580, 1000x650, 1216x848, 1280x720, 1920x1080 | 71 captured; the 900x580 set and a sample of the larger sizes reviewed by eye | not captured |
 
 The one Windows failure: `test_rune_click_and_art.py` at a **640x460** window in the STATUE layout. On Windows the rune stones are given no height at that size. 640x460 is the smallest size the window allows, below the supported 900x580; the same test passes on Windows at 1216x848, 900x620 and 760x550, and on Linux at all four. Not fixed in this release; see `HANDOVER.md`.
 
@@ -47,7 +47,7 @@ Recorded because each one is the reason a test now exists.
 | 2 | All six workspaces accessible | `test_tab_layout.py`, `capture_screens.py` open each | Verified in CI |
 | 3 | Navigation works repeatedly | Layout tests switch tabs and pages at four sizes in one session | Verified in CI |
 | 4 | Settings and data preserved | No persistence format changed; state paths unchanged; tests use throw-away state folders | By inspection. No upgrade test from a real 0.4.9.2 profile was run |
-| 5 | No overlap or lost controls at tested sizes | EIDOLITH: every button, slider, menu and entry checked inside its page at four sizes. AUGURSPEX: chart, axis-label and scroll tests. Others: screenshots reviewed | EIDOLITH and AUGURSPEX verified by test; HOME, OGGCULTIST, PASSPHRASE, TOUCH TYPE by eye only |
+| 5 | No overlap or lost controls at tested sizes | EIDOLITH: every button, slider, menu and entry checked inside its page at four sizes. AUGURSPEX: chart, axis-label and scroll tests. Others: 900x580 screenshots reviewed | EIDOLITH and AUGURSPEX verified by test; HOME, OGGCULTIST, PASSPHRASE, TOUCH TYPE by eye only |
 | 6 | Valid, stale, partial and unavailable provider replies handled | `test_augurspex_provider_errors_0493.py` and the earlier provider tests, with controlled replies | Verified with fixtures |
 | 7 | Calculations use only verified observations | `test_augurspex_signals_0493.py`, `test_augurspex_pdf_integration_0492.py` | Verified with fixtures |
 | 8 | CSV import/export integrity | Export formula-injection and close-only tests; import tests from 0.4.9.1 | Verified with fixtures |
@@ -71,6 +71,8 @@ One real check, 15 November 2026 05:19 UTC, from a GitHub runner, no keys: **23 
 `Tools/build_release.py` regenerated `FILE_INVENTORY.json` and `BUILD_MANIFEST.json` and wrote the ZIP; `Tools/verify_release.py` passed on the source tree and again on a fresh extraction of the ZIP. The ZIP's name and SHA-256 are in `HANDOVER.md` and the pull request. The ZIP was not launched on a desktop: the build machine has no Tk.
 
 ## Not verified
+
+- HOME's PLATE VAULT panel is empty in the automated screenshots, although `test_ascii_visibility.py` passes. Whether that is the capture tool or the panel was not established; check it on a real screen.
 
 - Any physical Windows 11 or Linux Mint machine, any real monitor, high-DPI or fractional scaling.
 - GPU encoders (NVENC, Quick Sync, AMF) on real hardware.
