@@ -1905,6 +1905,19 @@ class Scene(ChromeMixin, SkinMixin):
                          int(round((53 if keywords_enabled else 40) * self.k)))
         art_bottom = reading_top - text_space
         available_height = max(1, int(art_bottom - py - max(4, int(5*self.k))))
+        # At the smallest window (STATUE layout, and sooner with the taller
+        # Windows fonts) the caption band can be as tall as the whole column,
+        # leaving the stones no height. The stone matters more than its
+        # caption: give back the title line first, then the position label,
+        # until a recognisable stone fits. Captions that no longer fit are
+        # skipped below; the reading pane still names the selected rune.
+        min_stone = max(20, int(round(24 * self.k)))
+        for reduced in (caption_line + 3, 0):
+            if available_height >= min_stone:
+                break
+            text_space = min(text_space, reduced)
+            art_bottom = reading_top - text_space
+            available_height = max(1, int(art_bottom - py - max(4, int(5*self.k))))
         available_width = max(1, int(cw - art_padding * 2))
         # Use the maximum safe width/height of each column.  The old 96px cap
         # and inset+round-down left stones at ~50px on normal screens.  The
@@ -1966,11 +1979,12 @@ class Scene(ChromeMixin, SkinMixin):
             position_label = names[n]
             if self.font(9, True).measure(position_label) > cw - 2 * art_padding:
                 position_label = "FUTURE" if n == 2 else fit(position_label, self.font(9, True), cw - 2 * art_padding)
-            self.T(cx, label_y, position_label, 9,
-                   "gold" if n == self.rune_sel else "dim",
-                   "n", ("content", "cards"), True)
-            if shown:
-                name_y = label_y + caption_line
+            if label_y + caption_line <= reading_top:
+                self.T(cx, label_y, position_label, 9,
+                       "gold" if n == self.rune_sel else "dim",
+                       "n", ("content", "cards"), True)
+            name_y = label_y + caption_line
+            if shown and name_y + title_line <= reading_top + 2:
                 rune_title = fit(entry["name"].upper(), self.font(11, True), max(25, cw - 7))
                 self.T(cx, name_y, rune_title, 11,
                        "gold" if n == self.rune_sel else "txt", "n", ("content", "cards"), True)

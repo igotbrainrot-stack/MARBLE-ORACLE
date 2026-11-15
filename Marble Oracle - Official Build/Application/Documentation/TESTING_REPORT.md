@@ -1,4 +1,22 @@
-# Testing report: Marble Oracle 0.4.9.3
+# Testing report: Marble Oracle 0.4.9.4
+
+## 0.4.9.4 addendum (16 November 2026)
+
+Run in a Linux container (Python 3.12, Tk under Xvfb at 1600x1000, FFmpeg 6.1), not on a real PC and not on Windows.
+
+| Check | Result |
+|---|---|
+| Regression scripts (`Tools/run_tests.py`) | **62 passed, 0 failed, 0 skipped** (the 60 from 0.4.9.3 plus two new) |
+| Lint (`ruff.toml`) on the changed files | pass |
+| New market-data sources against live providers | **not run**: the container cannot reach any provider |
+| Rune-stone fix on Windows | **not run**: simulated on Linux with line heights up to 1.8x; the Windows CI job has to confirm it |
+| GitHub Actions for this branch | see the pull request; not part of this report |
+
+The rest of this file is the 0.4.9.3 report, unchanged.
+
+---
+
+## The 0.4.9.3 report
 
 15 November 2026. Everything below was run; nothing is inferred. Where something could not be checked, it says so.
 

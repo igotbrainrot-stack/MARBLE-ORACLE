@@ -14,7 +14,7 @@ def tests():
     def no_http(_url):raise AssertionError('Must not send request')
     with patch.dict(os.environ,{},clear=True):
         r=MarketRouter(clock=lambda:100)
-        assert r._routes('BTC-USD','auto')==['coinbase','kraken','gemini','coingecko','coinpaprika']  # 0.4.9.3: CoinDesk Data only with a key
+        assert r._routes('BTC-USD','auto')==['coinbase','kraken','bitstamp','gemini','bitfinex','coinbase-adv','coingecko','coinpaprika','binance']  # 0.4.9.4: more venues; USDT-quoted Binance last
         assert r._routes('COH.AX','auto')==[]
         assert r._routes('4568.T','auto')==[]
         assert r._routes('005930.KS','auto')==[]
@@ -85,7 +85,8 @@ def tests():
         ]).encode())
         assert p['aggregated_market'] and all(x['close_only'] for x in p['candles'])
         def fallthrough(url):
-            if 'api.exchange.coinbase.com' in url or 'api.kraken.com' in url or 'api.gemini.com' in url:
+            if any(host in url for host in ('api.exchange.coinbase.com','api.kraken.com','api.gemini.com',
+                                             'bitstamp.net','api-pub.bitfinex.com','api.coinbase.com')):   # 0.4.9.4 venues too
                 raise ProviderError('HTTP 429; upstream provider rate limited')
             if 'coingecko.com' in url:return json.dumps({'prices':values}).encode()
             raise AssertionError('CoinGecko should finish fallback')
@@ -94,7 +95,7 @@ def tests():
         assert result['provider_attempts'][0].startswith('coinbase:')
         assert result['aggregated_market']
         # CoinGecko cannot claim it has actual 1-minute OHLC bars.
-        assert MarketRouter()._routes('ETH-USD','auto','1')==['coinbase','kraken','gemini']
+        assert MarketRouter()._routes('ETH-USD','auto','1')==['coinbase','kraken','bitstamp','gemini','bitfinex','coinbase-adv','binance']
     return True
 
 if __name__=='__main__':

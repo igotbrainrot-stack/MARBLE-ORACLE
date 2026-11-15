@@ -27,7 +27,7 @@ def test_routers_no_ticker_substitution():
     assert r._routes('NVDA','auto')==['strasmore','stooq','nasdaq','yahoo']
     assert r._routes('COH.AX','auto')==['yahoo','stooq']
     assert r._routes('005930.KS','auto')==['naver','yahoo']
-    assert r._routes('ETH-USD','auto')==['coinbase','kraken','gemini','coingecko','coinpaprika']  # 0.4.9.3: CoinDesk Data only with a key
+    assert r._routes('ETH-USD','auto')==['coinbase','kraken','bitstamp','gemini','bitfinex','coinbase-adv','coingecko','coinpaprika','binance']  # 0.4.9.4: more venues; USDT-quoted Binance last
 
 
 @patch.dict(os.environ,{"AUGURSPEX_ALLOW_UNOFFICIAL_SOURCES":"1"})

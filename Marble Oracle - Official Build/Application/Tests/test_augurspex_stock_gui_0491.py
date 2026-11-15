@@ -34,9 +34,9 @@ def test_keys_and_csv():
             tab._stock_key_setup();root.update()
             dialog=[w for w in _walk(root) if isinstance(w,tk.Toplevel)][0]
             entries=[w for w in _walk(dialog) if isinstance(w,tk.Entry)]
-            assert len(entries)==4
+            assert len(entries)==8   # 0.4.9.4: Stooq, EODHD, Tiingo and data.go.kr added
             testkey='TEST_SESSION_0491_NOT_REAL'
-            entries[0].insert(0,testkey)
+            entries[3].insert(0,testkey)   # Twelve Data is the fourth field
             btn=next(w for w in _walk(dialog) if isinstance(w,tk.Button) and w.cget('text')=='APPLY + REFRESH')
             btn.invoke();root.update()
             assert os.environ.get('AUGURSPEX_TWELVE_DATA_KEY')==testkey

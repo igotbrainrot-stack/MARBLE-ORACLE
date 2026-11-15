@@ -276,8 +276,10 @@ class Router(unittest.TestCase):
         self.assertFalse(plan['cryptocompare']['active'])
         self.assertIn('API KEY', plan['cryptocompare']['status'])
         os.environ['AUGURSPEX_CRYPTOCOMPARE_KEY'] = 'CC-TEST-KEY'
-        self.assertEqual(router._routes('BNB-USD', 'auto', 'D')[-1], 'cryptocompare')
-        self.assertEqual(router._routes('BTC-USD', 'auto', '5'), ['coinbase', 'kraken', 'gemini'])
+        # 0.4.9.4: the USDT-quoted Binance mirror is the last resort, after every USD source.
+        self.assertEqual(router._routes('BNB-USD', 'auto', 'D')[-2:], ['cryptocompare', 'binance'])
+        self.assertEqual(router._routes('BTC-USD', 'auto', '5'),
+                         ['coinbase', 'kraken', 'bitstamp', 'gemini', 'bitfinex', 'coinbase-adv', 'binance'])  # 0.4.9.4 venues
 
     def test_key_never_appears_in_messages_or_cache(self):
         secret = 'ALPHA-SECRET-VALUE-0001'

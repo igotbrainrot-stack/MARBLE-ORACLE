@@ -24,7 +24,14 @@ SOURCE_INFO = {
     'kraken': {'name':'Kraken', 'coverage':'Crypto OHLC + public WebSocket', 'timeliness':'Trades in real time; OHLC provider interval', 'credentials':False},
     'coinbase': {'name':'Coinbase Exchange', 'coverage':'Crypto OHLC + public WebSocket', 'timeliness':'Trades in real time; OHLC provider interval', 'credentials':False},
     'strasmore': {'name':'Strasmore SQL public demo', 'coverage':'US stock and ETF daily OHLCV, no account, demo-limited', 'timeliness':'Historical / delayed, never live; 500-row and one-year limits', 'credentials':False},
-    'stooq': {'name':'Stooq', 'coverage':'Daily stock history (US best supported; AU/JP best effort)', 'timeliness':'End-of-day; never live', 'credentials':False},
+    'stooq': {'name':'Stooq', 'coverage':'Daily stock and index history (US, AU, JP). Since 2026 Stooq asks for a free personal key (AUGURSPEX_STOOQ_KEY)', 'timeliness':'End-of-day; never live', 'credentials':False},
+    'tiingo': {'name':'Tiingo (optional)', 'coverage':'US equity/ETF daily OHLC with a free personal key; licence is internal/personal use', 'timeliness':'End-of-day', 'credentials':True},
+    'eodhd': {'name':'EODHD (optional)', 'coverage':'Daily OHLC for US, ASX, Tokyo, Korea and index levels with a free personal key; free plan about one year and 20 calls a day, exchange coverage not confirmed', 'timeliness':'End-of-day', 'credentials':True},
+    'datagokr': {'name':'Korea data.go.kr FSC stock prices (optional)', 'coverage':'Korean listed-stock daily OHLC with a free personal service key; non-commercial licence', 'timeliness':'Published the next business day', 'credentials':True},
+    'coinbase-adv': {'name':'Coinbase Advanced Trade (public)', 'coverage':'Crypto OHLC, same venue as Coinbase Exchange on a second host', 'timeliness':'Exchange venue observations', 'credentials':False},
+    'bitstamp': {'name':'Bitstamp', 'coverage':'USD spot OHLC for BTC/ETH/SOL/XRP/DOGE', 'timeliness':'Exchange venue observations; not a consolidated price', 'credentials':False},
+    'bitfinex': {'name':'Bitfinex', 'coverage':'USD spot OHLC for BTC/ETH/SOL/XRP', 'timeliness':'Exchange venue observations; not a consolidated price', 'credentials':False},
+    'binance': {'name':'Binance market-data mirror (USDT pairs)', 'coverage':'Crypto OHLC quoted in USDT, a dollar-pegged token, not US dollars; last resort and labelled USDT', 'timeliness':'Exchange venue observations', 'credentials':False},
     'nasdaq': {'name':'Nasdaq.com historical (unofficial endpoint)', 'coverage':'US equity/ETF daily history; website feed may restrict access', 'timeliness':'Delayed historical, not a licensed live API', 'credentials':False},
     'alpha': {'name':'Alpha Vantage official API (optional)', 'coverage':'US equities daily/weekly/monthly history when a personal API key is configured', 'timeliness':'Historical; rate-limited free tier', 'credentials':True},
     'twelve': {'name':'Twelve Data API (optional)', 'coverage':'Documented stock/ETF OHLC subject to provider plan and exchange permissions', 'timeliness':'Historical or provider-delayed; exchange-specific licensing applies', 'credentials':True},
@@ -73,6 +80,13 @@ URL_GEMINI = 'https://api.gemini.com/v2/candles/'
 URL_CRYPTOCOMPARE = 'https://min-api.cryptocompare.com/data/v2/'
 URL_FMP = 'https://financialmodelingprep.com/stable/historical-price-eod/full'
 URL_ALPACA = 'https://data.alpaca.markets/v2/stocks/'
+URL_TIINGO = 'https://api.tiingo.com/tiingo/daily/'
+URL_EODHD = 'https://eodhd.com/api/eod/'
+URL_DATAGOKR = 'https://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService/getStockPriceInfo'
+URL_COINBASE_ADV = 'https://api.coinbase.com/api/v3/brokerage/market/products/'
+URL_BITSTAMP = 'https://www.bitstamp.net/api/v2/ohlc/'
+URL_BITFINEX = 'https://api-pub.bitfinex.com/v2/candles/'
+URL_BINANCE = 'https://data-api.binance.vision/api/v3/klines'
 
 COIN_IDENTITIES = {
     'BTC-USD': ('bitcoin','btc-bitcoin'), 'ETH-USD': ('ethereum','eth-ethereum'),
@@ -85,6 +99,8 @@ INTERVALS = {'1':(1,60),'5':(5,300),'15':(15,900),'60':(60,3600),'240':(240,3600
 CACHE_TTL = {'kraken':50,'coinbase':50,'strasmore':4*3600,'stooq':6*3600,'yahoo':25*60,'nasdaq':30*60,'alpha':12*3600,'twelve':20*60,'naver':25*60,'frankfurter':3600, 'fred':24*3600,'massive':12*3600, 'jquants':24*3600, 'krx':24*3600,
              'coingecko':10*60, 'coinpaprika':30*60, 'cryptocompare':15*60,
              'gemini':60, 'fmp':12*3600, 'alpaca':12*3600,
+             'tiingo':12*3600, 'eodhd':24*3600, 'datagokr':24*3600,
+             'coinbase-adv':50, 'bitstamp':60, 'bitfinex':60, 'binance':60,
              'frankfurter-history':8*3600, 'ecb-fx':8*3600, 'boc-fx':8*3600}
 MAX_BODY = 2_000_000
 PROVIDER_COOLDOWN = 900        # seconds a source is left alone after a rate limit, refusal or rejected key
@@ -115,7 +131,8 @@ _KIND_RULES = (
     ('rate_limited', ('http 429', 'quota', 'rate or plan limit', 'rate limit', 'too many requests',
                       'daily hits limit', 'demo limit', 'html challenge')),
     ('auth', ('http 401', 'credential denied', 'authentication', 'not approved', 'entitlement',
-              'api key', 'key/secret', 'subscription', 'unauthorized', 'unauthorised')),
+              'api key', 'key/secret', 'subscription', 'unauthorized', 'unauthorised', 'personal key',
+              'service key')),
     ('refused', ('http 403',)),
     ('network', ('network problem', 'name resolution', 'timeout', 'timed out', 'temporary failure',
                  'connection refused', 'connection reset', 'unreachable')),
@@ -214,7 +231,7 @@ def get_bytes(url, timeout=9, extra_headers=None):
     if url.startswith(URL_NASDAQ):
         headers.update({'Origin':'https://www.nasdaq.com','Referer':'https://www.nasdaq.com/'})
     if extra_headers is not None:
-        allowed={'x-api-key','AUTH_KEY','APCA-API-KEY-ID','APCA-API-SECRET-KEY'}
+        allowed={'x-api-key','AUTH_KEY','APCA-API-KEY-ID','APCA-API-SECRET-KEY','Authorization'}
         if any(k not in allowed for k in extra_headers):
             raise ProviderError('Unsupported custom provider header')
         headers.update(extra_headers)
@@ -430,9 +447,18 @@ def read_stooq(symbol, period, getter=get_bytes):
     begin=end-timedelta(days=lookback)
     codes=code if isinstance(code,(list,tuple)) else (code,)
     failures=[]
+    key=os.environ.get('AUGURSPEX_STOOQ_KEY','').strip()
     for candidate in codes:
-        url=URL_STOOQ+'?'+urlencode({'s':candidate,'d1':begin.strftime('%Y%m%d'), 'd2':end.strftime('%Y%m%d'),'i':'d'})
+        query={'s':candidate,'d1':begin.strftime('%Y%m%d'), 'd2':end.strftime('%Y%m%d'),'i':'d'}
+        if key:query['apikey']=key
+        url=URL_STOOQ+'?'+urlencode(query)
         raw=getter(url).decode('utf-8-sig',errors='replace').strip()
+        # Since about March 2026 a request without a key answers HTTP 200 with
+        # an instruction page ("Get your apikey: ..."), not CSV. That is a
+        # missing or rejected key, never "no data for this listing".
+        if 'apikey' in raw[:400].lower() and not raw.startswith('Date,'):
+            raise ProviderError('Stooq needs a free personal key: '+('the configured key was not accepted'
+                                if key else 'none is configured (STOCK FEEDS, Stooq key)'),kind='auth')
         if raw.startswith('<') or raw.startswith('Exceeded'):
             raise ProviderError('Stooq quota or HTML challenge; automated history temporarily blocked')
         if raw.startswith('N/D') or not raw:
@@ -1181,6 +1207,187 @@ def read_alpaca(symbol,period,getter=get_bytes):
                   'IEX exchange-only bars; not consolidated US stock trading volume/prices.')
 
 
+def _day_stamp(text):
+    return datetime.strptime(str(text)[:10],'%Y-%m-%d').replace(tzinfo=timezone.utc).isoformat()
+
+
+def read_tiingo(symbol,period,getter=get_bytes):
+    key=os.environ.get('AUGURSPEX_TIINGO_KEY','').strip()
+    if not key:raise ProviderError('Tiingo personal API key not configured')
+    ticker=_us_listing(symbol)
+    if not ticker or period not in ('D','W','M'):
+        raise ProviderError('Tiingo adapter only supports daily US equity/ETF history')
+    begin=(datetime.now(timezone.utc)-timedelta(days=740)).date().isoformat()
+    url=URL_TIINGO+quote(ticker.lower().replace('.','-'),safe='-')+'/prices?'+urlencode({'startDate':begin,'format':'json'})
+    # The key travels in a header, never in the URL.
+    data=_json(_with_headers(getter,url,{'Authorization':'Token '+key}),'Tiingo')
+    if isinstance(data,dict):
+        raise ProviderError('Tiingo: '+str(data.get('detail','request rejected'))[:120])
+    if not isinstance(data,list):raise ProviderError('Tiingo returned no historical price rows')
+    rows=[]
+    for r in data:
+        if not isinstance(r,dict):continue
+        try:stamp=_day_stamp(r['date'])
+        except (TypeError,ValueError,KeyError):continue
+        # Raw (unadjusted) prices, like the other daily sources here.
+        rows.append(candle(stamp,r.get('open'),r.get('high'),r.get('low'),r.get('close'),r.get('volume',0)))
+    return finish(_aggregate_candles(rows,period),'Tiingo','USD',period,'equity',
+                  'End-of-day US stock/ETF prices, unadjusted; personal key, personal/internal use licence.')
+
+
+EODHD_INDEX={'^GSPC':'GSPC.INDX','^IXIC':'IXIC.INDX','^DJI':'DJI.INDX'}
+
+def eodhd_code(symbol):
+    """(provider code, currency) for the SAME listing; no ADR or ETF stand-ins."""
+    s=str(symbol).upper().strip()
+    if s in EODHD_INDEX:return EODHD_INDEX[s],'USD'
+    match=STOCK.fullmatch(s)
+    if match:
+        code,ex=match.groups()
+        return code+{'AX':'.AU','T':'.TSE','KS':'.KO','KQ':'.KQ'}[ex],{'AX':'AUD','T':'JPY','KS':'KRW','KQ':'KRW'}[ex]
+    if s.startswith('ASX:'):return s[4:]+'.AU','AUD'
+    if s.startswith('TSE:'):return s[4:]+'.TSE','JPY'
+    krx=_krx_code(s)
+    if krx:return krx[0]+('.KO' if krx[1]=='KS' else '.KQ'),'KRW'
+    ticker=_us_listing(s)
+    if ticker:return ticker.replace('.','-')+'.US','USD'
+    return None,None
+
+
+def read_eodhd(symbol,period,getter=get_bytes):
+    key=os.environ.get('AUGURSPEX_EODHD_KEY','').strip()
+    if not key:raise ProviderError('EODHD personal API key not configured')
+    code,currency=eodhd_code(symbol)
+    if not code:raise ProviderError('EODHD mapping unavailable for this listing')
+    if period not in ('D','W','M'):raise ProviderError('EODHD free history is daily only')
+    begin=(datetime.now(timezone.utc)-timedelta(days=366)).date().isoformat()
+    url=URL_EODHD+quote(code,safe='.-')+'?'+urlencode({'api_token':key,'fmt':'json','from':begin,'period':'d'})
+    data=_json(getter(url),'EODHD')
+    if not isinstance(data,list):
+        raise ProviderError('EODHD returned no authorized history; check the key and plan entitlement')
+    rows=[]
+    for r in data:
+        if not isinstance(r,dict):continue
+        try:stamp=_day_stamp(r['date'])
+        except (TypeError,ValueError,KeyError):continue
+        rows.append(candle(stamp,r.get('open'),r.get('high'),r.get('low'),r.get('close'),r.get('volume',0)))
+    asset='index' if code.endswith('.INDX') else 'equity'
+    return finish(_aggregate_candles(rows,period),'EODHD',currency,period,asset,
+                  'End-of-day history, unadjusted; free plan is limited to about one year and 20 calls a day.')
+
+
+def read_datagokr(symbol,period,getter=get_bytes):
+    """Korean listed-stock daily prices from the public data portal (FSC)."""
+    key=os.environ.get('AUGURSPEX_DATA_GO_KR_KEY','').strip()
+    if not key:raise ProviderError('data.go.kr personal service key not configured')
+    listing=_krx_code(symbol)
+    if not listing:raise ProviderError('data.go.kr only supports six-digit Korean listings')
+    if period not in ('D','W','M'):raise ProviderError('data.go.kr prices are daily only')
+    begin=(datetime.now(timezone.utc)-timedelta(days=560)).strftime('%Y%m%d')
+    url=URL_DATAGOKR+'?'+urlencode({'serviceKey':key,'resultType':'json','numOfRows':'400','pageNo':'1',
+                                    'likeSrtnCd':listing[0],'beginBasDt':begin})
+    payload=_json(getter(url),'data.go.kr')
+    body=((payload.get('response') or {}).get('body') or {}) if isinstance(payload,dict) else {}
+    items=(body.get('items') or {}).get('item') if isinstance(body.get('items'),dict) else None
+    if isinstance(items,dict):items=[items]
+    if not isinstance(items,list):
+        raise ProviderError('data.go.kr returned no authorized price rows; check the service key approval')
+    rows=[]
+    for r in items:
+        # The query is a prefix match: accept only the exact listing code.
+        if not isinstance(r,dict) or str(r.get('srtnCd','')).strip().lstrip('A')!=listing[0]:continue
+        try:stamp=datetime.strptime(str(r['basDt']),'%Y%m%d').replace(tzinfo=timezone.utc).isoformat()
+        except (TypeError,ValueError,KeyError):continue
+        rows.append(candle(stamp,r.get('mkp'),r.get('hipr'),r.get('lopr'),r.get('clpr'),r.get('trqu',0)))
+    return finish(_aggregate_candles(rows,period),'data.go.kr (FSC)','KRW',period,'equity',
+                  'Official Korean daily prices, published the next business day; non-commercial licence, source: Financial Services Commission.')
+
+
+def read_coinbase_adv(symbol,period,getter=get_bytes):
+    if symbol not in CRYPTO:raise ProviderError('Coinbase only supports configured USD crypto pairs')
+    seconds=INTERVALS[period][1];end=int(datetime.now(timezone.utc).timestamp())
+    grain={60:'ONE_MINUTE',300:'FIVE_MINUTE',900:'FIFTEEN_MINUTE',3600:'ONE_HOUR',86400:'ONE_DAY'}[seconds]
+    # 300 buckets (< 350 request limit); the pair is a literal allowed product.
+    url=URL_COINBASE_ADV+CRYPTO[symbol][1]+'/candles?'+urlencode({'start':end-seconds*300,'end':end,'granularity':grain})
+    data=_json(getter(url),'Coinbase')
+    found=data.get('candles') if isinstance(data,dict) else None
+    if not isinstance(found,list):raise ProviderError('Coinbase Advanced candle response unavailable')
+    rows=[]
+    for x in found:
+        if not isinstance(x,dict):continue
+        try:t=datetime.fromtimestamp(int(x['start']),timezone.utc).isoformat()
+        except (TypeError,ValueError,OverflowError,KeyError):continue
+        rows.append(candle(t,x.get('open'),x.get('high'),x.get('low'),x.get('close'),x.get('volume',0)))
+    return finish(_aggregate_candles(rows,period),'Coinbase Advanced Trade','USD',period,'crypto',
+                  'Public spot OHLC from Coinbase (second host); per-exchange prices can differ.')
+
+
+BITSTAMP_USD={'BTC-USD':'btcusd','ETH-USD':'ethusd','SOL-USD':'solusd','XRP-USD':'xrpusd','DOGE-USD':'dogeusd'}
+
+def read_bitstamp(symbol,period,getter=get_bytes):
+    pair=BITSTAMP_USD.get(symbol)
+    if not pair:raise ProviderError('Bitstamp has no verified USD spot listing for this cryptocurrency')
+    seconds=INTERVALS[period][1]
+    url=URL_BITSTAMP+pair+'/?'+urlencode({'step':seconds,'limit':320})
+    payload=_json(getter(url),'Bitstamp')
+    found=(payload.get('data') or {}).get('ohlc') if isinstance(payload,dict) and isinstance(payload.get('data'),dict) else None
+    if not isinstance(found,list):raise ProviderError('Bitstamp returned no historical OHLC list')
+    rows=[]
+    for x in found:
+        if not isinstance(x,dict):continue
+        try:t=datetime.fromtimestamp(int(x['timestamp']),timezone.utc).isoformat()
+        except (TypeError,ValueError,OverflowError,KeyError):continue
+        rows.append(candle(t,x.get('open'),x.get('high'),x.get('low'),x.get('close'),x.get('volume',0)))
+    return finish(_aggregate_candles(rows,period),'Bitstamp','USD',period,'crypto',
+                  'Public BITSTAMP/USD spot-market OHLC, not an all-exchange aggregate.')
+
+
+BITFINEX_USD={'BTC-USD':'tBTCUSD','ETH-USD':'tETHUSD','SOL-USD':'tSOLUSD','XRP-USD':'tXRPUSD'}
+
+def read_bitfinex(symbol,period,getter=get_bytes):
+    pair=BITFINEX_USD.get(symbol)
+    if not pair:raise ProviderError('Bitfinex has no verified USD spot listing for this cryptocurrency')
+    frame={'1':'1m','5':'5m','15':'15m','60':'1h','240':'1h','D':'1D','W':'1D','M':'1D'}[period]
+    url=URL_BITFINEX+'trade:'+frame+':'+pair+'/hist?'+urlencode({'limit':320,'sort':-1})
+    data=_json(getter(url),'Bitfinex')
+    if not isinstance(data,list) or (data and data[0]=='error'):
+        raise ProviderError('Bitfinex returned no historical OHLC list')
+    rows=[]
+    for x in data:
+        # Bitfinex order is [time ms, open, close, high, low, volume].
+        if not isinstance(x,list) or len(x)<6:continue
+        try:t=datetime.fromtimestamp(int(x[0])/1000,timezone.utc).isoformat()
+        except (TypeError,ValueError,OverflowError):continue
+        rows.append(candle(t,x[1],x[3],x[4],x[2],x[5]))
+    return finish(_aggregate_candles(rows,period),'Bitfinex','USD',period,'crypto',
+                  'Public BITFINEX/USD spot-market OHLC, not an all-exchange aggregate.')
+
+
+BINANCE_USDT={'BTC-USD':'BTCUSDT','ETH-USD':'ETHUSDT','SOL-USD':'SOLUSDT','XRP-USD':'XRPUSDT',
+              'DOGE-USD':'DOGEUSDT','BNB-USD':'BNBUSDT'}
+
+def read_binance(symbol,period,getter=get_bytes):
+    """USDT-quoted candles. Reported as USDT, never relabelled as US dollars."""
+    pair=BINANCE_USDT.get(symbol)
+    if not pair:raise ProviderError('Binance mirror is not mapped for this cryptocurrency')
+    frame={'1':'1m','5':'5m','15':'15m','60':'1h','240':'4h','D':'1d','W':'1w','M':'1M'}[period]
+    url=URL_BINANCE+'?'+urlencode({'symbol':pair,'interval':frame,'limit':320})
+    data=_json(getter(url),'Binance')
+    if not isinstance(data,list):raise ProviderError('Binance returned no historical OHLC list')
+    rows=[]
+    for x in data:
+        if not isinstance(x,list) or len(x)<6:continue
+        try:t=datetime.fromtimestamp(int(x[0])/1000,timezone.utc).isoformat()
+        except (TypeError,ValueError,OverflowError):continue
+        rows.append(candle(t,x[1],x[2],x[3],x[4],x[5]))
+    base=symbol.split('-')[0]
+    result=finish(rows,'Binance '+base+'/USDT','USDT',period,'crypto',
+                  'Priced in USDT (Tether, a dollar-pegged token), NOT US dollars: no USD venue answered. '
+                  'Binance spot OHLC from its public market-data mirror.')
+    result['quote_substitute']='USDT'
+    return result
+
+
 # User-selected historical CSVs offer a legitimate offline alternative when
 # upstream stock feeds require credentials. They are NOT fetched market data.
 # The original source is unverified, and imported bars retain their actual dates.
@@ -1326,7 +1533,8 @@ class MarketRouter:
         symbol=symbol.upper()
         allowed=('auto','coinbase','kraken','strasmore','stooq','naver','yahoo','nasdaq','alpha','twelve',
                  'massive','jquants','krx','coingecko','coinpaprika','fred','frankfurter-history',
-                 'ecb-fx','boc-fx','gemini','cryptocompare','fmp','alpaca')
+                 'ecb-fx','boc-fx','gemini','cryptocompare','fmp','alpaca',
+                 'tiingo','eodhd','datagokr','coinbase-adv','bitstamp','bitfinex','binance')
         if source not in allowed:raise ProviderError('Unknown source')
         if source!='auto':return [source]
         unofficial=(os.environ.get('AUGURSPEX_ALLOW_UNOFFICIAL_SOURCES','').strip()=='1'
@@ -1337,40 +1545,57 @@ class MarketRouter:
         keyed_crypto=['cryptocompare'] if has('AUGURSPEX_CRYPTOCOMPARE_KEY') else []
         if FX_SYMBOL.fullmatch(symbol):
             return ['frankfurter-history','ecb-fx','boc-fx'] if period in ('D','W','M') else []
+        # Order: true-USD exchange candles, then USD aggregates (close only),
+        # and only then USDT-quoted candles, which are labelled USDT.
+        usdt=['binance'] if symbol in BINANCE_USDT else []
         if symbol in CRYPTO:
             result=['coinbase','kraken']
+            if symbol in BITSTAMP_USD:result.append('bitstamp')
             if symbol in GEMINI_USD:result.append('gemini')
+            if symbol in BITFINEX_USD:result.append('bitfinex')
+            result.append('coinbase-adv')
             if period in ('60','240','D','W','M'):
                 result+=['coingecko','coinpaprika']+keyed_crypto
-            return result
+            return result+usdt
         if symbol in COIN_IDENTITIES:
-            return ['coingecko','coinpaprika']+keyed_crypto if period in ('60','240','D','W','M') else []
+            return (['coingecko','coinpaprika']+keyed_crypto if period in ('60','240','D','W','M') else [])+usdt
+        daily=period in ('D','W','M')
+        eodhd=['eodhd'] if has('AUGURSPEX_EODHD_KEY') and daily else []
+        # With the user's own key Stooq is a documented keyed route, not a
+        # scrape, so it no longer needs the unofficial-sources switch.
+        stooq_keyed=['stooq'] if has('AUGURSPEX_STOOQ_KEY') and daily else []
         if _krx_code(symbol):
             choices=['krx'] if has('AUGURSPEX_KRX_KEY') and period=='D' else []
+            if has('AUGURSPEX_DATA_GO_KR_KEY') and daily:choices.append('datagokr')
+            choices+=eodhd
             if has('AUGURSPEX_TWELVE_DATA_KEY'):choices.append('twelve')
             if unofficial:choices+=['naver','yahoo'] if period in ('D','W','M') else ['yahoo']
             return choices
         if _tse_code(symbol):
             choices=['twelve'] if has('AUGURSPEX_TWELVE_DATA_KEY') else []
             if has('AUGURSPEX_JQUANTS_KEY') and period in ('D','W','M'):choices.append('jquants')
+            choices=stooq_keyed+eodhd+choices
             if unofficial:choices+=['yahoo','stooq'] if period in ('D','W','M') else ['yahoo']
-            return choices
+            return list(dict.fromkeys(choices))
         if symbol.endswith('.AX') or symbol.startswith('ASX:'):
-            choices=['twelve'] if has('AUGURSPEX_TWELVE_DATA_KEY') else []
+            choices=stooq_keyed+eodhd+(['twelve'] if has('AUGURSPEX_TWELVE_DATA_KEY') else [])
             if unofficial:choices+=['yahoo','stooq'] if period in ('D','W','M') else ['yahoo']
-            return choices
+            return list(dict.fromkeys(choices))
         if symbol in ('^GSPC','^IXIC','^DJI'):
-            choices=['fred'] if has('AUGURSPEX_FRED_KEY') and period in ('D','W','M') else []
+            # Index candles (Stooq, EODHD) before FRED's close-only series.
+            choices=stooq_keyed+eodhd+(['fred'] if has('AUGURSPEX_FRED_KEY') and period in ('D','W','M') else [])
             if unofficial:choices+=['yahoo','stooq'] if period in ('D','W','M') else ['yahoo']
-            return choices
+            return list(dict.fromkeys(choices))
         if _us_listing(symbol):
             choices=[]
             if period in ('D','W','M'):
                 if has('AUGURSPEX_TWELVE_DATA_KEY'):choices.append('twelve')
                 if has('AUGURSPEX_MASSIVE_KEY'):choices.append('massive')
                 if has('AUGURSPEX_ALPACA_KEY_ID') and has('AUGURSPEX_ALPACA_SECRET_KEY'):choices.append('alpaca')
+                if has('AUGURSPEX_TIINGO_KEY'):choices.append('tiingo')
                 if has('AUGURSPEX_FMP_KEY'):choices.append('fmp')
                 if has('AUGURSPEX_ALPHA_VANTAGE_KEY'):choices.append('alpha')
+                choices+=eodhd
                 choices.extend(['strasmore','stooq'])
                 if unofficial:choices+=['nasdaq','yahoo']
             else:
@@ -1380,6 +1605,14 @@ class MarketRouter:
         choices=['twelve'] if has('AUGURSPEX_TWELVE_DATA_KEY') and twelve_listing(symbol) else []
         if unofficial:choices+=['yahoo','stooq'] if period in ('D','W','M') else ['yahoo']
         return choices
+
+    def credentials_changed(self):
+        """Forget cool-downs after the user enters a key.
+
+        A source that answered "key needed" is waiting out a cool-down; with a
+        new key it deserves one fresh attempt now, not in fifteen minutes.
+        """
+        with self.lock:self.blocked.clear()
 
     def provider_plan(self, symbol, period='D'):
         """Explain the real eligible sources and what would need credentials.
@@ -1395,13 +1628,25 @@ class MarketRouter:
         if FX_SYMBOL.fullmatch(symbol):
             possible=['frankfurter-history','ecb-fx','boc-fx'] if period in ('D','W','M') else []
         elif symbol in CRYPTO:
-            possible=['coinbase','kraken','gemini'] if symbol in GEMINI_USD else ['coinbase','kraken']
+            possible=['coinbase','kraken']
+            possible+=[name for name,table in (('bitstamp',BITSTAMP_USD),('gemini',GEMINI_USD),('bitfinex',BITFINEX_USD))
+                       if symbol in table]+['coinbase-adv']
             if period in ('60','240','D','W','M'):possible+=['coingecko','coinpaprika','cryptocompare']
+            if symbol in BINANCE_USDT:possible.append('binance')
         elif symbol in COIN_IDENTITIES:
             possible=['coingecko','coinpaprika','cryptocompare'] if period in ('60','240','D','W','M') else []
+            if symbol in BINANCE_USDT:possible.append('binance')
         elif _us_listing(symbol):
-            possible=(['twelve','massive','alpaca','fmp','alpha','strasmore','stooq','nasdaq','yahoo']
+            possible=(['twelve','massive','alpaca','tiingo','fmp','alpha','eodhd','strasmore','stooq','nasdaq','yahoo']
                       if period in ('D','W','M') else ['twelve','yahoo'])
+        elif period in ('D','W','M') and (_krx_code(symbol) or _tse_code(symbol) or symbol.endswith('.AX')
+                                          or symbol.startswith('ASX:') or symbol in EODHD_INDEX):
+            # Show what a free personal key would unlock, not only what is active.
+            if _krx_code(symbol):possible=['krx','datagokr','eodhd','twelve']
+            elif symbol in EODHD_INDEX:possible=['stooq','eodhd','fred']
+            elif _tse_code(symbol):possible=['stooq','eodhd','twelve','jquants']
+            else:possible=['stooq','eodhd','twelve']
+            possible+=[name for name in active if name not in possible]
         else:
             possible=list(active)
         if imported:possible.insert(0,'local-csv');active.add('local-csv')
@@ -1476,7 +1721,8 @@ class MarketRouter:
                     obs=str(hit['value'].get('latest_observation') or '')
                     fresh_hits.append((obs,-index,hit['value']))
             if fresh_hits:
-                winner=max(fresh_hits,key=lambda x:(x[0],x[1]))
+                # A USDT-quoted stand-in never outranks a cached true-USD series.
+                winner=max(fresh_hits,key=lambda x:(not x[2].get('quote_substitute'),x[0],x[1]))
                 return {**winner[2],'cache':'fresh'}
         failures=[];stale=[];attempts=[]
         functions={'kraken':read_kraken,'coinbase':read_coinbase,
@@ -1486,7 +1732,10 @@ class MarketRouter:
                    'coingecko':read_coingecko,'coinpaprika':read_coinpaprika,
                    'frankfurter-history':read_frankfurter_history,
                    'ecb-fx':read_ecb_fx,'boc-fx':read_boc_fx,'gemini':read_gemini,
-                   'cryptocompare':read_cryptocompare,'fmp':read_fmp,'alpaca':read_alpaca}
+                   'cryptocompare':read_cryptocompare,'fmp':read_fmp,'alpaca':read_alpaca,
+                   'tiingo':read_tiingo,'eodhd':read_eodhd,'datagokr':read_datagokr,
+                   'coinbase-adv':read_coinbase_adv,'bitstamp':read_bitstamp,
+                   'bitfinex':read_bitfinex,'binance':read_binance}
         for provider in routes:
             key=(symbol,period,provider)
             now=self.clock()
@@ -1507,6 +1756,7 @@ class MarketRouter:
                 gap={'strasmore':6.5,'massive':12.5,'jquants':12.5,'coingecko':10.0,'coinpaprika':2.0,
                      'frankfurter-history':1.5,'ecb-fx':2.0,'boc-fx':2.0,
                      'gemini':1.5,'cryptocompare':5.0,'fmp':6.0,'alpaca':2.0,
+                     'tiingo':2.0,'eodhd':3.0,'datagokr':1.5,'bitstamp':1.5,'bitfinex':2.5,'binance':1.5,
                      'krx':1.5,'alpha':8.0,'fred':2.0}.get(provider,1.4)
                 wait=max(0.0,self.last_call.get(provider,now-gap)+gap-now)
                 self.last_call[provider]=now+wait
@@ -1535,7 +1785,11 @@ class MarketRouter:
                                os.environ.get('AUGURSPEX_FMP_KEY','').strip(),
                                os.environ.get('AUGURSPEX_ALPACA_KEY_ID','').strip(),
                                os.environ.get('AUGURSPEX_ALPACA_SECRET_KEY','').strip(),
-                               os.environ.get('AUGURSPEX_CRYPTOCOMPARE_KEY','').strip()):
+                               os.environ.get('AUGURSPEX_CRYPTOCOMPARE_KEY','').strip(),
+                               os.environ.get('AUGURSPEX_STOOQ_KEY','').strip(),
+                               os.environ.get('AUGURSPEX_TIINGO_KEY','').strip(),
+                               os.environ.get('AUGURSPEX_EODHD_KEY','').strip(),
+                               os.environ.get('AUGURSPEX_DATA_GO_KR_KEY','').strip()):
                     if secret:err=err.replace(secret,'[REDACTED]')
                 err=err[:160]
                 failures.append(f'{provider}: {err}')
