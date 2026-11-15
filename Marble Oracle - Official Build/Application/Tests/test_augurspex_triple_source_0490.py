@@ -24,8 +24,17 @@ class TestThreeIndependentRoutes(unittest.TestCase):
         for symbol in CRYPTO+FX:
             with self.subTest(market=symbol):
                 routes=router._routes(symbol,'auto','D')
-                self.assertGreaterEqual(len(routes),3,(symbol,routes))
+                # 0.4.9.3: BNB's third source (CoinDesk Data) rejects keyless
+                # requests (live probe, 15 Nov 2026), so without a key BNB has
+                # two real routes; the third appears once a key is configured.
+                self.assertGreaterEqual(len(routes),2 if symbol=='BNB-USD' else 3,(symbol,routes))
                 self.assertEqual(len(routes),len(set(routes)))
+                saved=os.environ.get('AUGURSPEX_CRYPTOCOMPARE_KEY')
+                os.environ['AUGURSPEX_CRYPTOCOMPARE_KEY']='TEST-KEY'
+                try:self.assertGreaterEqual(len(router._routes(symbol,'auto','D')),3,symbol)
+                finally:
+                    if saved is None:del os.environ['AUGURSPEX_CRYPTOCOMPARE_KEY']
+                    else:os.environ['AUGURSPEX_CRYPTOCOMPARE_KEY']=saved
         for symbol in STOCKS:
             with self.subTest(market=symbol):
                 # US stocks need keys for documented primary providers. With no keys,

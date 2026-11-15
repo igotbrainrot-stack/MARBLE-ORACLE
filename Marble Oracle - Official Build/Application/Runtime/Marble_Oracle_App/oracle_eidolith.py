@@ -23,6 +23,7 @@ from oracle_native_files import choose_directory, choose_video_files
 from marble_uberata import FAMILY
 from oracle_ogg_texture import frame as ogl_frame, label as ogl_label, install as ogl_install
 from oggcultist_design_system import COLOR as C
+from oracle_design import HOME_LABEL
 from oracle_assets import load_json, save_json, state_dir
 from oracle_eidolith_core import (PROFILES, PROFILE_ORDER, DEFAULT_PROFILE, LEGACY_PROFILE_NAMES, NAME_MODES, RESOLUTIONS, RESOLUTION_ORDER, output_name,
                                   detect_encoders, profile_support, seconds_label)
@@ -213,7 +214,7 @@ class EidolithPanel(tk.Frame):
 
         bottom = ogl_frame(self.rail, bg=C['sidebar'])
         bottom.pack(side='bottom', fill='x', padx=18, pady=18)
-        self._button(bottom, 'BACK TO HOME', self.on_home, primary=False).pack(fill='x')
+        self._button(bottom, HOME_LABEL, self.on_home, primary=False).pack(fill='x')
         self._label(bottom, f'{APP_VERSION} · LOCAL', 10, 'text_3').pack(anchor='w', pady=(10, 0))
 
     def _draw_logo(self, canvas):

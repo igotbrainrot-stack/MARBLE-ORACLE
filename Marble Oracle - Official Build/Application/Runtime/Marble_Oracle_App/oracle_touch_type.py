@@ -13,6 +13,7 @@ import tkinter as tk
 from marble_uberata import FAMILY
 from oracle_ogg_texture import frame as ogl_frame, label as ogl_label, install as ogl_install
 from oggcultist_design_system import COLOR as C
+from oracle_design import HOME_LABEL
 from oracle_assets import load_json, save_json
 
 LESSONS = (
@@ -282,7 +283,7 @@ class TouchTypePanel(tk.Frame):
         ogl_frame(self.rail, bg=C['sidebar']).pack(fill='both', expand=True)
         self.best_label = self._label(self.rail, 'BEST  —', 11, 'text_2')
         self.best_label.pack(anchor='w', padx=18, pady=(4, 6))
-        self._button(self.rail, '← BACK TO ORACLE', self.on_home).pack(fill='x', padx=12, pady=(0, 7))
+        self._button(self.rail, HOME_LABEL, self.on_home).pack(fill='x', padx=12, pady=(0, 7))
 
         head = ogl_frame(main, bg=C['canvas'])
         head.pack(fill='x', padx=20, pady=(9, 1))

@@ -14,6 +14,7 @@ import tkinter as tk
 
 from marble_uberata import FAMILY
 from oggcultist_design_system import COLOR
+from oracle_design import HOME_LABEL
 
 HERE = Path(__file__).resolve().parent
 OGG_MAIN = HERE / 'Oggcultist' / 'launch.py'
@@ -32,7 +33,7 @@ class OggcultistPanel(tk.Frame):
         bar.pack(side='top', fill='x')
         tk.Label(bar, text='OGGCULTIST 2.0.6', bg=COLOR['sidebar'], fg=COLOR['text'],
                  font=(FAMILY, 12, 'bold')).pack(side='left', padx=(6, 0))
-        tk.Button(bar, text='BACK TO HOME', command=on_home,
+        tk.Button(bar, text=HOME_LABEL, command=on_home,
                   font=(FAMILY, 11, 'bold'), padx=14, pady=5,
                   bg=COLOR['control'], fg=COLOR['text'],
                   activebackground=COLOR['raised'], activeforeground=COLOR['text'],

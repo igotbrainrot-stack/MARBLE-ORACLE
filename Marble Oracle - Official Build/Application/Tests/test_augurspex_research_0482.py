@@ -14,7 +14,7 @@ def tests():
     def no_http(_url):raise AssertionError('Must not send request')
     with patch.dict(os.environ,{},clear=True):
         r=MarketRouter(clock=lambda:100)
-        assert r._routes('BTC-USD','auto')==['coinbase','kraken','gemini','coingecko','coinpaprika','cryptocompare']
+        assert r._routes('BTC-USD','auto')==['coinbase','kraken','gemini','coingecko','coinpaprika']  # 0.4.9.3: CoinDesk Data only with a key
         assert r._routes('COH.AX','auto')==[]
         assert r._routes('4568.T','auto')==[]
         assert r._routes('005930.KS','auto')==[]

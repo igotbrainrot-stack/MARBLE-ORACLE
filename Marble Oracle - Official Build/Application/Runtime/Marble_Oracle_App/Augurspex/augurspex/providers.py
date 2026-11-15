@@ -40,7 +40,7 @@ SOURCE_INFO = {
     'ecb-fx': {'name':'European Central Bank SDMX', 'coverage':'Seven curated FX cross-rates from independent ECB daily EUR reference series', 'timeliness':'Daily reference, never intraday or live', 'credentials':False},
     'boc-fx': {'name':'Bank of Canada Valet', 'coverage':'Seven curated FX cross-rates from independent CAD reference observations', 'timeliness':'Daily indicative reference, not a live quote', 'credentials':False},
     'gemini': {'name':'Gemini Exchange', 'coverage':'Verified USD pairs BTC/ETH/SOL/XRP/DOGE, spot OHLC', 'timeliness':'Exchange venue observations; not consolidated crypto price', 'credentials':False},
-    'cryptocompare': {'name':'CoinDesk Data / CryptoCompare', 'coverage':'Aggregated USD crypto OHLC as a third public-data option; may require API key', 'timeliness':'Exchange-aggregated historical bars, not a tradeable venue quote', 'credentials':False},
+    'cryptocompare': {'name':'CoinDesk Data / CryptoCompare', 'coverage':'Aggregated USD crypto OHLC; a personal API key is required (set AUGURSPEX_CRYPTOCOMPARE_KEY)', 'timeliness':'Exchange-aggregated historical bars, not a tradeable venue quote', 'credentials':True},
     'fmp': {'name':'Financial Modeling Prep', 'coverage':'US equity/ETF historical OHLC, personal API key and plan permission', 'timeliness':'Daily historical bars; subscription-dependent', 'credentials':True},
     'alpaca': {'name':'Alpaca Market Data', 'coverage':'US stock/ETF historical IEX OHLC; personal key and secret required', 'timeliness':'IEX feed is not a consolidated SIP quote', 'credentials':True},
     'frankfurter': {'name':'Frankfurter', 'coverage':'Currency reference rates', 'timeliness':'Central-bank reference; not live', 'credentials':False},
@@ -1033,7 +1033,10 @@ def read_ecb_fx(symbol, period, getter=get_bytes):
     # SDMX key allows '+' for several currencies without changing base identity.
     key='D.'+'+'.join(needed)+'.EUR.SP00.A'
     url=URL_ECB+key+'?'+urlencode({'format':'csvdata','startPeriod':begin.isoformat()})
-    text=getter(url).decode('utf-8-sig',errors='replace')
+    # The ECB's SDMX service is often slow; the default 9 s timed out for five
+    # of seven pairs in the live probe of 15 Nov 2026.
+    raw=get_bytes(url,timeout=20) if getter is get_bytes else getter(url)
+    text=raw.decode('utf-8-sig',errors='replace')
     records=csv.DictReader(io.StringIO(text))
     if not records.fieldnames or not {'TIME_PERIOD','OBS_VALUE'}.issubset(records.fieldnames):
         raise ProviderError('ECB did not supply SDMX CSV observation columns')
@@ -1329,16 +1332,19 @@ class MarketRouter:
         unofficial=(os.environ.get('AUGURSPEX_ALLOW_UNOFFICIAL_SOURCES','').strip()=='1'
                     or getattr(self,'allow_unofficial',False))
         has=lambda name: bool(os.environ.get(name,'').strip())
+        # CoinDesk Data answers 401 without a key (live probe, 15 Nov 2026), so
+        # it is only a route when the user has configured one.
+        keyed_crypto=['cryptocompare'] if has('AUGURSPEX_CRYPTOCOMPARE_KEY') else []
         if FX_SYMBOL.fullmatch(symbol):
             return ['frankfurter-history','ecb-fx','boc-fx'] if period in ('D','W','M') else []
         if symbol in CRYPTO:
             result=['coinbase','kraken']
             if symbol in GEMINI_USD:result.append('gemini')
             if period in ('60','240','D','W','M'):
-                result+=['coingecko','coinpaprika','cryptocompare']
+                result+=['coingecko','coinpaprika']+keyed_crypto
             return result
         if symbol in COIN_IDENTITIES:
-            return ['coingecko','coinpaprika','cryptocompare'] if period in ('60','240','D','W','M') else []
+            return ['coingecko','coinpaprika']+keyed_crypto if period in ('60','240','D','W','M') else []
         if _krx_code(symbol):
             choices=['krx'] if has('AUGURSPEX_KRX_KEY') and period=='D' else []
             if has('AUGURSPEX_TWELVE_DATA_KEY'):choices.append('twelve')

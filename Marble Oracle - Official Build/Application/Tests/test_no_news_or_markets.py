@@ -16,8 +16,11 @@ for flag in ([], ['--retro'], ['--flat']):
         s.resized(1216, 848)
         app.root.update()
         s = app.scene
-        assert s.news.enabled is False
-        assert s.markets.md is None
+        # 0.4.9.3: the retired RSS reader and the AUD ticker (which could show
+        # simulated prices) are deleted, not merely switched off.
+        assert not hasattr(s, 'news') and not hasattr(s, 'markets')
+        app_dir = Path(__file__).resolve().parent.parent/'Runtime'/'Marble_Oracle_App'
+        assert not (app_dir/'marketdata.py').exists() and not (app_dir/'oracle_feeds.py').exists()
         assert s.c.itemcget(s.tick_id, 'text') == ''
         assert 'mkt' not in s.rect
         assert 'aug' in s.rect

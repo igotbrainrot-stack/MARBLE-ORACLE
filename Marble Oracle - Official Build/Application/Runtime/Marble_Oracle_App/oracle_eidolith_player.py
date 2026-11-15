@@ -69,6 +69,30 @@ def _ppm_frame(stream):
     return b'P6\n%d %d\n255\n' % (w, h) + bytes(data)
 
 
+def _end_process(proc, grace=0.4):
+    """Stop a helper process and collect it, so the file it was reading is released.
+
+    terminate() alone returns at once and leaves the process to exit when it
+    likes: on Windows the video stayed locked for a moment after STOP (a move or
+    delete straight afterwards failed with "file in use"), and on Linux every
+    pause or seek left a defunct process behind until the suite closed.
+    """
+    if proc is None:
+        return
+    try:
+        if proc.poll() is None:
+            proc.terminate()
+        proc.wait(timeout=grace)
+    except subprocess.TimeoutExpired:
+        try:
+            proc.kill()
+        except OSError:
+            pass
+        threading.Thread(target=proc.wait, name='eidolith-reap', daemon=True).start()
+    except OSError:
+        pass
+
+
 class InTabVideoPlayer:
     def __init__(self, parent, *, ffmpeg, ffplay, colors, font):
         self.parent, self.ffmpeg, self.ffplay, self.C, self.font = parent, ffmpeg, ffplay, colors, font
@@ -261,22 +285,14 @@ class InTabVideoPlayer:
 
     def _apply_volume(self):
         if self.phase == 'playing' and self.ffplay:
-            if self.audio_proc and self.audio_proc.poll() is None:
-                try:
-                    self.audio_proc.terminate()
-                except OSError:
-                    pass
+            _end_process(self.audio_proc)
             self.audio_proc = None
             self._start_audio()
 
     def _kill_processes(self):
         self._generation += 1
         for proc in (self.play_proc, self.audio_proc):
-            if proc and proc.poll() is None:
-                try:
-                    proc.terminate()
-                except OSError:
-                    pass
+            _end_process(proc)
         self.play_proc = None
         self.audio_proc = None
         # Old decode workers own old queues; new sessions create new queues.

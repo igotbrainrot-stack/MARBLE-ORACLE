@@ -473,25 +473,23 @@ class AugurspexPanel(tk.Frame):
         self.rail.pack(fill='both',expand=True)
         tk.Frame(self,bg=self.p['border'],width=1).pack(side='left',fill='y')
         self.work=ogg_frame(self,bg='#1D1714');self.work._oracle_bg=self.p['bg'];self.work.pack(side='left',fill='both',expand=True)
-        self._label(self.rail,'AUGURSPEX','accent',19,True,anchor='w').pack(fill='x',padx=12,pady=(12,1))
-        self._label(self.rail,'MARKET OBSERVATORY','muted',11,anchor='w').pack(fill='x',padx=12,pady=(0,12))
+        self._label(self.rail,'AUGURSPEX','accent',19,True,anchor='w').pack(fill='x',padx=12,pady=(10,6))
         self._label(self.rail,'FIND MARKET','muted',11,True,anchor='w').pack(fill='x',padx=12)
         self._entry(self.rail,self.search).pack(fill='x',padx=12,pady=(2,5))
         filt=ogg_frame(self.rail,bg='#130F0D');filt._oracle_bg=self.p['rail'];filt.pack(fill='x',padx=10,pady=(0,6))
         self.filters={}
-        for index,(text,name) in enumerate([('ALL','all'),('STOCKS','stocks'),
-                                            ('CURRENCIES','fx'),('CRYPTO','crypto'),
+        # Each category filter is lettered in the colour its rows use in the
+        # list below, so the filters double as the legend (the label carries
+        # the meaning; the colour only repeats it).
+        for index,(text,name) in enumerate([('ALL','all'),(MARKET_LABELS['stocks'],'stocks'),
+                                            (MARKET_LABELS['fx'],'fx'),(MARKET_LABELS['crypto'],'crypto'),
                                             ('★ SAVED','favorites')]):
             btn=self._button(filt,text,lambda n=name:self._set_filter(n))
-            btn.grid(row=index//2,column=index%2,padx=2,pady=2,sticky='ew')
+            btn.configure(padx=4)
+            btn.grid(row=index//3,column=index%3,padx=2,pady=2,sticky='ew')
             self.filters[name]=btn
-        filt.columnconfigure(0,weight=1,uniform='filter')
-        filt.columnconfigure(1,weight=1,uniform='filter')
-        category_legend=tk.Frame(self.rail,bg=self.p['rail'])
-        category_legend.pack(fill='x',padx=12,pady=(0,5))
-        for kind in ('stocks','fx','crypto'):
-            tk.Label(category_legend,text='● '+MARKET_LABELS[kind],bg=self.p['rail'],fg=MARKET_COLORS[kind],
-                     font=(FAMILY,10,'bold')).pack(side='left',padx=(0,10))
+        for column in range(3):
+            filt.columnconfigure(column,weight=1,uniform='filter')
         sourcing=ogg_frame(self.rail,bg='#130F0D');sourcing._oracle_bg=self.p['rail']
         sourcing.pack(fill='x',padx=10,pady=(0,5))
         self.sourced_button=self._button(sourcing,'SHOW ALL MARKETS',self._toggle_sourced)
@@ -565,6 +563,9 @@ class AugurspexPanel(tk.Frame):
             self._label(part,label,'muted',11,True).pack(side='left',padx=(0,3))
             self._option(part,var,items,fn).pack(side='left')
             self.option_parts.append(part)
+            # A menu showing a longer value (LINE -> CANDLES) grows; re-flow so
+            # it never runs into its neighbour.
+            part.bind('<Configure>',lambda _e:self._options_changed(),add='+')
         # The options flow left to right and wrap where the window ends, so
         # they use as few rows as the width allows and none is ever cut off.
         self.options_bar=opts
@@ -635,6 +636,10 @@ class AugurspexPanel(tk.Frame):
         for part,x,y in placement:
             part.place(x=x+2,y=y)
         self.options_bar.configure(height=y+row_height+2)
+
+    def _options_changed(self):
+        bar=getattr(self,'options_bar',None)
+        if bar is not None and bar.winfo_width()>1:self._reflow_options(bar.winfo_width())
 
     def _reflow_tools(self,width):
         """Full captions when all four fit in equal columns, short ones otherwise."""
@@ -1004,8 +1009,10 @@ class AugurspexPanel(tk.Frame):
         self._source_summary()
         for key,button in self.filters.items():
             on=key==filt
+            rest=MARKET_COLORS.get(key,self.p['ink'])
             button.configure(bg=self.p['active'] if on else self.p['control'],
-                             fg=self.p['accent'] if on else self.p['ink'])
+                             fg=self.p['accent'] if on and key not in MARKET_COLORS else rest,
+                             highlightbackground=self.p['accent'] if on else self.p['border'])
 
     def _watch_resize(self):
         current_width=self.watch.winfo_width()

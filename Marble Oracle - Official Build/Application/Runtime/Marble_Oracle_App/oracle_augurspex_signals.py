@@ -37,6 +37,19 @@ def rsi(prices, window=14):
     return 100. - 100./(1.+gains/losses)
 
 
+def _number(value):
+    """Four decimals, or three significant digits for prices under a cent."""
+    value=float(value)
+    if value!=0 and abs(value)<0.01:
+        decimals=min(12,max(4,2-int(math.floor(math.log10(abs(value))))))
+        return f'{value:.{decimals}f}'
+    return f'{value:,.4f}'
+
+
+def _rsi_text(value):
+    return 'not enough observations' if value is None else f'{value:.1f}'
+
+
 def market_signal_report(symbol,data):
     if not isinstance(data,dict):data={}
     series=valid_closes(data.get('candles'))
@@ -44,18 +57,21 @@ def market_signal_report(symbol,data):
         return f'{symbol}\nNo valid observations available. No indicators calculated.'
     prices=[r[1] for r in series]
     last=prices[-1]
-    def fmt(v):return 'not enough observations' if v is None else f'{v:,.4f}'
+    def fmt(v):return 'not enough observations' if v is None else _number(v)
     trend=(prices[-1]/prices[0]-1)*100 if len(prices)>1 else None
-    percent='not enough observations' if trend is None else f'{trend:+.2f}%'
+    # The change is stated with the two observations it is measured between,
+    # so it cannot be mistaken for a daily move.
+    percent=('not enough observations' if trend is None else
+             f'{trend:+.2f}% ({series[0][0][:10]} to {series[-1][0][:10]})')
     lines=[f'{symbol} · Historical observations only',
            f'Source: {data.get("source","unknown")}',
            f'Latest observation: {series[-1][0]}',
            f'Values: {len(prices)} · {data.get("currency","")}',
-           f'Latest recorded close: {last:,.4f}',
+           f'Latest recorded close: {_number(last)}',
            f'Change across retrieved observations: {percent}',
            f'20-observation mean: {fmt(sma(prices,20))}',
            f'50-observation mean: {fmt(sma(prices,50))}',
-           f'RSI(14) over latest closes: {fmt(rsi(prices,14))}',
+           f'RSI(14), simple averages of the latest 14 changes: {_rsi_text(rsi(prices,14))}',
            '',
            'Values are observations, not predictions or investment advice.',
            'Reference FX rates and aggregate crypto closes are not live trades.',

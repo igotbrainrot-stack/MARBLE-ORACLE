@@ -98,6 +98,13 @@ def capture_suite(size, out, extra=(), prefix=''):
         scene.act(tab)
         pump(root, 1.6)
         grab(root, out / f'{prefix}{size}_{TABS.index(tab) + 1}_{tab[4:]}.png')
+        if tab == 'tab_eidolith' and not extra:      # its other pages hold most of its controls
+            frame = scene.eido.frame
+            for page in ('CONVERT', 'QUEUE', 'ABOUT'):
+                frame._set_nav(page)
+                pump(root, 0.5)
+                grab(root, out / f'{prefix}{size}_3_eidolith_{page.lower()}.png')
+            frame._set_nav('PLAYER')
     scene.act('tab_home')
     pump(root, 0.3)
     app.quit()

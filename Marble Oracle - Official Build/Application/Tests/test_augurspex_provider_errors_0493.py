@@ -266,6 +266,19 @@ class Router(unittest.TestCase):
         router.fetch('NASDAQ:NVDA', 'D', getter=getter)
         self.assertEqual(sum('financialmodelingprep' in url for url in calls), 2)
 
+    def test_a_source_that_needs_a_key_is_not_tried_without_one(self):
+        # CoinDesk Data answered HTTP 401 to every keyless request in the live
+        # probe of 15 Nov 2026, so it is a route only once a key is configured.
+        router = MarketRouter(cache_dir=None)
+        self.assertNotIn('cryptocompare', router._routes('BTC-USD', 'auto', 'D'))
+        self.assertNotIn('cryptocompare', router._routes('BNB-USD', 'auto', 'D'))
+        plan = {row['id']: row for row in router.provider_plan('BNB-USD', 'D')}
+        self.assertFalse(plan['cryptocompare']['active'])
+        self.assertIn('API KEY', plan['cryptocompare']['status'])
+        os.environ['AUGURSPEX_CRYPTOCOMPARE_KEY'] = 'CC-TEST-KEY'
+        self.assertEqual(router._routes('BNB-USD', 'auto', 'D')[-1], 'cryptocompare')
+        self.assertEqual(router._routes('BTC-USD', 'auto', '5'), ['coinbase', 'kraken', 'gemini'])
+
     def test_key_never_appears_in_messages_or_cache(self):
         secret = 'ALPHA-SECRET-VALUE-0001'
         os.environ['AUGURSPEX_ALPHA_VANTAGE_KEY'] = secret
