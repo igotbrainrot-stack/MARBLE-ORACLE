@@ -1,0 +1,32 @@
+# Marble Oracle lint rules: the checks that find real mistakes.
+# The formatter is deliberately not applied to existing modules.
+target-version = "py310"
+line-length = 160
+extend-exclude = ["handoffs"]
+
+[lint]
+select = [
+    "F",      # undefined names, unused imports and variables, redefinitions
+    "E7",     # comparison, lambda-assignment and bare-except mistakes
+    "E9",     # syntax and I/O errors
+    "PLE",    # pylint errors
+    "B006", "B008", "B018", "B904",   # mutable defaults, useless expressions, raise without from
+]
+ignore = [
+    "E701", "E702", "E731", "E741",   # the legacy dense style: several statements per line, short names
+]
+
+[lint.per-file-ignores]
+# The embedded Oggcultist application is vendored and has its own conventions.
+"**/Oggcultist/**" = ["F401", "F811", "F841", "F541", "B904", "B008"]
+# Legacy shell and CRT-housing modules: correctness rules only; leftover locals are not worth the churn.
+"**/marble_oracle.py" = ["F841"]
+"**/oracle_chrome.py" = ["F841"]
+"**/oracle_crt_v2.py" = ["F841"]
+"**/oracle_photo_bezel.py" = ["F841"]
+"**/crt_barrel_no_feedback.py" = ["B008"]      # the default is an immutable config value
+# Imports here are availability probes: the import is the check.
+"**/oracle_bootstrap.py" = ["F401"]
+# Test helpers.
+"**/Tests/*" = ["F401", "E402", "F841"]
+"**/Marble_Oracle_App/test_*.py" = ["F401", "E402"]

@@ -36,6 +36,8 @@ APP_NAME = "EIDOLITH"
 APP_VERSION = "0.4.7"
 QUEUE_STATE = 'eidolith_queue.json'
 STALL_NOTICE_SECONDS = 30
+# Below this much free height the QUEUE page puts the job list and the log side by side.
+QUEUE_STACK_MIN_HEIGHT = 400
 
 NAV_ITEMS = ("PLAYER", "CONVERT", "QUEUE", "ABOUT")
 
@@ -337,7 +339,7 @@ class EidolithPanel(tk.Frame):
                                     activestyle='none', bg=C['canvas'], fg=C['text'], bd=0,
                                     highlightthickness=1, highlightbackground=C['control_line'],
                                     selectbackground=C['hover'], selectforeground=C['text_bright'],
-                                    font=(FAMILY, 10), height=4)
+                                    font=(FAMILY, 10), height=2)
         ys = tk.Scrollbar(list_frame, orient='vertical', command=self.file_list.yview)
         self.file_list.config(yscrollcommand=ys.set)
         self.file_list.pack(side='left', fill='both', expand=True)
@@ -519,9 +521,16 @@ class EidolithPanel(tk.Frame):
                                       bg=C['raised'])
         self.job_detail.pack(anchor='w', fill='x', padx=12, pady=(4, 9))
 
-        outer, box = self._section_frame(parent, 'ENCODE JOBS',
+        # The job list and the log share whatever height is left. In a tall
+        # window they stack; in a short one (900x580, 1000x650) they sit side
+        # by side, because stacked the log was pushed off the bottom edge.
+        lower = ogl_frame(parent, bg=C['canvas'])
+        lower.pack(fill='both', expand=True)
+        outer, box = self._section_frame(lower, 'ENCODE JOBS',
                                          'Queued / probing / converting / validating / completed / failed / cancelled.')
-        outer.pack(fill='both', expand=True)
+        # Buttons first, from the bottom: when height is short the list gives way, never the buttons.
+        logtools = ogl_frame(box, bg=C['raised'])
+        logtools.pack(side='bottom', fill='x', padx=12, pady=(0, 10))
         self.queue_list = tk.Listbox(box, activestyle='none', bg=C['canvas'], fg=C['text'], bd=0,
                                      highlightthickness=1, highlightbackground=C['control_line'],
                                      selectbackground=C['hover'], selectforeground=C['text_bright'],
@@ -530,19 +539,50 @@ class EidolithPanel(tk.Frame):
         self.queue_list.bind('<<ListboxSelect>>', lambda e: self._update_progress_panel())
         self.queue_list.bind('<Delete>', lambda e: self.remove_selected_jobs())
         self.queue_list.bind('<BackSpace>', lambda e: self.remove_selected_jobs())
-        logtools = ogl_frame(box, bg=C['raised'])
-        logtools.pack(fill='x', padx=12, pady=(0, 10))
         flow(logtools, [self._button(logtools, 'REMOVE SELECTED', self.remove_selected_jobs),
                         self._button(logtools, 'OPEN LOG', self.open_job_log),
                         self._button(logtools, 'COPY DIAGNOSTICS', self.copy_diagnostics),
                         self._button(logtools, 'LOG FOLDER', self.open_log_folder),
                         self._button(logtools, 'RETRY SELECTED', self.retry_selected)])
 
-        outer2, logbox = self._section_frame(parent, 'CONVERSION LOG',
+        outer2, logbox = self._section_frame(lower, 'CONVERSION LOG',
                                              'Recent events. Full FFmpeg output is kept in one log file per job.')
-        outer2.pack(fill='both', expand=True)
         self.log_text = self._text(logbox, height=3)
+        self.log_text.configure(width=18)          # asks for little; the grid gives it its share
         self.log_text.pack(fill='both', expand=True, padx=12, pady=12)
+
+        outer.pack_forget()
+        outer2.pack_forget()
+        arrangement = {'side_by_side': None}
+
+        def arrange(_event=None):
+            try:
+                height = lower.winfo_height()
+            except tk.TclError:                     # the workspace is closing
+                return
+            side_by_side = 1 < height < QUEUE_STACK_MIN_HEIGHT
+            if side_by_side == arrangement['side_by_side']:
+                return
+            arrangement['side_by_side'] = side_by_side
+            outer.grid_forget()
+            outer2.grid_forget()
+            if side_by_side:
+                lower.grid_rowconfigure(0, weight=1)
+                lower.grid_rowconfigure(1, weight=0)
+                lower.grid_columnconfigure(0, weight=3, uniform='queue')
+                lower.grid_columnconfigure(1, weight=2, uniform='queue')
+                outer.grid(row=0, column=0, sticky='nsew', padx=(0, 6))
+                outer2.grid(row=0, column=1, sticky='nsew', padx=(6, 0))
+            else:
+                lower.grid_rowconfigure(0, weight=3)
+                lower.grid_rowconfigure(1, weight=2)
+                lower.grid_columnconfigure(0, weight=1, uniform='')
+                lower.grid_columnconfigure(1, weight=0, uniform='')
+                outer.grid(row=0, column=0, sticky='nsew', pady=(0, 10))
+                outer2.grid(row=1, column=0, sticky='nsew')
+
+        lower.bind('<Configure>', arrange, add='+')
+        arrange()
 
     def _selected_job(self):
         sel = self.queue_list.curselection() if hasattr(self, 'queue_list') else ()

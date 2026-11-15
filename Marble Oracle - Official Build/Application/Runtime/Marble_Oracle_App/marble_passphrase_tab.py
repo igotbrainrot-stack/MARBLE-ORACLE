@@ -6,13 +6,10 @@ password history, or external Python packages are required.
 
 from __future__ import annotations
 
-import argparse
 from pathlib import Path
-import sys
 import tkinter as tk
-from tkinter import messagebox
 
-from oracle_dicekey import Dicekey, NoWords, PARTS, PART_NAMES
+from oracle_dicekey import Dicekey, PARTS, PART_NAMES
 from marble_uberata import FAMILY, apply_tk_fonts
 from oracle_ogg_texture import frame as ogl_frame, label as ogl_label
 

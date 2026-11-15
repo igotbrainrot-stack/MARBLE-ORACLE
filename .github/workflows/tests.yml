@@ -48,6 +48,8 @@ jobs:
           ffmpeg -hide_banner -version | head -1
       - name: Byte-compile every source file
         run: python3 -m compileall -q "Marble Oracle - Official Build/Application"
+      - name: Lint (ruff.toml; the rules that find real mistakes)
+        run: pipx run ruff check .
       - name: Regression tests
         run: |
           cd "Marble Oracle - Official Build"

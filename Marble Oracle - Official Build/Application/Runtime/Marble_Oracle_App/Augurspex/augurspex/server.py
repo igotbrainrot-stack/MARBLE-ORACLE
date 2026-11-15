@@ -9,12 +9,11 @@ import secrets
 import sys
 import threading
 import webbrowser
-from functools import partial
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit, parse_qs
 from .providers import MarketRouter, ProviderError, SOURCE_INFO
-from .core import (read_settings, merge_watchlists, save_settings, tv_symbol, sanitize_settings, update_watchlist)
+from .core import (read_settings, merge_watchlists, save_settings, update_watchlist)
 
 ROOT = Path(__file__).resolve().parent
 HOME = Path.home()

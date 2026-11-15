@@ -6,11 +6,10 @@ There is no fabricated quote, alternate ticker substitution, or login.
 """
 from __future__ import annotations
 
-import math
 import csv
 import os
 import re
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 import queue
 import threading
 import time
@@ -23,7 +22,7 @@ from collections import deque
 from pathlib import Path
 
 from Augurspex.augurspex.core import (
-    LAYOUTS, WORKSPACES, INTERVALS, CHART_TYPES, FILTERS, read_settings,
+    LAYOUTS, WORKSPACES, INTERVALS, read_settings,
     save_settings, merge_watchlists, update_watchlist, clean_item,
     market_category, reset_to_popular_markets_once, app_folder,
 )

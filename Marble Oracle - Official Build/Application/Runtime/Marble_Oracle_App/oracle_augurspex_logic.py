@@ -14,7 +14,7 @@ import math
 from datetime import datetime, timezone
 
 from Augurspex.augurspex.core import market_category
-from Augurspex.augurspex.providers import SOURCE_INFO, classify_error_text, error_kind, split_attempts
+from Augurspex.augurspex.providers import classify_error_text, error_kind, split_attempts
 
 
 def _rgb(value):

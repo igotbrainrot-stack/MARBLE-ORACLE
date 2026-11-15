@@ -2,12 +2,10 @@
 the MARBLE ARCHIVE plates (Statue).  Each one
 degrades silently when its asset is missing.  Split out of marble_oracle.py (build 0929); behaviour unchanged."""
 import base64
-import json
 import math
 import os
 
 import oracle_assets
-from oracle_assets import asset
 
 
 def _zip(name):

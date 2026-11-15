@@ -9,7 +9,6 @@ SkinMixin is the Scene side.  Any failure (an old Tk without PNG alpha, say) tur
 which --flat also asks for."""
 import base64
 import math
-import random
 
 from oggcultist_design_system import COLOR as OGG_EMBER
 

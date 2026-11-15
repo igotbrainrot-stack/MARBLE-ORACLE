@@ -11,9 +11,7 @@ Flags:   --fps N --wallpaper --fullscreen --theme NAME --layout NAME --no-diceke
          --no-bezel --os-frame --no-markets --no-network
          --selftest --version --install-startup --remove-startup
 """
-import base64
 import datetime
-import json
 import math
 import os
 import random
@@ -2909,7 +2907,7 @@ class WindowApp:
         sw, sh = root.winfo_screenwidth(), root.winfo_screenheight()
         if opts.get("bezel", True):
             try:
-                from oracle_photo_bezel import photo_zip, photo_fit_size, SOURCE_W, SOURCE_H
+                from oracle_photo_bezel import photo_zip, photo_fit_size
             except Exception:
                 photo_zip = None
             if photo_zip is not None and photo_zip() is not None:
@@ -3179,7 +3177,7 @@ class WindowApp:
         if mode == "move":
             self.root.geometry("+%d+%d" % (wx + ex - x0, wy + ey - y0))
         else:
-            from oracle_photo_bezel import photo_zip, photo_fit_size, PHOTO_STEPS, photo_geometry
+            from oracle_photo_bezel import photo_zip, PHOTO_STEPS, photo_geometry
             if self.o.get('bezel', True) and photo_zip() is not None:
                 # Resize by selecting a complete image size. No partial photo
                 # tiles and no non-uniform scaling, even on frameless Windows.

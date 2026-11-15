@@ -13,7 +13,6 @@ import os
 import queue
 import subprocess
 import threading
-import time
 import tkinter as tk
 
 from oracle_eidolith_core import end_process

@@ -9,7 +9,7 @@ import threading
 import time
 from pathlib import Path
 from Augurspex.augurspex.core import merge_watchlists, read_settings, reset_to_popular_markets_once, app_folder
-from Augurspex.augurspex.providers import MarketRouter, shared_market_router, local_stock_path
+from Augurspex.augurspex.providers import shared_market_router, local_stock_path
 
 class MarketCarousel:
     def __init__(self, *, home=None, router=None, enabled=True, rotate_seconds=12,
