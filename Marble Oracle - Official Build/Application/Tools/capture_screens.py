@@ -24,7 +24,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 APP = Path(__file__).resolve().parents[1] / 'Runtime' / 'Marble_Oracle_App'
-DEFAULT_SIZES = ('900x580', '1000x650', '1280x720', '1920x1080')
+DEFAULT_SIZES = ('900x580', '1000x650', '1216x848', '1280x720', '1920x1080')   # 1216x848 is the default window
 TABS = ('tab_home', 'tab_oggcultist', 'tab_eidolith', 'tab_augurspex', 'tab_passphrase', 'tab_touch_type')
 
 
@@ -82,20 +82,22 @@ class FixtureRouter:
                 'latest_observation': bars[-1]['time'], 'cache': 'network'}
 
 
-def capture_suite(size, out):
-    from marble_oracle import WindowApp, parse
+def capture_suite(size, out, extra=(), prefix=''):
+    """The window exactly as a launch opens it (launch_plan), driven tab by tab."""
+    from marble_oracle import WindowApp, launch_plan
     width, height = (int(v) for v in size.split('x'))
-    args = vars(parse(['--selftest', '--no-network', '--no-markets', '--no-bezel', '--os-frame']))
-    app = WindowApp(args)
+    _args, options, _cls = launch_plan(['--selftest', '--no-network', *extra])
+    app = WindowApp(options)
     root, scene = app.root, app.scene
-    root.geometry(f'{width}x{height}+0+0')
-    root.update()
-    scene.resized(width, height)
+    if not extra:               # the photographic CRT chooses its own fixed sizes
+        root.geometry(f'{width}x{height}+0+0')
+        root.update()
+        scene.resized(width, height)
     pump(root, 1.0)
     for tab in TABS:
         scene.act(tab)
         pump(root, 1.6)
-        grab(root, out / f'{size}_{TABS.index(tab) + 1}_{tab[4:]}.png')
+        grab(root, out / f'{prefix}{size}_{TABS.index(tab) + 1}_{tab[4:]}.png')
     scene.act('tab_home')
     pump(root, 0.3)
     app.quit()
@@ -150,6 +152,12 @@ def main(argv=None):
                     import traceback
                     print(f'FAILED {label} at {size}: {exc}', flush=True)
                     traceback.print_exc()
+        try:        # the optional photographic CRT housing, at the size it picks for this display
+            capture_suite('auto', out, extra=('--crt-v2',), prefix='crt_')
+            print('captured CRT housing', flush=True)
+        except Exception as exc:
+            failures += 1
+            print(f'FAILED CRT housing: {exc}', flush=True)
     finally:
         shutil.rmtree(state, ignore_errors=True)
     print(f'{len(list(out.glob("*.png")))} screenshots in {out}')

@@ -3724,10 +3724,12 @@ def hide_console():
         pass
 
 
-def main(argv=None):
-    if sys.stdout is None:                 # pythonw: no console streams
-        sys.stdout = sys.stderr = open(os.devnull, "w")
-    hide_console()
+def launch_plan(argv=None):
+    """Turn a command line into (namespace, options, application class), exactly as a launch does.
+
+    Kept separate from main() so tools and tests open the same window a user
+    gets (no bezel unless one is asked for) instead of re-deriving the options.
+    """
     args = list(argv if argv is not None else sys.argv[1:])
     if not any(x in args for x in ("--crt-v2", "--legacy-bezel", "--retro", "--no-bezel", "--wallpaper", "--fullscreen")):
         args.insert(0, "--no-bezel")
@@ -3741,14 +3743,6 @@ def main(argv=None):
         os.environ.pop("MARBLE_ORACLE_CRT_V2", None)
     if a.calm:
         os.environ["MARBLE_ORACLE_CALM"] = "1"                 # read by oracle_vhs when each tab builds its art
-    if a.version:
-        print("%s %s" % (TITLE, VERSION_NAME))
-        return 0
-    if a.install_startup or a.remove_startup:
-        return startup(a.install_startup, startup_flags(a))
-    if a.check_webui or a.check_ollama:                # 1058: THE LIEN is gone; the old checks print that and exit, as they always exited
-        print("THE LIEN was removed in build 1058: there is no model to check.")
-        return 0
     opts = dict(theme=a.theme, layout=a.layout or "CLASSIC", fps=a.fps, frameless=a.frameless, crt_v2=use_v2,
                 no_dicekey=a.no_dicekey, no_markets=a.no_markets,
                 no_network=a.no_network or a.selftest, crt=not a.no_crt, wire=a.wire, bezel=not a.no_bezel, osframe=a.os_frame or a.no_bezel, flat=a.flat,
@@ -3770,6 +3764,22 @@ def main(argv=None):
         cls = Fullscreen
     else:
         cls = WindowApp
+    return a, opts, cls
+
+
+def main(argv=None):
+    if sys.stdout is None:                 # pythonw: no console streams
+        sys.stdout = sys.stderr = open(os.devnull, "w")
+    hide_console()
+    a, opts, cls = launch_plan(argv)
+    if a.version:
+        print("%s %s" % (TITLE, VERSION_NAME))
+        return 0
+    if a.install_startup or a.remove_startup:
+        return startup(a.install_startup, startup_flags(a))
+    if a.check_webui or a.check_ollama:                # 1058: THE LIEN is gone; the old checks print that and exit, as they always exited
+        print("THE LIEN was removed in build 1058: there is no model to check.")
+        return 0
     cls(opts).run()
     return 0
 
