@@ -19,7 +19,7 @@ sys.path.insert(0, str(APP))
 import tkinter as tk  # noqa: E402
 from tkinter import ttk  # noqa: E402
 
-from oracle_design import flow_layout  # noqa: E402
+from oracle_design import WrapSettler, flow_layout  # noqa: E402
 
 SIZES = ((900, 580), (1000, 650), (1280, 720), (1920, 1080))
 failures = []
@@ -73,6 +73,38 @@ def flow_rule():
     check('nothing to lay out is zero height', flow_layout([], 300) == ([], 0))
     positions, _height = flow_layout([(100, 30), (100, 30)], 0)
     check('a container not yet measured never divides by zero or drops items', len(positions) == 2)
+
+
+def wrap_rule():
+    # 0.4.9.3: on Windows the CONVERT page froze the window. A wrapped label
+    # changed its container's width, which changed the wrap, for ever.
+    settler = WrapSettler()
+    check('a first width is applied', settler.next(300) == 300)
+    check('the same width again changes nothing', settler.next(300) is None)
+    check('a new width is applied', settler.next(280) == 280)
+    check('bouncing back to an earlier width is refused', settler.next(300) is None)
+    check('and the text stays on the narrower width however often it bounces',
+          [settler.next(w) for w in (280, 300, 280, 300)] == [None, None, None, None])
+    check('a genuinely new width (the window was resized) is applied again', settler.next(520) == 520)
+
+    settler = WrapSettler()
+    applied = [settler.next(w) for w in (400, 360, 380, 400)]
+    check('a three-width cycle settles on its narrowest width', applied == [400, 360, 380, 360], applied)
+    check('and then ignores every width of that cycle',
+          [settler.next(w) for w in (360, 380, 400, 360)] == [None, None, None, None])
+
+    # Any feedback rule at all must stop changing within a few steps.
+    for container_for in (lambda wrap: 300 if wrap == 280 else 280,          # two widths that cause each other
+                          lambda wrap: {250: 270, 270: 290, 290: 250}.get(wrap, 250),
+                          lambda wrap: wrap - 7 if wrap > 130 else wrap):   # keeps shrinking, then stops
+        settler, width, changes = WrapSettler(), 300, 0
+        for _step in range(200):
+            wrap = settler.next(width)
+            if wrap is None:
+                break
+            changes += 1
+            width = container_for(wrap)
+        check('the wrap width stops changing', changes < 60, changes)
 
 
 def gui():
@@ -147,6 +179,7 @@ def gui():
 
 if __name__ == '__main__':
     flow_rule()
+    wrap_rule()
     gui()
     print(f'EIDOLITH LAYOUT: {checks - len(failures)}/{checks} checks passed')
     sys.exit(1 if failures else 0)

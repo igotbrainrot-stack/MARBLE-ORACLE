@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import tkinter as tk
 
-from oracle_design import flow_layout
+from oracle_design import WrapSettler, flow_layout
 
 
 def flow(container, children, gap_x=7, gap_y=6):
@@ -50,15 +50,22 @@ def flow(container, children, gap_x=7, gap_y=6):
 
 
 def wrap_to_parent(widget, margin=0, minimum=120):
-    """Keep `widget`'s text wrapped to its parent's width (less `margin`)."""
+    """Keep `widget`'s text wrapped to its parent's width (less `margin`).
+
+    The width is chosen by oracle_design.WrapSettler, so a container whose own
+    width depends on this text cannot bounce between two widths for ever.
+    """
     parent = widget.master
+    settler = WrapSettler()
 
     def rewrap(_event=None):
         try:
-            width = max(minimum, parent.winfo_width() - margin)
-            if parent.winfo_width() > 1 and int(float(str(widget.cget('wraplength')) or 0)) != width:
+            if parent.winfo_width() <= 1:                    # not laid out yet
+                return
+            width = settler.next(max(minimum, parent.winfo_width() - margin))
+            if width is not None:
                 widget.configure(wraplength=width, justify='left')
-        except (tk.TclError, ValueError):
+        except tk.TclError:                                  # the workspace is closing
             pass
 
     parent.bind('<Configure>', rewrap, add='+')

@@ -314,8 +314,10 @@ class EidolithPanel(tk.Frame):
         head = ogl_frame(outer, bg=C['canvas'])
         head.pack(fill='x', pady=(0, 6))
         self._label(head, title, 15, 'text_bright', bold=True).pack(anchor='w')
+        outer.subtitle = None
         if subtitle:
-            wrap_to_parent(self._label(head, subtitle, 10, 'text_3')).pack(anchor='w')
+            outer.subtitle = wrap_to_parent(self._label(head, subtitle, 10, 'text_3'))
+            outer.subtitle.pack(anchor='w')
         box = ogl_frame(outer, bg=C['raised'])
         box.pack(fill='both', expand=True)
         return outer, box
@@ -569,11 +571,16 @@ class EidolithPanel(tk.Frame):
             arrangement['side_by_side'] = side_by_side
             outer.grid_forget()
             outer2.grid_forget()
+            for section in (outer, outer2):         # a short window has no room for the explanations
+                if side_by_side:
+                    section.subtitle.pack_forget()
+                else:
+                    section.subtitle.pack(anchor='w')
             if side_by_side:
                 lower.grid_rowconfigure(0, weight=1)
                 lower.grid_rowconfigure(1, weight=0)
-                lower.grid_columnconfigure(0, weight=3, uniform='queue')
-                lower.grid_columnconfigure(1, weight=2, uniform='queue')
+                lower.grid_columnconfigure(0, weight=1, uniform='queue')
+                lower.grid_columnconfigure(1, weight=1, uniform='queue')
                 outer.grid(row=0, column=0, sticky='nsew', padx=(0, 6))
                 outer2.grid(row=0, column=1, sticky='nsew', padx=(6, 0))
             else:

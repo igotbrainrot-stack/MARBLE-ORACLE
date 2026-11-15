@@ -47,3 +47,42 @@ def flow_layout(sizes, width, gap_x=8, gap_y=4):
         x += item_width + gap_x
         row_height = max(row_height, item_height)
     return positions, (y + row_height if positions else 0)
+
+
+class WrapSettler:
+    """Decides the wrap width for text that follows its container, without ever looping.
+
+    Wrapping a label changes the width it asks for. In a container whose own
+    width depends on that request, two widths can each cause the other
+    (A wraps → container becomes B → B wraps → container becomes A …), and Tk's
+    geometry pass then never finishes. Seen on Windows, where font metrics put
+    EIDOLITH's CONVERT page exactly on such a pair and the window froze.
+
+    `next(width)` returns the width to apply, or None to leave the text alone.
+    When a width comes round again the text settles on the narrowest width of
+    that cycle (which fits inside every one of them) and ignores the cycle's
+    widths until the container moves to a genuinely new width.
+    """
+    HISTORY = 6
+
+    def __init__(self):
+        self.applied = []          # most recent last
+        self.settled = frozenset()
+
+    def next(self, width):
+        width = int(width)
+        if width in self.settled:
+            return None
+        if self.applied and width == self.applied[-1]:
+            return None
+        if width in self.applied:
+            cycle = self.applied[self.applied.index(width):]
+            self.settled = frozenset(cycle)
+            narrowest = min(cycle)
+            if narrowest == self.applied[-1]:
+                return None
+            self.applied.append(narrowest)
+            return narrowest
+        self.settled = frozenset()
+        self.applied = (self.applied + [width])[-self.HISTORY:]
+        return width
