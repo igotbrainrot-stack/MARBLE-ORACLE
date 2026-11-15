@@ -25,7 +25,7 @@ The brief asked for a complete redesign and refactor of every workspace. What wa
 | OGGCULTIST | One crash fixed | Deliberately not edited: it is a complete vendored application |
 | PASSPHRASE | Security reviewed and tested (OS random source, nothing logged, clipboard cleared) | No interface change |
 | TOUCH TYPE | A focus fix in its test | No interface change |
-| Design system | Shared tokens and two shared widgets, used by two workspaces | Not yet adopted by HOME, PASSPHRASE, TOUCH TYPE; no shared focus/hover/disabled styling, tooltips or context menus |
+| Design system | Shared tokens; wrapping toolbars and text (two workspaces); one hover, keyboard-focus and disabled look for every control in the window; tooltips for shortened text | HOME is canvas-drawn and does not use the shared tokens or get hover feedback; PASSPHRASE and TOUCH TYPE still spell their colours inline; no context menus |
 | Refactor | Tk-free logic split out of AUGURSPEX; dead code removed; one version number | The large modules remain large (listed in `ARCHITECTURE.md`) |
 | Optimisation | Cache bounded; helper processes collected; two unused start-up objects removed | No start-up or redraw measurements were taken. The ZIP is the same size as before (113 MB): it is almost entirely artwork archives, which were deliberately left alone |
 
@@ -35,7 +35,7 @@ The brief asked for a complete redesign and refactor of every workspace. What wa
 2. **Windows, 640x460, rune stones.** `Scene.draw_runes` in `marble_oracle.py` computes the stone height from the panel height minus fixed bands; with Windows font metrics that reaches zero in the STATUE layout. Either raise the minimum window size on Windows or let the bands give way. `test_rune_click_and_art.py` reproduces it on the Windows CI job.
 3. **HOME's PLATE VAULT is empty in the automated screenshots** (`Tools/capture_screens.py`) while its test passes. Confirm on a real screen whether the statues draw; if they do, fix the capture tool's timing.
 4. **Make the Windows job required.** It is informational (`continue-on-error`) until item 2 is closed.
-5. **Carry the shared design into HOME, PASSPHRASE and TOUCH TYPE:** tokens from `oracle_design.py`, `flow` and `wrap_to_parent` from `oracle_widgets.py`, then one focus/hover/disabled treatment for every button.
+5. **Carry the shared design into HOME, PASSPHRASE and TOUCH TYPE:** tokens from `oracle_design.py`, `flow` and `wrap_to_parent` from `oracle_widgets.py`, and give HOME's canvas-drawn buttons the same hover feedback the Tk buttons now have.
 6. **Split `marble_oracle.py`:** move each HOME panel (tarot, runes, Latin, statues, wire, market chart) into its own module behind the existing `Scene` methods. Keep the GUI tests green on both systems at every step.
 7. **Run the embedded Oggcultist's own tests** (`Oggcultist/tests/`) from the suite runner, or record why not.
 8. **Measure** start-up time and tab-switch time before optimising anything further.

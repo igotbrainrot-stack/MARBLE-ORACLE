@@ -38,6 +38,10 @@ Built on 0.4.9.2. No feature was removed from any workspace, no saved setting ch
 - **One design vocabulary.** `oracle_design.py` holds the suite-level tokens (market category colours and labels, the wording for leaving a workspace) and `oracle_widgets.py` holds two shared behaviours: toolbars that wrap to a second row instead of running off the edge, and explanatory text that wraps instead of being cut. EIDOLITH and AUGURSPEX both use them.
 - **AUGURSPEX header.** The selected market's name sits in the header beside CSV / SOURCE DETAILS / REFRESH. The separate "active chart market" box and the second status strip are gone, which returns three rows of height to the charts at 900x580. The four tools share equal columns and shorten their captions in a narrow window. The filter buttons are lettered in their category colour, replacing a separate legend (two more watchlist rows at 900x580).
 - **EIDOLITH QUEUE.** Job actions (REMOVE SELECTED, RETRY SELECTED) sit with the job list; log actions (OPEN LOG, LOG FOLDER, COPY DIAGNOSTICS) sit with the log. In a short window the list and the log stand side by side; in a tall one they stack.
+- **One hover, focus and disabled look everywhere.** A button under the pointer lightens slightly in every workspace (on Windows, buttons gave no hover feedback at all). The control that has keyboard focus gets an accent outline; it used to be black on near-black, so Tab moved an invisible focus. Disabled captions use the tertiary text colour.
+- **Shortened text can be read.** AUGURSPEX's fitted status lines and shortened watchlist rows show their full wording when the pointer rests on them.
+- **TOUCH TYPE coaching line.** It was cut at 30 characters at every window size, so every hint ended in "…". It now uses the width the row has, and shows the rest on hover when it still cannot fit.
+- **EIDOLITH rail.** The wordmark is the title; the name is no longer written twice above the navigation.
 - **One version number.** `oracle_version.py`; shown in the window title and by `--version`.
 
 ### Removed: verified unused, then deleted
@@ -57,7 +61,7 @@ Net effect on the source tree: about 10,500 lines removed, 3,900 added. The rele
 - `Tools/capture_screens.py`: a picture of every workspace and page at each supported size.
 - `Tools/build_release.py`: regenerates the inventory and manifest and writes a reproducible ZIP; `verify_release.py` checks more and ignores caches.
 - `ruff.toml`: the lint rules that find real mistakes, enforced in CI.
-- New tests: provider failure kinds and validation, axis labels, signals, EIDOLITH file safety (real FFmpeg: sources byte-identical after success, failure, cancel and stop; nothing overwritten; no partial files left), EIDOLITH layout at four sizes, process cleanup, passphrase randomness and secrecy.
+- New tests: provider failure kinds and validation, axis labels, signals, EIDOLITH file safety (real FFmpeg: sources byte-identical after success, failure, cancel and stop; nothing overwritten; no partial files left), EIDOLITH layout at four sizes, process cleanup, passphrase randomness and secrecy, hover/focus/tooltip behaviour.
 - Fixtures with fixed calendar dates (one began failing on 15 November 2026) now use dates relative to today.
 
 ### Documentation

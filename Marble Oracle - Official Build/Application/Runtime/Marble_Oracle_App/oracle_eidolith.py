@@ -269,8 +269,10 @@ class EidolithPanel(tk.Frame):
 
         # CONVERTER: source selection left, archival profile/output controls right.
         page = self.pages['CONVERT']
-        page.grid_columnconfigure(0, weight=1)
-        page.grid_columnconfigure(1, weight=1)
+        # Equal halves whatever each side asks for: sized by request, the
+        # source column shrank until its own heading was cut.
+        page.grid_columnconfigure(0, weight=1, uniform='convert')
+        page.grid_columnconfigure(1, weight=1, uniform='convert')
         page.grid_rowconfigure(0, weight=1)
         conv_left = ogl_frame(page, bg=C['canvas'])
         conv_left.grid(row=0, column=0, sticky='nsew', padx=(0, 8))
