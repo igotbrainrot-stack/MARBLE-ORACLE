@@ -241,6 +241,10 @@ class EidolithPanel(tk.Frame):
         self.page_subtitle = self._label(title, 'Play video in the EIDOLITH viewer.', 10, 'text_3')
         self.page_subtitle.pack(anchor='w', pady=(2, 0))
 
+        # The status line claims its row first, from the bottom: a tall page
+        # (CONVERT at 580 px) used to push it half out of the window.
+        footer = ogl_frame(self.main, bg=C['canvas'])
+        footer.pack(side='bottom', fill='x', padx=16, pady=(0, 8))
         body = ogl_frame(self.main, bg=C['canvas'])
         body.pack(fill='both', expand=True, padx=12, pady=(0, 8))
         self.pages = {}
@@ -292,8 +296,6 @@ class EidolithPanel(tk.Frame):
         self._section_queue(self.pages['QUEUE'])
         self._section_about(self.pages['ABOUT'])
 
-        footer = ogl_frame(self.main, bg=C['canvas'])
-        footer.pack(fill='x', padx=16, pady=(0, 8))
         self.status_label = self._label(footer, '', 10, 'text_3')
         self.status_label.pack(anchor='w')
         self._sync_status()
@@ -341,7 +343,7 @@ class EidolithPanel(tk.Frame):
                                     activestyle='none', bg=C['canvas'], fg=C['text'], bd=0,
                                     highlightthickness=1, highlightbackground=C['control_line'],
                                     selectbackground=C['hover'], selectforeground=C['text_bright'],
-                                    font=(FAMILY, 10), height=2)
+                                    font=(FAMILY, 10), height=3)
         ys = tk.Scrollbar(list_frame, orient='vertical', command=self.file_list.yview)
         self.file_list.config(yscrollcommand=ys.set)
         self.file_list.pack(side='left', fill='both', expand=True)
@@ -364,6 +366,8 @@ class EidolithPanel(tk.Frame):
         clear_controls = ogl_frame(box, bg=C['raised'])
         clear_controls.pack(fill='x', padx=10, pady=(0, 8))
         self._button(clear_controls, 'CLEAR SELECTION', self.clear_selection).pack(side='left')
+        wrap_to_parent(self._label(box, 'Files are not deleted, modified or replaced by conversion.', 10, 'text_3'),
+                       margin=20).pack(side='bottom', anchor='w', padx=10, pady=(0, 10))
         f = ogl_frame(box, bg=C['raised'])
         f.pack(fill='both', expand=True, padx=10, pady=(0, 10))
         self.convert_list = tk.Listbox(f, selectmode='extended', exportselection=False,
@@ -377,8 +381,6 @@ class EidolithPanel(tk.Frame):
         ys.pack(side='right', fill='y')
         self.convert_list.bind('<Control-a>', lambda e: (self.select_all(), 'break')[-1])
         self.convert_list.bind('<<ListboxSelect>>', lambda e: self._update_name_preview())
-        self._label(box, 'Files are not deleted, modified or replaced by conversion.', 10, 'text_3').pack(
-            anchor='w', padx=10, pady=(0, 10))
 
     def _current_listbox(self):
         return self.convert_list if self.active_nav.get() == 'CONVERT' else self.file_list
@@ -394,11 +396,11 @@ class EidolithPanel(tk.Frame):
         self._set_status('Selection cleared.')
 
     def _section_probe(self, parent):
-        outer, box = self._section_frame(parent, 'MEDIA PROBE', 'ffprobe metadata, streams and quick inspection.')
+        outer, box = self._section_frame(parent, 'MEDIA PROBE', 'Streams and metadata.')
         outer.pack(fill='both', expand=True)
         body = ogl_frame(box, bg=C['raised'])
         body.pack(fill='both', expand=True, padx=10, pady=10)
-        self.probe_text = self._text(body, height=3)
+        self.probe_text = self._text(body, height=2)
         scroll = tk.Scrollbar(body, command=self.probe_text.yview)
         self.probe_text.configure(yscrollcommand=scroll.set)
         self.probe_text.pack(side='left', fill='both', expand=True)
