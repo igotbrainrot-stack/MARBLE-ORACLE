@@ -30,6 +30,7 @@ from Augurspex.augurspex.core import (
 from Augurspex.augurspex.providers import (MarketRouter, shared_market_router,
     local_stock_path, read_local_stock_csv, LOCAL_IMPORT_LIMIT)
 from marble_uberata import FAMILY
+from oracle_design import HOME_LABEL, MARKET_COLORS, MARKET_LABELS
 # Re-exported on purpose: tests and oracle_augurspex_insights import these names from this module.
 from oracle_augurspex_logic import (  # noqa: F401
     CARD_CHROME_H, CARD_CHROME_W, CARD_GAP, CHART_PAD_B, CHART_PAD_L, CHART_PAD_R, CHART_PAD_T,
@@ -421,7 +422,7 @@ class AugurspexPanel(tk.Frame):
         self._load_watchlist()
         self.search=tk.StringVar(value='');self.search.trace_add('write',lambda *_:self._refresh_watch())
         self.symbol_input=tk.StringVar(value='')
-        self.status=tk.StringVar(value='MULTI-SOURCE HISTORY · LICENSED STOCK DATA MAY REQUIRE A PERSONAL API KEY')
+        self.status=tk.StringVar(value='HISTORY, NOT LIVE QUOTES · STOCKS DELAYED / END OF DAY · CRYPTO VENUE PRICES · SEE SOURCE DETAILS')
         self._build_ui()
         self._refresh_watch();self._refresh_charts()
 
@@ -488,8 +489,8 @@ class AugurspexPanel(tk.Frame):
         filt.columnconfigure(1,weight=1,uniform='filter')
         category_legend=tk.Frame(self.rail,bg=self.p['rail'])
         category_legend.pack(fill='x',padx=12,pady=(0,5))
-        for text,colour in (('● STOCKS','#FFB667'),('● FX','#77DCC2'),('● CRYPTO','#CCAAFF')):
-            tk.Label(category_legend,text=text,bg=self.p['rail'],fg=colour,
+        for kind in ('stocks','fx','crypto'):
+            tk.Label(category_legend,text='● '+MARKET_LABELS[kind],bg=self.p['rail'],fg=MARKET_COLORS[kind],
                      font=(FAMILY,10,'bold')).pack(side='left',padx=(0,10))
         sourcing=ogg_frame(self.rail,bg='#130F0D');sourcing._oracle_bg=self.p['rail']
         sourcing.pack(fill='x',padx=10,pady=(0,5))
@@ -502,7 +503,8 @@ class AugurspexPanel(tk.Frame):
         bottom=ogg_frame(self.rail,bg='#130F0D');bottom._oracle_bg=self.p['rail']
         bottom.pack(side='bottom',fill='x',padx=10,pady=(2,6))
         self._button(bottom,'MANAGE LIST',self._manage_watchlist).pack(side='left',fill='x',expand=True,padx=(0,2))
-        self._button(bottom,'HOME',self.on_home).pack(side='right',fill='x',expand=True,padx=(2,0))
+        self.home_button=self._button(bottom,HOME_LABEL,self.on_home)
+        self.home_button.pack(side='right',fill='x',expand=True,padx=(2,0))
         lst=ogg_frame(self.rail,bg='#130F0D');lst._oracle_bg=self.p['rail'];lst.pack(fill='both',expand=True,padx=10)
         self.watch=tk.Listbox(lst,selectmode='browse',exportselection=False,
                               bg=self.p['inset'],fg=self.p['ink'],selectbackground=self.p['active'],
@@ -515,29 +517,35 @@ class AugurspexPanel(tk.Frame):
         self.watch.bind('<<ListboxSelect>>',lambda _e:self._choose_from_list())
         self.watch.bind('<Configure>',lambda _e:self._watch_resize(),add='+')
 
+        # One header row: the market the selected chart shows, and the actions
+        # that apply to it. The actions are packed first so they are never the
+        # part that gets clipped in a narrow window; the name gives way instead.
         header=ogg_frame(self.work,bg='#261F1B');header._oracle_bg=self.p['panel'];header.pack(fill='x',padx=8,pady=(8,4))
-        self._label(header,'MARKET OBSERVATORY','ink',16,True).pack(side='left',padx=8,pady=5)
-        self._button(header,'REFRESH',self._force_refresh).pack(side='right',padx=4)
-        self._button(header,'SOURCE DETAILS',self._show_source_details).pack(side='right',padx=4)
-        self._button(header,'CSV',self._export_chart_csv).pack(side='right',padx=4)
+        self._button(header,'REFRESH',self._force_refresh).pack(side='right',padx=(4,6),pady=4)
+        self._button(header,'SOURCE DETAILS',self._show_source_details).pack(side='right',padx=4,pady=4)
+        self._button(header,'CSV',self._export_chart_csv).pack(side='right',padx=4,pady=4)
+        self._selected_text='Choose a market'
+        self.selected_market=tk.Label(header,text=self._selected_text,bg=self.p['panel'],
+                                      fg=self.p['ink'],font=(FAMILY,15,'bold'),anchor='w')
+        self.selected_market.pack(side='left',fill='x',expand=True,padx=(8,4),pady=5)
+        self.selected_market.bind('<Configure>',lambda _e:self._fit(self.selected_market,self._selected_text),add='+')
         # Secondary tools: a whole-watchlist comparison and an accessible
-        # provider-observation table. Separate toolbar avoids squeezing headers.
+        # provider-observation table. Equal columns; the captions shorten
+        # (see _reflow_tools) rather than run off the edge.
         tools=tk.Frame(self.work,bg=self.p['bg'])
         tools.pack(fill='x',padx=12,pady=(0,5))
-        for caption,command in (('◈ MARKET ATLAS',self._show_market_atlas),
-                                ('▣ SIGNALS',self._show_market_signals),
-                                ('▤ OBSERVATION TABLE',self._show_observation_table),
-                                ('? SHORTCUTS',self._show_shortcuts)):
-            self._button(tools,caption,command).pack(side='left',fill='x',expand=True,padx=(0,5),pady=1)
-        selected_box=ogg_frame(self.work,bg='#261F1B')
-        selected_box._oracle_bg=self.p['panel']
-        selected_box.pack(fill='x',padx=10,pady=(0,5))
-        self._label(selected_box,'ACTIVE CHART MARKET','muted',10,True,anchor='w').pack(fill='x')
-        self.selected_market=tk.Label(selected_box,text='Choose a market',bg=self.p['panel'],
-                                      fg=self.p['ink'],font=(FAMILY,12,'bold'),anchor='w',
-                                      wraplength=660,justify='left')
-        self.selected_market.pack(fill='x',pady=(3,0))
-        selected_box.bind('<Configure>',lambda e:self.selected_market.configure(wraplength=max(160,e.width-8)),add='+')
+        self.tool_buttons=[]
+        for column,(caption,short,command) in enumerate((
+                ('◈ MARKET ATLAS','◈ ATLAS',self._show_market_atlas),
+                ('▣ SIGNALS','▣ SIGNALS',self._show_market_signals),
+                ('▤ OBSERVATION TABLE','▤ TABLE',self._show_observation_table),
+                ('? SHORTCUTS','? KEYS',self._show_shortcuts))):
+            button=self._button(tools,caption,command)
+            button.grid(row=0,column=column,sticky='ew',padx=(0,5),pady=1)
+            tools.columnconfigure(column,weight=1,uniform='augurspex-tools')
+            self.tool_buttons.append((button,caption,short))
+        self._tools_compact=None
+        tools.bind('<Configure>',lambda e:self._reflow_tools(e.width),add='+')
         opts=ogg_frame(self.work,bg='#1D1714');opts._oracle_bg=self.p['bg'];opts.pack(fill='x',padx=8,pady=(0,4))
         self.workspace_var=tk.StringVar(value=self.settings['workspace'])
         self.layout_var=tk.StringVar(value=str(self.settings['layout']))
@@ -557,8 +565,9 @@ class AugurspexPanel(tk.Frame):
             self._label(part,label,'muted',11,True).pack(side='left',padx=(0,3))
             self._option(part,var,items,fn).pack(side='left')
             self.option_parts.append(part)
-        # At narrow widths, two compact rows keep the DISPLAY option visible
-        # instead of losing it behind the right side of the CRT viewport.
+        # The options flow left to right and wrap where the window ends, so
+        # they use as few rows as the width allows and none is ever cut off.
+        self.options_bar=opts
         opts.bind('<Configure>',lambda e:self._reflow_options(e.width),add='+')
         self._reflow_options(1000)  # initial geometry; updates after layout
         # Requested chart spaces vs slots with real data, always stated.
@@ -594,18 +603,12 @@ class AugurspexPanel(tk.Frame):
             widget.bind('<MouseWheel>',self._scroll_charts,add='+')
             widget.bind('<Button-4>',self._scroll_charts,add='+')
             widget.bind('<Button-5>',self._scroll_charts,add='+')
+        # One footer row: what kind of data this is, then the latest status.
         footer=ogg_frame(self.work,bg='#261F1B');footer._oracle_bg=self.p['panel'];footer.pack(fill='x',side='bottom',padx=8,pady=(0,7))
         footer_tag=self._label(footer,'LOCAL · NO LOGIN', 'accent',11,True)
         footer_tag.pack(side='left',padx=8,pady=5)
-        self.footer_note=self._label(footer,'', 'muted',10,anchor='w')
-        self.footer_note.pack(side='left',padx=4,fill='x',expand=True)
-        footer_text='STOCKS: DELAYED / EOD · CRYPTO: VENUE PRICES · SEE SOURCE DETAILS'
-        footer.bind('<Configure>',lambda e:self._fit(self.footer_note,footer_text,
-                    e.width-footer_tag.winfo_reqwidth()-32),add='+')
-        status_row=ogg_frame(self.work,bg='#1D1714');status_row._oracle_bg=self.p['bg']
-        status_row.pack(side='bottom',fill='x',padx=11,pady=2)
-        self.status_label=tk.Label(status_row,text='',anchor='w',bg=self.p['bg'],fg=self.p['weak'],font=(FAMILY,11))
-        self.status_label.pack(fill='x')
+        self.status_label=tk.Label(footer,text='',anchor='w',bg=self.p['panel'],fg=self.p['muted'],font=(FAMILY,10))
+        self.status_label.pack(side='left',padx=4,fill='x',expand=True)
         # Fitted to measured pixels: a long status was cropped on both sides.
         self.status.trace_add('write',lambda *_:self._fit(self.status_label,self.status.get()))
         self.status_label.bind('<Configure>',lambda _e:self._fit(self.status_label,self.status.get()),add='+')
@@ -616,13 +619,33 @@ class AugurspexPanel(tk.Frame):
         self._render_grid()
 
     def _reflow_options(self,width):
-        columns=4 if width>=850 else 2 if width>=440 else 1
-        if columns==self._option_columns:return
-        self._option_columns=columns
-        for i,part in enumerate(self.option_parts):
-            part.grid_forget()
-            part.grid(row=i//columns,column=i%columns,sticky='w',
-                      padx=(2,8),pady=(0,2))
+        """Flow the option groups across `width`, wrapping to a new row when one does not fit."""
+        gap_x,gap_y=10,3
+        x=y=row_height=0
+        placement=[]
+        for part in self.option_parts:
+            w,h=part.winfo_reqwidth(),part.winfo_reqheight()
+            if x and x+w>max(1,width):
+                x=0;y+=row_height+gap_y;row_height=0
+            placement.append((part,x,y))
+            x+=w+gap_x;row_height=max(row_height,h)
+        signature=tuple((x,y) for _part,x,y in placement)+(y+row_height,)
+        if signature==self._option_columns:return
+        self._option_columns=signature
+        for part,x,y in placement:
+            part.place(x=x+2,y=y)
+        self.options_bar.configure(height=y+row_height+2)
+
+    def _reflow_tools(self,width):
+        """Full captions when all four fit in equal columns, short ones otherwise."""
+        if not self.tool_buttons:return
+        measure=FontMeasure(self,self.tool_buttons[0][0].cget('font')).measure
+        column=max(1,width)/len(self.tool_buttons)
+        compact=any(measure(caption)+34>column for _button,caption,_short in self.tool_buttons)
+        if compact==self._tools_compact:return
+        self._tools_compact=compact
+        for button,caption,short in self.tool_buttons:
+            button.configure(text=short if compact else caption)
 
     def _toggle_sourced(self):
         self.sourced_only=not self.sourced_only
@@ -974,7 +997,7 @@ class AugurspexPanel(tk.Frame):
                 display+='  '+item['name']
             display=fit_text_pixels(display,self._watch_font,max(120,self.watch.winfo_width()-16))
             self.watch.insert('end',display)
-            category_colour={'stocks':'#FFB667','fx':'#77DCC2','crypto':'#CCAAFF'}[kind]
+            category_colour=MARKET_COLORS[kind]
             try:self.watch.itemconfig(i,foreground=category_colour)
             except tk.TclError:pass
             if item['symbol']==old:self.watch.selection_set(i)
@@ -998,7 +1021,8 @@ class AugurspexPanel(tk.Frame):
         shown,auto=plan[index] if 0<=index<len(plan) else (sym,False)
         label=self._names.get(shown,shown) if shown else 'Choose a market from the list'
         if auto:label+='  · AUTO-FILLED'
-        self.selected_market.configure(text=label)
+        self._selected_text=label
+        self._fit(self.selected_market,label)
 
     def _selected(self):
         if not hasattr(self,'watch'):return None
