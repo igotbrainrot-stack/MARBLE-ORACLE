@@ -42,6 +42,11 @@ jobs:
         run: |
           cd "Marble Oracle - Official Build"
           xvfb-run -a -s "-screen 0 1920x1080x24" python3 Application/Tools/run_tests.py --tail 150 --json "$RUNNER_TEMP/test-results.json" ${{ inputs.filters }}
+      - name: Screenshots of every workspace at the supported window sizes
+        if: always()
+        run: |
+          cd "Marble Oracle - Official Build"
+          xvfb-run -a -s "-screen 0 1920x1080x24" python3 Application/Tools/capture_screens.py "$RUNNER_TEMP/screens" || true
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4
@@ -49,3 +54,32 @@ jobs:
           name: test-results-linux
           path: ${{ runner.temp }}/test-results.json
           if-no-files-found: ignore
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-linux
+          path: ${{ runner.temp }}/screens
+          if-no-files-found: ignore
+
+  time-travel:
+    # Fixtures with fixed calendar dates pass today and fail next month.
+    # Running the display-free tests with the clock moved forward finds them
+    # before they bite. Informational: it never blocks a merge.
+    name: Linux · clock +60 days (date-dependent fixtures)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Tk, Xvfb, FFmpeg, faketime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            python3-tk python3-pil python3-pil.imagetk python3-mutagen python3-numpy python3-opencv \
+            xvfb xauth ffmpeg faketime
+      - name: AUGURSPEX tests, 60 days from now
+        run: |
+          cd "Marble Oracle - Official Build"
+          xvfb-run -a -s "-screen 0 1920x1080x24" faketime -f '+60d' \
+            python3 Application/Tools/run_tests.py --tail 40 augurspex market_atlas

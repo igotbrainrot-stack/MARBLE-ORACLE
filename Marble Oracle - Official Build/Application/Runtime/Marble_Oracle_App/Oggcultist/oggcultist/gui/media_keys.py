@@ -403,7 +403,7 @@ class MediaControls:
         if self._poll_job is not None:
             try:
                 self.app.after_cancel(self._poll_job)
-            except tk.TclError:
+            except Exception:  # tk.TclError once the window is gone; `tk` is not imported here
                 pass
             self._poll_job = None
         if self.windows is not None:

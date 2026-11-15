@@ -138,6 +138,11 @@ def open_panel(home, router, size, layout=9):
     settings = cfg / 'settings.json'
     if not settings.exists():
         settings.write_text(json.dumps({'layout': layout, 'symbols': SYMS, 'style': '2', 'interval': 'D'}))
+        # Auto-fill borrows from the user's watchlist. The starter list changed
+        # in 0.4.8.8 and no longer contains these fixture markets, so the test
+        # supplies its own list instead of depending on the shipped one.
+        (cfg / 'watchlist.json').write_text(json.dumps(
+            {'version': 1, 'markets': [{'symbol': s, 'name': s} for s in SYMS + ['SOL-USD', 'XRP-USD']]}))
     root = tk.Tk()
     root.geometry(f'{w}x{h}+0+0')
     root.update()

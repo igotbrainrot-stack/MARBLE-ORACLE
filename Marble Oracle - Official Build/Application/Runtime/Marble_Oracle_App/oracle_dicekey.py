@@ -143,7 +143,9 @@ class Dicekey:
         the phrase comes back unchanged with a note.  Raises ValueError for an unknown part or a phrase that is not one of ours."""
         parts = self.split(phrase)
         if parts is None or part not in PARTS:
-            raise ValueError("cannot re-roll %r of %r" % (part, phrase))
+            # The phrase itself is a secret: it must never reach an exception
+            # message, because unhandled errors are written to the error log.
+            raise ValueError("cannot re-roll %r: not a phrase made by this roller" % (part,))
         w1, w2, w3, digits, symbol = parts
         note = ""
         if part in ("w1", "w2"):
