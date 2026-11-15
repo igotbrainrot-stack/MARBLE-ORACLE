@@ -1,6 +1,6 @@
 {
  "release": "Marble Oracle 0.4.9.4",
- "generated_utc": "2026-11-15T20:23:13+00:00",
+ "generated_utc": "2026-11-15T20:35:33+00:00",
  "schema": "sha256-inventory-v2",
  "excluded_from_hashes": [
   "Application/Documentation/BUILD_MANIFEST.json",
@@ -8,7 +8,7 @@
  ],
  "optional_note": "Entries marked optional are in the portable ZIP but not in Git; verify_release.py checks them when present.",
  "inventory_file_count": 470,
- "inventory_total_bytes": 115464203,
+ "inventory_total_bytes": 115464583,
  "files": [
   {
    "path": "Application/.gitignore",
@@ -37,8 +37,8 @@
   },
   {
    "path": "Application/Documentation/HANDOVER.md",
-   "bytes": 7134,
-   "sha256": "985c914a3c45d4d6ba35f1783f3e5ac433b2438e66721230b2ebe5a1781b8299"
+   "bytes": 7152,
+   "sha256": "65c2a47772bb36768a353aaf1220fb82111efa7f43909babdc91e9630dec0cb8"
   },
   {
    "path": "Application/Documentation/History/ALL_SECTIONS_TEXTURE_UPDATE.md",
@@ -437,8 +437,8 @@
   },
   {
    "path": "Application/Documentation/TESTING_REPORT.md",
-   "bytes": 8463,
-   "sha256": "1c799266a7cc95b6d2fc0fc435043992884d48f78ec633b118f11e8d280e566f"
+   "bytes": 8524,
+   "sha256": "8a71b31db0e94d774db243e4a96fa393d9f1a18bb8a8dc7c8636bbaddbac050e"
   },
   {
    "path": "Application/Documentation/TROUBLESHOOTING.md",
@@ -2272,8 +2272,8 @@
   },
   {
    "path": "Application/Tests/test_rune_tall_fonts_0494.py",
-   "bytes": 3556,
-   "sha256": "0631058fd766dab9b7481ede473f5c72bfec7d6e83671f2afcf729c108b5f112"
+   "bytes": 3857,
+   "sha256": "aacc61cc54fd8eefd0ae6f95d16fbb29b5f9b952afaebc6e372283fddb719941"
   },
   {
    "path": "Application/Tests/test_source_ogg_texture.py",

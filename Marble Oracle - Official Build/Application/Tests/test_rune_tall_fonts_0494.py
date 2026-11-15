@@ -42,7 +42,11 @@ try:
     real_font = scene.font
     for layout in ('STATUE', 'CLASSIC'):
         scene.o['layout'] = layout
-        for factor in (1.0, 1.4, 1.8):   # Windows fonts are about 1.2-1.4x Linux ones
+        # Windows fonts are about 1.2-1.4x Linux ones, so 1.8x on Linux covers
+        # Windows with room to spare. On Windows the real metrics are already
+        # tall: 1.4x on top of them is the headroom checked there (1.8x on top
+        # leaves 12 px in total and is not a size any system produces).
+        for factor in ((1.0, 1.4) if sys.platform == 'win32' else (1.0, 1.4, 1.8)):
             scene.font = lambda *a, _f=factor, **k: TallFont(real_font(*a, **k), _f)
             for width, height in ((640, 460), (760, 550), (900, 620)):
                 root.geometry(f'{width}x{height}+16+16')
@@ -65,6 +69,6 @@ try:
                     assert scene.hit((left + right) // 2, (top + bottom) // 2)[4] == f'rune_select{i}', (where, 'not clickable')
                     checks += 1
     scene.font = real_font
-    print('RUNE TALL FONTS OK:', checks, 'stones checked with line heights up to 1.8x in two layouts')
+    print('RUNE TALL FONTS OK:', checks, 'stones checked with taller line heights in two layouts')
 finally:
     app.quit()

@@ -9,7 +9,7 @@ Run in a Linux container (Python 3.12, Tk under Xvfb at 1600x1000, FFmpeg 6.1), 
 | Regression scripts (`Tools/run_tests.py`) | **62 passed, 0 failed, 0 skipped** (the 60 from 0.4.9.3 plus two new) |
 | Lint (`ruff.toml`) on the changed files | pass |
 | New market-data sources against live providers | **not run**: the container cannot reach any provider |
-| Rune-stone fix on Windows | **not run**: simulated on Linux with line heights up to 1.8x; the Windows CI job has to confirm it |
+| Rune-stone fix on Windows | GitHub's Windows runner, commit `c29a79e`: `test_rune_click_and_art.py`, the script that failed in 0.4.9.3, **passed**. Not checked on a physical Windows 11 PC |
 | GitHub Actions for this branch | see the pull request; not part of this report |
 
 The rest of this file is the 0.4.9.3 report, unchanged.
