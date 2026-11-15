@@ -12,11 +12,11 @@ The development environment for this release had no Tk, so every graphical test 
 | **Windows** | GitHub's Windows Server runner, Python 3.12 from python.org with its native Tk, FFmpeg from Chocolatey, desktop set to 1920x1080 | Not Windows 11, not a physical PC |
 | **Linux, clock +60 days** | The AUGURSPEX tests with the system date moved forward | |
 
-## Results (code commit `2cd6c00`, workflow run 43706364577)
+## Results (code commit `e7e6de6`, workflow run 43709186385)
 
 | Check | Linux | Windows |
 |---|---|---|
-| Regression scripts (`Tools/run_tests.py`) | **59 passed, 0 failed, 0 skipped** | **58 passed, 1 failed, 0 skipped** |
+| Regression scripts (`Tools/run_tests.py`) | **60 passed, 0 failed, 0 skipped** | **59 passed, 1 failed, 0 skipped** |
 | AUGURSPEX scripts with the clock 60 days ahead | 30 passed, 0 failed | not run |
 | Byte-compile every source file | pass | not run |
 | Lint (`ruff.toml`) | pass | not run |
@@ -24,7 +24,7 @@ The development environment for this release had no Tk, so every graphical test 
 
 The one Windows failure: `test_rune_click_and_art.py` at a **640x460** window in the STATUE layout. On Windows the rune stones are given no height at that size. 640x460 is the smallest size the window allows, below the supported 900x580; the same test passes on Windows at 1216x848, 900x620 and 760x550, and on Linux at all four. Not fixed in this release; see `HANDOVER.md`.
 
-The 59 scripts are the 57 in `Application/Tests/` and `Runtime/Marble_Oracle_App/test_*.py` that existed in 0.4.9.2 (one removed, see the changelog) plus the new ones listed there. The embedded Oggcultist application's own `Oggcultist/tests/` folder is **not** run by the suite runner and was not run for this release; the suite's `test_ogg206_embedded.py` (which opens Oggcultist inside the suite) was, and passes on both systems.
+The 60 scripts are the 57 in `Application/Tests/` and `Runtime/Marble_Oracle_App/test_*.py` that existed in 0.4.9.2 (one removed, see the changelog) plus the new ones listed there. The embedded Oggcultist application's own `Oggcultist/tests/` folder is **not** run by the suite runner and was not run for this release; the suite's `test_ogg206_embedded.py` (which opens Oggcultist inside the suite) was, and passes on both systems.
 
 ## Defects the tests found during this work
 

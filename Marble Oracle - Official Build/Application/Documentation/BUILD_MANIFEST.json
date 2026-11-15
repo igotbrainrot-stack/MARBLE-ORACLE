@@ -3,7 +3,7 @@
   "version": "0.4.9.3",
   "title": "Refinement: honest market states, safer files, one design vocabulary",
   "release_date": "2026-11-15",
-  "generated_utc": "2026-11-15T11:05:16+00:00",
+  "generated_utc": "2026-11-15T11:39:08+00:00",
   "platform_targets": [
     "Windows 11",
     "Linux Mint"
@@ -23,11 +23,11 @@
     "PASSPHRASE",
     "TOUCH TYPE"
   ],
-  "file_count": 471,
-  "inventory_file_count": 469,
-  "python_source_count": 222,
-  "test_script_count": 98,
-  "total_bytes": 115576257,
+  "file_count": 472,
+  "inventory_file_count": 470,
+  "python_source_count": 223,
+  "test_script_count": 99,
+  "total_bytes": 115589988,
   "previous_release": {
     "version": "0.4.9.2",
     "zip": "Marble-Oracle-0.4.9.2-PDF-RESEARCH-STOCK-FEEDS-Windows-Linux.zip",
