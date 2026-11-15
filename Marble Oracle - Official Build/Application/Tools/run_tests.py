@@ -49,6 +49,18 @@ def discover(filters):
     return found
 
 
+# Runs a test script exactly as `python script.py` would, but shortly before the
+# time limit prints where every thread is, so a hang names its own line.
+HANG_REPORTER = (
+    "import faulthandler, os, runpy, sys\n"
+    "script = sys.argv[1]\n"
+    "faulthandler.dump_traceback_later(float(sys.argv[2]), exit=False)\n"
+    "sys.argv = [script]\n"
+    "sys.path[0] = os.path.dirname(script)\n"
+    "runpy.run_path(script, run_name='__main__')\n"
+)
+
+
 def run_one(path: Path, timeout: float, tail_lines: int = 12):
     state = Path(tempfile.mkdtemp(prefix='marble-oracle-test-'))
     env = dict(os.environ)
@@ -58,7 +70,7 @@ def run_one(path: Path, timeout: float, tail_lines: int = 12):
         'XDG_CONFIG_HOME': str(state / 'config'), 'XDG_CACHE_HOME': str(state / 'cache'),
         'XDG_STATE_HOME': str(state / 'xdg-state'), 'XDG_DATA_HOME': str(state / 'data'),
         'LOCALAPPDATA': str(state / 'localappdata'), 'APPDATA': str(state / 'appdata'),
-        'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONIOENCODING': 'utf-8',
+        'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONIOENCODING': 'utf-8', 'PYTHONUNBUFFERED': '1',
     })
     # Never let a developer's real API keys reach a test run.
     for name in list(env):
@@ -66,7 +78,8 @@ def run_one(path: Path, timeout: float, tail_lines: int = 12):
             del env[name]
     started = time.monotonic()
     try:
-        done = subprocess.run([sys.executable, str(path)], cwd=str(ROOT), env=env, timeout=timeout,
+        done = subprocess.run([sys.executable, '-c', HANG_REPORTER, str(path), str(max(5.0, timeout - 10))],
+                              cwd=str(ROOT), env=env, timeout=timeout,
                               stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors='replace')
         output, code = done.stdout, done.returncode
     except subprocess.TimeoutExpired as exc:

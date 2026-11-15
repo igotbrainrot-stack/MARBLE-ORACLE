@@ -37,7 +37,7 @@ APP_VERSION = "0.4.7"
 QUEUE_STATE = 'eidolith_queue.json'
 STALL_NOTICE_SECONDS = 30
 # Below this much free height the QUEUE page puts the job list and the log side by side.
-QUEUE_STACK_MIN_HEIGHT = 400
+QUEUE_STACK_MIN_HEIGHT = 440
 
 NAV_ITEMS = ("PLAYER", "CONVERT", "QUEUE", "ABOUT")
 
@@ -539,17 +539,20 @@ class EidolithPanel(tk.Frame):
         self.queue_list.bind('<<ListboxSelect>>', lambda e: self._update_progress_panel())
         self.queue_list.bind('<Delete>', lambda e: self.remove_selected_jobs())
         self.queue_list.bind('<BackSpace>', lambda e: self.remove_selected_jobs())
+        # Job actions stay with the job list; log actions sit with the log.
         flow(logtools, [self._button(logtools, 'REMOVE SELECTED', self.remove_selected_jobs),
-                        self._button(logtools, 'OPEN LOG', self.open_job_log),
-                        self._button(logtools, 'COPY DIAGNOSTICS', self.copy_diagnostics),
-                        self._button(logtools, 'LOG FOLDER', self.open_log_folder),
                         self._button(logtools, 'RETRY SELECTED', self.retry_selected)])
 
         outer2, logbox = self._section_frame(lower, 'CONVERSION LOG',
                                              'Recent events. Full FFmpeg output is kept in one log file per job.')
+        log_actions = ogl_frame(logbox, bg=C['raised'])
+        log_actions.pack(side='bottom', fill='x', padx=12, pady=(0, 10))
+        flow(log_actions, [self._button(log_actions, 'OPEN LOG', self.open_job_log),
+                           self._button(log_actions, 'LOG FOLDER', self.open_log_folder),
+                           self._button(log_actions, 'COPY DIAGNOSTICS', self.copy_diagnostics)])
         self.log_text = self._text(logbox, height=3)
         self.log_text.configure(width=18)          # asks for little; the grid gives it its share
-        self.log_text.pack(fill='both', expand=True, padx=12, pady=12)
+        self.log_text.pack(fill='both', expand=True, padx=12, pady=(12, 6))
 
         outer.pack_forget()
         outer2.pack_forget()
