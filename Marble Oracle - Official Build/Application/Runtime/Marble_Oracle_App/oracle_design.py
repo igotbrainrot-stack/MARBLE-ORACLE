@@ -86,3 +86,22 @@ class WrapSettler:
         self.settled = frozenset()
         self.applied = (self.applied + [width])[-self.HISTORY:]
         return width
+
+
+def hover_tint(colour, amount=0.10):
+    """`colour` ('#RRGGBB') moved `amount` of the way towards the suite's bright text colour.
+
+    The one rule for "the pointer is over this control", so a hovered button
+    looks the same in every workspace whatever its resting colour. Anything
+    that is not a six-digit hex colour is returned unchanged.
+    """
+    text = str(colour)
+    if len(text) != 7 or not text.startswith('#'):
+        return colour
+    try:
+        base = [int(text[i:i + 2], 16) for i in (1, 3, 5)]
+    except ValueError:
+        return colour
+    target = [int(COLOR['text_bright'][i:i + 2], 16) for i in (1, 3, 5)]
+    mixed = [round(b + (t - b) * amount) for b, t in zip(base, target)]
+    return '#%02X%02X%02X' % tuple(mixed)

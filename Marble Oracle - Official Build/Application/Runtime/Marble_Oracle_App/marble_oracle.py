@@ -2903,6 +2903,8 @@ class WindowApp:
         self.root = root = tk.Tk()
         root.title(suite_title())
         apply_window_icon(root)
+        from oracle_widgets import install_interaction_defaults
+        install_interaction_defaults(root)     # one hover / focus / disabled look for every workspace
         self.fps = max(5, min(60, int(opts.get("fps", 30))))
         sw, sh = root.winfo_screenwidth(), root.winfo_screenheight()
         if opts.get("bezel", True):

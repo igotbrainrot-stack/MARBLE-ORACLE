@@ -183,11 +183,11 @@ class EidolithPanel(tk.Frame):
     def _build_rail(self):
         top = ogl_frame(self.rail, bg=C['sidebar'])
         top.pack(fill='x', padx=16, pady=(10, 6))
-        self._label(top, f'{APP_NAME} {APP_VERSION}', 18, 'text_bright', bold=True).pack(anchor='w')
+        # The wordmark is the title; the name is not repeated in text above it.
         logo = tk.Canvas(top, width=208, height=54, bg=C['sidebar'], highlightthickness=0, bd=0)
-        logo.pack(anchor='w', pady=(6, 2))
+        logo.pack(anchor='w', pady=(2, 2))
         self._draw_logo(logo)
-        self._label(top, 'VIDEO · ARCHIVE', 10, 'text_3').pack(anchor='w', pady=(4, 2))
+        self._label(top, f'VIDEO · ARCHIVE · {APP_VERSION}', 10, 'text_3').pack(anchor='w', pady=(4, 2))
 
         group = ogl_frame(self.rail, bg=C['sidebar'])
         group.pack(fill='x', padx=12, pady=(10, 0))

@@ -30,6 +30,7 @@ from Augurspex.augurspex.providers import (MarketRouter, shared_market_router,
     local_stock_path, read_local_stock_csv, LOCAL_IMPORT_LIMIT)
 from marble_uberata import FAMILY
 from oracle_design import HOME_LABEL, MARKET_COLORS, MARKET_LABELS, flow_layout
+from oracle_widgets import tooltip
 # Re-exported on purpose: tests and oracle_augurspex_insights import these names from this module.
 from oracle_augurspex_logic import (  # noqa: F401
     CARD_CHROME_H, CARD_CHROME_W, CARD_GAP, CHART_PAD_B, CHART_PAD_L, CHART_PAD_R, CHART_PAD_T,
@@ -437,6 +438,17 @@ class AugurspexPanel(tk.Frame):
                          highlightthickness=1,highlightbackground=self.p['border'],
                          font=(FAMILY,11,'bold'),padx=9,pady=6)
 
+    def _watch_tip(self,event):
+        """The full symbol and name of the watchlist row under the pointer, if it was shortened."""
+        try:
+            row=self.watch.nearest(event.y)
+            box=self.watch.bbox(row)
+        except tk.TclError:
+            return ''
+        if not box or not (box[1]<=event.y<=box[1]+box[3]) or not 0<=row<len(self._watch_full):
+            return ''
+        return self._watch_full[row]
+
     def _entry(self,parent,variable):
         return tk.Entry(parent,textvariable=variable,relief='flat',bd=0,
                         bg=self.p['inset'],fg=self.p['ink'],insertbackground=self.p['accent'],
@@ -459,6 +471,11 @@ class AugurspexPanel(tk.Frame):
         width=max(20,int(width)-2*int(label.cget('padx') or 0)-2)
         fitted=fit_text_pixels(text,FontMeasure(self,label.cget('font')),width)
         if label.cget('text')!=fitted:label.configure(text=fitted)
+        # The full wording is one hover away whenever it had to be shortened.
+        label._full_text=text if fitted!=text else ''
+        if not getattr(label,'_has_tip',False):
+            label._has_tip=True
+            tooltip(label,lambda _e,l=label:getattr(l,'_full_text',''))
 
     def _build_ui(self):
         # Native layout matches the palette and proportions of EIDOLITH/Oggcultist.
@@ -508,6 +525,8 @@ class AugurspexPanel(tk.Frame):
                               selectforeground=self.p['accent'],relief='flat',bd=0,
                               highlightthickness=1,highlightbackground=self.p['border'],
                               activestyle='none',font=(FAMILY,13,'bold'))
+        self._watch_full=[]
+        tooltip(self.watch,self._watch_tip)        # a shortened row shows its whole name on hover
         sb=tk.Scrollbar(lst,orient='vertical',command=self.watch.yview)
         self.watch.configure(yscrollcommand=sb.set)
         self.watch.pack(side='left',fill='both',expand=True);sb.pack(side='right',fill='y')
@@ -985,6 +1004,7 @@ class AugurspexPanel(tk.Frame):
                    (filt not in ('crypto','stocks','fx') or market_category(row['symbol'])==filt) and
                    (not term or term in (row['symbol']+' '+row['name']).lower())]
         self.watch.delete(0,'end')
+        self._watch_full=[]
         self._watch_font=FontMeasure(self,(FAMILY,13,'bold')) if not hasattr(self,'_watch_font') else self._watch_font
         for i,item in enumerate(self.rows):
             tag='★ ' if item['symbol'] in fav else '  '
@@ -992,8 +1012,9 @@ class AugurspexPanel(tk.Frame):
             display=tag+({'fx':'FX  ', 'crypto':'₿  ', 'stocks':'STK '}[kind])+item['symbol']
             if item['name'] and item['name']!=item['symbol']:
                 display+='  '+item['name']
-            display=fit_text_pixels(display,self._watch_font,max(120,self.watch.winfo_width()-16))
-            self.watch.insert('end',display)
+            fitted=fit_text_pixels(display,self._watch_font,max(120,self.watch.winfo_width()-16))
+            self._watch_full.append(display if fitted!=display else '')
+            self.watch.insert('end',fitted)
             category_colour=MARKET_COLORS[kind]
             try:self.watch.itemconfig(i,foreground=category_colour)
             except tk.TclError:pass
