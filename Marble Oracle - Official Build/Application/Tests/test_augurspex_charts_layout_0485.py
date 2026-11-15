@@ -171,7 +171,14 @@ def plan_tests():
     check('plan: nine charts keep a legible minimum and scroll', nine['scroll']
           and nine['card_h'] >= tab_module.MIN_CARD_H and nine['card_w'] >= tab_module.MIN_CARD_W, nine)
     small = plan(1, 560, 300)
-    check('plan: one chart in a small view does not scroll needlessly', not small['scroll'], small)
+    # 0.4.8.6 changed this on purpose: in a view shorter than one minimum
+    # card, a single chart keeps a taller scrollable plot instead of being
+    # squeezed below the size of a four-chart card.
+    check('plan: one chart in a small view keeps a legible, scrollable plot (0.4.8.6)',
+          small['cols'] == 1 and small['scroll'] and small['card_h'] >= tab_module.MIN_CARD_H + 48
+          and small['card_w'] <= 560, small)
+    roomy = plan(1, 560, 400)
+    check('plan: one chart that fits does not scroll', not roomy['scroll'] and roomy['card_h'] <= 400, roomy)
     check('plan: zero charts is safe', plan(0, 500, 300)['rows'] == 0)
 
 
@@ -199,6 +206,11 @@ def gui_tests():
                 root, tab, p = open_panel(home, TestRouter(ok), size)
                 ready = pump_until(root, lambda: all(p._market_verified(x) for x in ok), 30)
                 check(f'fixture data loaded for slots {[i + 1 for i in ok_slots]} at {size}', ready)
+                # Since 0.4.8.8 the panel opens showing every market. Auto-fill
+                # belongs to the sourced-only view, so switch to it explicitly.
+                check(f'{size}: panel opens in the all-markets view (0.4.8.8 default)', not p.sourced_only)
+                if not p.sourced_only:
+                    p._toggle_sourced()
                 pump(root, .4)
                 label = (f'data in slots {[i + 1 for i in ok_slots]}' + (f' + {", ".join(extra)}' if extra else '')
                          + f' at {size[0]}x{size[1]}')
@@ -237,7 +249,8 @@ def gui_tests():
                           and f'{n} REQUESTED' in badge.cget('text') and f'{n} SHOWN' in badge.cget('text')
                           and (not autos_n or f'{autos_n} AUTO-FILLED' in badge.cget('text')),
                           badge.cget('text') if badge is not None else 'no badge')
-                    for name in ('BACK TO HOME', 'SOURCE DETAILS', 'REFRESH'):
+                    # The button was renamed from BACK TO HOME to HOME in 0.4.8.9.
+                    for name in ('HOME', 'SOURCE DETAILS', 'REFRESH'):
                         button = next((w for w in iter_widgets(p) if isinstance(w, tk.Button)
                                        and w.cget('text') == name), None)
                         check(f'{label} CHARTS={n}: {name} visible inside the window',

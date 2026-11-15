@@ -8,6 +8,7 @@ import sys
 import tempfile
 import time
 import tkinter as tk
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 APP=Path(__file__).resolve().parents[1]/'Runtime'/'Marble_Oracle_App'
 sys.path.insert(0,str(APP))
@@ -20,10 +21,14 @@ class TestRouter:
     def fetch(self,symbol,period='D'):
         self.calls.append((symbol,period))
         if symbol in self.fail:raise ValueError('PROVIDER TIMEOUT OR QUOTA')
+        # Dates are relative to the day the test runs: fixed calendar dates
+        # turn "recent" fixtures stale and made this test fail from 15 Nov 2026.
+        today=datetime.now(timezone.utc).date()
+        day=lambda back:(today-timedelta(days=back)).isoformat()
         return {'source':'TEST FIXTURE, NOT LIVE','currency':'USD',
-                'latest_observation':'2026-11-12',
-                'candles':[{'time':'2026-11-10','open':100,'high':104,'low':99,'close':102},
-                           {'time':'2026-11-11','open':102,'high':105,'low':100,'close':103}]}
+                'latest_observation':day(1),
+                'candles':[{'time':day(2),'open':100,'high':104,'low':99,'close':102},
+                           {'time':day(1),'open':102,'high':105,'low':100,'close':103}]}
 
 def pump(root, predicate, limit=5):
     until=time.monotonic()+limit

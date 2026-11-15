@@ -30,20 +30,16 @@ from Augurspex.augurspex.core import (
 from Augurspex.augurspex.providers import (MarketRouter, shared_market_router,
     local_stock_path, read_local_stock_csv, LOCAL_IMPORT_LIMIT)
 from marble_uberata import FAMILY
+# Re-exported on purpose: tests and oracle_augurspex_insights import these names from this module.
+from oracle_augurspex_logic import (  # noqa: F401
+    CARD_CHROME_H, CARD_CHROME_W, CARD_GAP, CHART_PAD_B, CHART_PAD_L, CHART_PAD_R, CHART_PAD_T,
+    MIN_CARD_H, MIN_CARD_W, SHORT_STATUS, _blend, _darken, _plotted_candles, _rgb,
+    chart_date_ticks, chart_display_bars, chart_geometry, chart_grid_plan, csv_safe, fit_date_ticks,
+    fit_text_pixels, format_price, format_quote, history_health, observed_at, plot_points,
+    provider_diagnostics, status_for_error,
+)
 
 DEFAULT_FILE = Path(__file__).resolve().parent / 'Augurspex' / 'augurspex' / 'default_watchlist.json'
-
-
-def _rgb(value):
-    value=str(value).strip().lstrip('#')
-    try:
-        return tuple(int(value[i:i+2],16) for i in (0,2,4))
-    except (TypeError,ValueError):
-        return (29,23,20)
-
-
-def _darken(value, amount):
-    return '#%02x%02x%02x' % tuple(round(v*(1-amount)) for v in _rgb(value))
 
 
 def _parent_bg(widget, fallback):
@@ -86,247 +82,6 @@ class FontMeasure:
 
     def measure(self, text):
         return int(self._tk.call('font', 'measure', self._spec, str(text)))
-
-
-def fit_text_pixels(text, font, max_width):
-    """Fit a single line in measured pixels; preserve recognisable ticker prefixes.
-
-    Tk label and list rows never truncate blindly by character count, since
-    Uberata Clear has variable-width glyphs and can change with font scaling.
-    """
-    text=str(text or '')
-    if max_width<=0:return ''
-    if font.measure(text)<=max_width:return text
-    ellipsis='…'
-    if font.measure(ellipsis)>max_width:return ''
-    low,high=0,len(text)
-    while low<high:
-        mid=(low+high+1)//2
-        if font.measure(text[:mid]+ellipsis)<=max_width:low=mid
-        else:high=mid-1
-    return text[:low].rstrip()+ellipsis
-
-
-def chart_geometry(n):
-    """Stable grid dimensions, suited to the narrow CRT viewport."""
-    return {1:(1,1),2:(1,2),4:(2,2),6:(2,3),9:(3,3)}[n]
-
-
-# Chart grid geometry (0.4.8.5). One chart fills the chart area; more charts
-# share it; vertical scrolling is used only when the legible minimum card size
-# cannot fit. Kept free of Tk so it can be tested directly.
-CARD_GAP = 12
-MIN_CARD_W, MIN_CARD_H = 420, 320
-CARD_CHROME_W, CARD_CHROME_H = 100, 160   # header, info strip and axes inside a card
-
-
-def chart_grid_plan(count, view_w, view_h):
-    """Columns, rows and card size for `count` charts in a view_w x view_h area."""
-    count = max(0, int(count))
-    view_w, view_h = max(1, int(view_w)), max(1, int(view_h))
-    if count == 0:
-        return dict(cols=0, rows=0, card_w=0, card_h=0, scroll=False, total_h=view_h)
-    best = None
-    for cols in range(1, min(3, count) + 1):
-        rows = -(-count // cols)
-        card_w = view_w // cols - CARD_GAP
-        if cols > 1 and card_w < MIN_CARD_W:
-            continue
-        fit_h = view_h // rows - CARD_GAP
-        scroll = fit_h < MIN_CARD_H
-        card_h = max(MIN_CARD_H, fit_h)
-        # When an embedded CRT has less vertical room than one minimum-height
-        # card, give the single-chart view a *larger* scrollable canvas rather
-        # than making it imperceptibly smaller than a four-chart card.
-        if count == 1 and scroll:
-            card_h = max(card_h, MIN_CARD_H + 48)
-        # Charts are time series: score the drawable plot, valuing width up to
-        # about twice the height, so 2 charts sit side by side when roomy.
-        score = min(card_w - CARD_CHROME_W, 2.2 * (card_h - CARD_CHROME_H))
-        # Prefer no scrolling; then the larger plot (or, when scrolling, fewer
-        # rows); then an even grid (4 -> 2x2, not 3+1); then fewer columns.
-        key = (0 if scroll else 1, -rows if scroll else score, count % cols == 0, -cols)
-        if best is None or key > best[0]:
-            best = (key, dict(cols=cols, rows=rows, card_w=max(1, card_w), card_h=card_h, scroll=scroll,
-                              total_h=max(view_h, rows * (card_h + CARD_GAP))))
-    return best[1]
-
-
-SHORT_STATUS = {'DATA SOURCE LIMITED': 'LIMITED', 'NETWORK ISSUE': 'NETWORK',
-                'LISTING NOT SUPPORTED': 'UNSUPPORTED', 'NO HISTORY FROM PROVIDER': 'NO HISTORY',
-                'MARKET DATA UNAVAILABLE': 'UNAVAILABLE', 'DATA SOURCE SETUP NEEDED': 'NEEDS SETUP',
-                'NETWORK DISABLED': 'OFFLINE', 'AWAITING DATA': 'WAITING'}
-
-
-# Reserve a real date axis along the bottom and price tick labels on the
-# right. The same geometry is used by the candles/lines, ticks and grid.
-CHART_PAD_L, CHART_PAD_T, CHART_PAD_R, CHART_PAD_B = 13, 16, 74, 51
-
-
-def _plotted_candles(candles, limit=120):
-    """Validate actual provider OHLC without changing values or timestamps.
-
-    Render callers may limit their window; CSV export and freshness checks
-    must examine the *complete* received history, not just its last 120 rows.
-    """
-    valid=[]
-    series=candles if limit is None else candles[-limit:]
-    for row in series:
-        if not isinstance(row, dict):continue
-        try:
-            o,h,l,cl=(float(row[x]) for x in ('open','high','low','close'))
-            if not all(math.isfinite(x) and x >= 0 for x in (o,h,l,cl)):continue
-            if h < max(o,cl) or l > min(o,cl):continue
-        except (KeyError,TypeError,ValueError):continue
-        valid.append(row)
-    return valid
-
-
-def plot_points(candles, width, height, style='1'):
-    """Scale real provider values into the chart viewport, retaining API shape."""
-    bars=_plotted_candles(candles, limit=None)
-    if not bars:return [], None
-    lo=min(float(v['low']) for v in bars)
-    hi=max(float(v['high']) for v in bars)
-    if hi==lo:
-        hi+=max(hi*.01,.01)
-        lo=max(0,lo-max(lo*.01,.01))
-    w=max(1,width-CHART_PAD_L-CHART_PAD_R)
-    h=max(1,height-CHART_PAD_T-CHART_PAD_B)
-    points=[]
-    for i,row in enumerate(bars):
-        x=CHART_PAD_L+(i+.5)*w/len(bars)
-        def yy(v):return CHART_PAD_T+(hi-float(v))*h/(hi-lo)
-        points.append((x,yy(row['open']),yy(row['high']),yy(row['low']),yy(row['close'])))
-    return points,(lo,hi)
-
-
-def chart_date_ticks(candles, width, max_ticks=5):
-    """Choose spaced, truthful date labels from provider timestamp strings.
-
-    Narrow multi-chart panels show fewer dates; ranges crossing years include
-    the year. No clock-derived or synthesized dates are displayed.
-    """
-    bars=_plotted_candles(candles, limit=None)
-    if not bars:return []
-    dated=[]
-    for i,row in enumerate(bars):
-        raw=str(row.get('time') or '').strip()
-        try:moment=datetime.fromisoformat(raw.replace('Z','+00:00'))
-        except (ValueError,OverflowError):continue
-        dated.append((i,moment))
-    if not dated:return []
-    span=(dated[-1][1]-dated[0][1]).total_seconds()/86400
-    if span<1:
-        fmt='%d %b %H:%M'
-    elif span<75:
-        fmt='%d %b'
-    elif span<900:
-        fmt="%b '%y"
-    else:
-        fmt='%Y'
-    # Do not crowd the labels on 2x3 or 3x3 cards.
-    count=min(max_ticks,len(dated),max(2,int(max(0,width-CHART_PAD_R)/82)))
-    picks=sorted(set(round(k*(len(dated)-1)/(count-1)) for k in range(count))) if count>1 else [0]
-    w=max(1,width-CHART_PAD_L-CHART_PAD_R)
-    ticks=[]
-    for j in picks:
-        i,moment=dated[j]
-        x=CHART_PAD_L+(i+.5)*w/len(bars)
-        label=moment.strftime(fmt).upper()
-        if ticks and ticks[-1][1]==label:continue
-        ticks.append((x,label))
-    return ticks
-
-
-def chart_display_bars(candles, width, style='1', view_bars='MAX'):
-    """Show recent *real* OHLC bars at a readable density on small cards.
-
-    Candle mode limits the visible window rather than synthesising or averaging
-    quotes. The date axis and prices use precisely the same visible records.
-    Line mode retains the full available history.
-    """
-    bars=_plotted_candles(candles, limit=None)
-    # A BARS view is an observation-count window, not a claim about calendar
-    # duration or the provider having supplied additional history.
-    if str(view_bars) in ('30','90'):
-        bars=bars[-int(view_bars):]
-    if style != '1' or any(bar.get('close_only') for bar in bars):
-        return bars
-    plot_width=max(1,width-CHART_PAD_L-CHART_PAD_R)
-    max_bars=max(8,int(plot_width//6.0))
-    return bars[-max_bars:]
-
-
-def _blend(colour, other, fraction):
-    a=_rgb(colour);b=_rgb(other)
-    return '#%02x%02x%02x' % tuple(round(a[i]*(1-fraction)+b[i]*fraction) for i in range(3))
-
-
-def observed_at(data):
-    """Best truthful observation timestamp; never use receipt time as a price date.
-
-    The newest parseable candle timestamp takes precedence over inconsistent
-    provider metadata. Fixtures with synthetic candle IDs may supply a valid
-    latest_observation instead. Unknown timestamps do not imply fresh data.
-    """
-    if not isinstance(data, dict):return None
-    samples=[]
-    for item in _plotted_candles(data.get('candles') or [], limit=None):
-        if item.get('time') is not None:
-            samples.append(str(item['time']))
-    values=[]
-    for raw in samples[-320:]:
-        try:
-            dt=datetime.fromisoformat(raw.replace('Z','+00:00'))
-            if dt.tzinfo is None:dt=dt.replace(tzinfo=timezone.utc)
-            if dt.year>=1990:values.append(dt.astimezone(timezone.utc))
-        except (ValueError,TypeError,OverflowError):pass
-    if values:return max(values)
-    try:
-        dt=datetime.fromisoformat(str(data.get('latest_observation','')).replace('Z','+00:00'))
-        if dt.tzinfo is None:dt=dt.replace(tzinfo=timezone.utc)
-        return dt.astimezone(timezone.utc)
-    except (ValueError,TypeError,OverflowError):return None
-
-
-def csv_safe(value):
-    """Stop formula injection if exported provider strings open in a spreadsheet."""
-    if isinstance(value,str) and (value.startswith(('\t','\r','\n','\ufeff')) or value.lstrip().startswith(('=','+','-','@','＝','＋','－','＠'))):
-        return "'"+value
-    return value
-
-
-def history_health(data, symbol, period='D', now=None):
-    """Separate historical existence from freshness and source availability.
-
-    Trading holidays/weekends are tolerated without claiming live coverage.
-    Weekly/monthly series need wider thresholds. A future observation is
-    suspicious, not a reason to call data current.
-    """
-    exists=bool(isinstance(data,dict) and _plotted_candles(data.get('candles') or []))
-    date=observed_at(data) if exists else None
-    if not exists:return 'missing', None
-    if date is None:return 'undated', None
-    now=now or datetime.now(timezone.utc)
-    if now.tzinfo is None:now=now.replace(tzinfo=timezone.utc)
-    days=(now.astimezone(timezone.utc)-date).total_seconds()/86400
-    if days < -1:return 'future',date
-    period=str(period).upper()
-    if period=='M':allowed=48
-    elif period=='W':allowed=17
-    elif period=='D':allowed=3 if symbol.endswith('-USD') else 8
-    else:allowed=3 if symbol.endswith('-USD') else 8
-    return ('recent' if days<=allowed else 'stale'),date
-
-
-def format_price(value):
-    """Right-axis price labels preserve useful decimals for low-price assets."""
-    v=float(value)
-    if abs(v)>=1000:return f'{v:,.0f}'
-    if abs(v)>=10:return f'{v:,.2f}'
-    if abs(v)>=1:return f'{v:,.3f}'
-    return f'{v:,.4f}'
 
 
 class PriceChart(tk.Frame):
@@ -452,26 +207,7 @@ class PriceChart(tk.Frame):
             self._fit_card_labels()
 
     def _message_for_error(self, error):
-        text=str(error or '').lower()
-        if not text:return 'AWAITING DATA'
-        if 'network disabled' in text:return 'NETWORK DISABLED'
-        if 'no eligible provider' in text:return 'DATA SOURCE SETUP NEEDED'
-        # Composite errors include every attempted public source. A 429 or
-        # network failure from the last source is more informative than an
-        # earlier Stooq N/D and should not be hidden under NO HISTORY.
-        if ('http 429' in text or 'http 403' in text or 'cooling down' in text
-                or 'quota' in text or 'html challenge' in text or 'rate or plan limit' in text):
-            return 'STOCK FEED LIMITED' if market_category(getattr(self,'symbol',''))=='stocks' else 'DATA SOURCE LIMITED'
-        if ('network problem' in text or 'name resolution' in text
-                or 'timeout' in text or 'temporary failure' in text):
-            return 'NETWORK ISSUE'
-        if ('mapping unavailable' in text or 'supports this market' in text
-                or 'requires a 6-digit korean listing' in text):
-            return 'LISTING NOT SUPPORTED'
-        if ('no usable candles' in text or 'no ohlc' in text or 'no csv' in text
-                or 'returned no history' in text or 'returned no candles' in text):
-            return 'NO HISTORY FROM PROVIDER'
-        return 'MARKET DATA UNAVAILABLE'
+        return status_for_error(error, getattr(self,'symbol',''))
 
     def _draw_texture(self, width, height):
         """Tile the original bundled Oggcultist grain behind charts, not labels."""
@@ -491,29 +227,7 @@ class PriceChart(tk.Frame):
     @staticmethod
     def _provider_diagnostics(error):
         """Short visible status for each attempted market source."""
-        if not error:return ''
-        pieces=[]
-        for raw in str(error).split(' | '):
-            prefix,sep,rest=raw.partition(':')
-            if not sep:continue
-            name=prefix.strip().upper()
-            if name not in ('YAHOO','NASDAQ','STOOQ','NAVER','ALPHA','TWELVE','COINBASE','KRAKEN',
-                            'MASSIVE','JQUANTS','KRX','FRED','COINGECKO','COINPAPRIKA','FRANKFURTER-HISTORY'):
-                continue
-            low=rest.lower()
-            if any(tag in low for tag in ('http 429','http 403','quota','cooling down','plan limit')):
-                status='LIMITED'
-            elif 'network problem' in low or 'timeout' in low or 'name resolution' in low:
-                status='NETWORK'
-            elif ('mapping unavailable' in low or 'unsupported' in low
-                  or 'subscription' in low or 'entitlement' in low):
-                status='UNSUPPORTED/PLAN'
-            elif 'no history' in low or 'no csv' in low or 'no usable candles' in low or 'no candles' in low:
-                status='NO HISTORY'
-            else:
-                status='ERROR'
-            pieces.append(name+' '+status)
-        return ' · '.join(pieces[:5])
+        return provider_diagnostics(error)
 
     def display(self,symbol,name,data,error,loading,style,selected,auto_note='',period='D',view_bars='MAX'):
         self.symbol=symbol;self.name=name;self.result=data;self.error=error;self.auto_note=auto_note
@@ -540,7 +254,7 @@ class PriceChart(tk.Frame):
             last=float(window[-1]['close']) if window else float(candles[-1]['close'])
             first=float(window[0]['close']) if window else last
             change=((last/first)-1)*100 if first else 0
-            self.price.configure(text=f'{last:,.4f}' if last<1 else f'{last:,.2f}',
+            self.price.configure(text=format_quote(last),
                                  fg=self.p['green'] if change>=0 else self.p['red'])
             src=data.get('source','');cur=data.get('currency','');obs=data.get('latest_observation','')[:10]
             health,last_at=history_health(data,symbol,period)
@@ -599,10 +313,16 @@ class PriceChart(tk.Frame):
                            outline=grid_major,width=1.2,tags=('plot-frame',))
         tick_count=5 if height>=250 else 4 if height>=180 else 3
         axis_size=11 if width>=370 else 9
+        price_labels=[format_price(mx-(mx-mn)*k/(tick_count-1)) for k in range(tick_count)]
+        # Six-figure and sub-cent prices are wider than the reserved band at
+        # the normal size: step the axis font down instead of clipping them.
+        price_size=axis_size
+        for price_size in dict.fromkeys((axis_size,9,8,7)):
+            fitter=FontMeasure(c,(FAMILY,price_size,'bold'))
+            if max(fitter.measure(text) for text in price_labels)<=CHART_PAD_R-12:break
         for k in range(tick_count):
             f=k/(tick_count-1)
             yy=CHART_PAD_T+(plot_bottom-CHART_PAD_T)*f
-            price=mx-(mx-mn)*f
             c.create_line(CHART_PAD_L,yy,plot_right,yy,
                           fill=grid_major if k in (0,tick_count-1) else grid_minor,
                           dash=() if k in (0,tick_count-1) else (3,4),
@@ -610,18 +330,20 @@ class PriceChart(tk.Frame):
                           tags=('chart-grid','horizontal-grid'))
             c.create_line(plot_right,yy,plot_right+5,yy,
                           fill=grid_major,width=1.3)
-            c.create_text(plot_right+8,yy,text=format_price(price),
-                          fill=self.p['ink'],font=(FAMILY,axis_size,'bold'),anchor='w')
-        dates=chart_date_ticks(visible,width)
-        for j,(x,label) in enumerate(dates):
-            if j not in (0,len(dates)-1):
+            c.create_text(plot_right+8,yy,text=price_labels[k],
+                          fill=self.p['ink'],font=(FAMILY,price_size,'bold'),anchor='w',
+                          tags=('axis-label','price-label'))
+        date_font=FontMeasure(c,(FAMILY,axis_size,'bold'))
+        dates=fit_date_ticks(chart_date_ticks(visible,width),date_font.measure)
+        for x,label,anchor in dates:
+            if anchor=='n':
                 c.create_line(x,CHART_PAD_T,x,plot_bottom,
                               fill=grid_minor,dash=(3,5),width=1.1,
                               tags=('chart-grid','vertical-grid'))
             c.create_line(x,plot_bottom,x,plot_bottom+5,fill=grid_major,width=1.3)
-            anchor=('nw' if j==0 else 'ne' if j==len(dates)-1 else 'n')
             c.create_text(x,plot_bottom+8,text=label,anchor=anchor,
-                          fill=self.p['ink'],font=(FAMILY,axis_size,'bold'))
+                          fill=self.p['ink'],font=(FAMILY,axis_size,'bold'),
+                          tags=('axis-label','date-label'))
         if render_as_candles:
             step=max(1.0,(plot_right-CHART_PAD_L)/len(points))
             body=max(3.8,min(11.5,step*.72))
@@ -1038,7 +760,7 @@ class AugurspexPanel(tk.Frame):
         if health in ('undated','future'):return 'UNVERIFIED DATE'
         if health=='recent':return 'WITH DATA'
         if key in self._errors:
-            text=PriceChart._message_for_error(None,self._errors[key])
+            text=status_for_error(self._errors[key],symbol)
             return SHORT_STATUS.get(text,text)
         if self.offline:return 'OFFLINE'
         return 'QUEUED'
@@ -1659,7 +1381,7 @@ class AugurspexPanel(tk.Frame):
         # optional documented provider when a user configured credentials.
         try:
             routes=self.router._routes(symbol,'auto',period)
-        except (AttributeError,ValueError) as exc:
+        except (AttributeError,ValueError):
             routes=[]
         if routes:details.append('Provider order: '+', '.join(routes))
         if hasattr(self.router,'provider_plan'):
@@ -1703,6 +1425,7 @@ class AugurspexPanel(tk.Frame):
             return '\n'.join(details)
         failed=self._errors.get(key)
         if failed:
+            details.append('Status: '+status_for_error(failed,symbol))
             details.append('Source attempts:')
             details.extend('  '+s[:170] for s in str(failed).split(' | ')[:8])
             when=self._failed_at.get(key)
