@@ -4,13 +4,13 @@ AUGURSPEX draws **history that a named source returned**. It is not a live quote
 
 ## What you get without any key
 
-Checked live on 15 November 2026 (`PROVIDER_PROBE.md`): all 23 starter markets returned validated daily history.
+Checked live on 15 November 2026 (`PROVIDER_PROBE.md`): all 23 starter markets returned validated daily history. That check predates the sources added in 0.4.9.4 (Bitstamp, Bitfinex, the second Coinbase host, the Binance mirror, Tiingo, EODHD, data.go.kr and Stooq with a key). Those are tested against recorded reply shapes only and have **not** been checked live; run `Tools/probe_providers.py` from your own connection to see what they answer.
 
 | Markets | Sources tried, in order | What the data is |
 |---|---|---|
-| Crypto (BTC, ETH, SOL, XRP, DOGE; BNB from the aggregators only) | Coinbase, Kraken, Gemini, then CoinGecko and CoinPaprika | Exchange candles for one venue, or a cross-exchange aggregate (close only). Labelled as such. |
+| Crypto (BTC, ETH, SOL, XRP, DOGE, BNB) | Coinbase, Kraken, Bitstamp, Gemini, Bitfinex, Coinbase's second host, then CoinGecko and CoinPaprika, and last the Binance market-data mirror | Exchange candles in US dollars for one venue, or a cross-exchange aggregate (close only). Labelled as such. Binance prices are in **USDT** (Tether, a dollar-pegged token), not dollars: it is used only when no dollar source answered, and the chart then says `Binance BTC/USDT` and `USDT`. BNB has no dollar exchange candles here, so its candles and intraday come from Binance in USDT. |
 | Currency pairs | Frankfurter, European Central Bank, Bank of Canada | Daily **reference rates**, one value a day. Not tradable quotes, no intraday. |
-| US stocks and ETFs | Strasmore public SQL demo, then Stooq | End-of-day bars, about one year, daily/weekly/monthly only. The demo may throttle or change its terms; Stooq often blocks automated requests. |
+| US stocks and ETFs | Strasmore public SQL demo, then Stooq | End-of-day bars, about one year, daily/weekly/monthly only. The demo may throttle or change its terms. Since about March 2026 Stooq answers requests without a key with a "get your key" page; the chart reports that as a key being needed, and the key is free (below). |
 
 Australian, Japanese and Korean listings and the US indices have **no** no-key route. They show DATA SOURCE SETUP NEEDED until you add a key (below) or import a CSV.
 
@@ -50,7 +50,11 @@ Set these in the operating system's environment before starting, or enter them f
 
 | Variable | Adds |
 |---|---|
-| `AUGURSPEX_TWELVE_DATA_KEY` | Stocks worldwide by exchange code (Australian, Japanese and Korean markets usually need a paid add-on). |
+| `AUGURSPEX_STOOQ_KEY` | Daily candles for US, Australian and Tokyo listings and the three US indices. Free: open `stooq.com/q/d/?s=aapl.us&get_apikey` in a browser, pass the captcha, copy the key. With a key Stooq no longer needs the unofficial-sources switch. |
+| `AUGURSPEX_EODHD_KEY` | Daily candles for US, Australian, Tokyo and Korean listings and the three US indices. Free plan: about one year of history and 20 requests a day; which exchanges the free plan really includes is not confirmed. |
+| `AUGURSPEX_TIINGO_KEY` | US stock and ETF daily candles. Free key; Tiingo's terms are for personal, internal use. |
+| `AUGURSPEX_DATA_GO_KR_KEY` | Korean listings, daily, from the Korean government data portal (Financial Services Commission). Non-commercial licence; published the next business day. The request format was written from the published specification and is unverified. |
+| `AUGURSPEX_TWELVE_DATA_KEY` | US stocks on the free plan. Australian, Japanese and Korean markets need a paid plan. |
 | `AUGURSPEX_ALPHA_VANTAGE_KEY`, `AUGURSPEX_FMP_KEY`, `AUGURSPEX_MASSIVE_KEY` | US stock history. |
 | `AUGURSPEX_ALPACA_KEY_ID` + `AUGURSPEX_ALPACA_SECRET_KEY` | US stock history (both are required). |
 | `AUGURSPEX_JQUANTS_KEY` | Tokyo listings. |
@@ -59,7 +63,9 @@ Set these in the operating system's environment before starting, or enter them f
 | `AUGURSPEX_CRYPTOCOMPARE_KEY` | CoinDesk Data crypto aggregates (it rejects keyless requests). |
 | `AUGURSPEX_ALLOW_UNOFFICIAL_SOURCES=1` | Opt-in only: the unofficial Yahoo, Nasdaq.com and Naver web endpoints. Off by default because they are undocumented and their terms restrict automated use. |
 
-A key that the provider rejects starts the same cool-down as a rate limit, so it is not re-sent on every refresh.
+A key that the provider rejects starts the same cool-down as a rate limit, so it is not re-sent on every refresh. Entering a key in the dialog ends those waits at once.
+
+There is no free official source for Australian (ASX) prices; Stooq and EODHD are third-party redistributors.
 
 ## Your own data
 

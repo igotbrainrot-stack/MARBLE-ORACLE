@@ -2,6 +2,28 @@
 
 Newest first. Releases before 0.4.9.3 have their original notes in `History/ReleaseNotes/`.
 
+## 0.4.9.4 · 16 November 2026 · Backup data sources
+
+Built on 0.4.9.3. Nothing was removed and no saved setting changes format.
+
+**Not checked live.** The build environment cannot reach any market-data provider. Every source below is tested against the reply format its provider documents, using made-up numbers; none has been seen answering for real. Run `Tools/probe_providers.py` on a home connection to find out.
+
+### Fixed
+
+- **Stooq.** Since about March 2026 Stooq answers a request without a key with a "get your key" page. AUGURSPEX read that as broken data. It is now reported as a key being needed, a free key can be entered (`AUGURSPEX_STOOQ_KEY`, or STOCK FEEDS in the app), and with a key Stooq serves Australian and Tokyo listings and the US indices without the unofficial-sources switch.
+- **Rune stones at the smallest window.** In the STATUE layout at 640x460 the stones were drawn about 3 pixels tall (and on Windows, with its taller fonts, failed their test). The caption band now gives way so a real stone always fits; captions that no longer fit are left out and the reading pane still names the rune.
+- A source waiting out a "key needed" cool-down is asked again as soon as a key is entered, instead of up to fifteen minutes later.
+
+### Added
+
+- **Crypto:** Bitstamp, Bitfinex and Coinbase's second public host as further US-dollar exchange sources, and the Binance market-data mirror as a last resort. Binance prices are in USDT, not dollars, and are always labelled `USDT`; a cached dollar series is preferred over a fresh USDT one. BNB gains real candles and intraday this way.
+- **Stocks, with a free personal key each:** Tiingo (US), EODHD (US, Australia, Tokyo, Korea, US indices) and the Korean government data portal (Korea). The key dialog has the four new fields and says where to get each key.
+- SOURCE DETAILS for Australian, Tokyo, Korean and index listings now lists the sources a free key would unlock.
+
+### Tests
+
+- `test_augurspex_backup_sources_0494.py` (22 checks, no network) and `test_rune_tall_fonts_0494.py`. Seven older checks that spelled out the previous source order were updated to the new order.
+
 ## 0.4.9.3 · 15 November 2026 · Refinement
 
 Built on 0.4.9.2. No feature was removed from any workspace, no saved setting changes format, and no asset was repacked.

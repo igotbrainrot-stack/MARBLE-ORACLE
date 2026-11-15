@@ -48,7 +48,7 @@ def test_stock_routes_and_safe_mapping():
     r = MarketRouter(clock=lambda: 100.0)
     assert r._routes('NVDA', 'auto') == ['strasmore', 'stooq', 'nasdaq', 'yahoo']
     assert r._routes('COH.AX', 'auto') == ['yahoo', 'stooq']
-    assert r._routes('ETH-USD', 'auto') == ['coinbase', 'kraken', 'gemini', 'coingecko', 'coinpaprika']  # 0.4.9.3: CoinDesk Data only with a key
+    assert r._routes('ETH-USD', 'auto') == ['coinbase','kraken','bitstamp','gemini','bitfinex','coinbase-adv','coingecko','coinpaprika','binance']  # 0.4.9.4: more venues; USDT-quoted Binance last
     assert r._routes('005930.KS', 'auto') == ['naver', 'yahoo']
 
 

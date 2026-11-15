@@ -91,9 +91,8 @@ def write_manifests() -> dict:
         'test_script_count': sum(1 for e in entries if Path(e['path']).name.startswith('test_') and e['path'].endswith('.py')),
         'total_bytes': inventory['inventory_total_bytes'],
         'previous_release': {
-            'version': '0.4.9.2',
-            'zip': 'Marble-Oracle-0.4.9.2-PDF-RESEARCH-STOCK-FEEDS-Windows-Linux.zip',
-            'zip_sha256': '839970fe65eef4c77ec3e0edfbea6d4e4f7f501fe458158e1327719fac764945',
+            'version': '0.4.9.3',
+            'branch': 'claude/marble-oracle-0493-refinement',
         },
         'verification': {
             'see': 'Application/Documentation/TESTING_REPORT.md',
@@ -117,7 +116,7 @@ def build_zip(target: Path) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for relative, path in files.items():
-            info = zipfile.ZipInfo(f'{ROOT.name}/{relative}', date_time=(2026, 11, 15, 0, 0, 0))
+            info = zipfile.ZipInfo(f'{ROOT.name}/{relative}', date_time=(2026, 11, 16, 0, 0, 0))
             mode = 0o755 if relative.endswith(EXECUTABLE_SUFFIXES) else 0o644
             info.external_attr = (0o100000 | mode) << 16
             # Media archives are already compressed; storing them keeps the build fast and no larger.

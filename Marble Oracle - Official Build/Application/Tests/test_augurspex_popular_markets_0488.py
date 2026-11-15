@@ -87,8 +87,8 @@ class CuratedTests(unittest.TestCase):
         self.assertEqual(router._routes('FX:EURUSD','auto','D'),['frankfurter-history','ecb-fx','boc-fx'])
         self.assertEqual(router._routes('FX:EURUSD','auto','W'),['frankfurter-history','ecb-fx','boc-fx'])
         self.assertEqual(router._routes('FX:EURUSD','auto','5'),[])
-        self.assertEqual(router._routes('BNB-USD','auto','D'),['coingecko','coinpaprika'])
-        self.assertEqual(router._routes('DOGE-USD','auto','1'),['coinbase','kraken','gemini'])
+        self.assertEqual(router._routes('BNB-USD','auto','D'),['coingecko','coinpaprika','binance'])  # 0.4.9.4: USDT-quoted last resort, labelled USDT
+        self.assertEqual(router._routes('DOGE-USD','auto','1'),['coinbase','kraken','bitstamp','gemini','coinbase-adv','binance'])  # 0.4.9.4 venues
 
     def test_unofficial_stock_source_is_conscious_opt_in(self):
         with tempfile.TemporaryDirectory() as folder:

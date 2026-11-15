@@ -1,4 +1,17 @@
-# Handover: Marble Oracle 0.4.9.3
+# Handover: Marble Oracle 0.4.9.4
+
+## What 0.4.9.4 changed (16 November 2026)
+
+A small release on top of 0.4.9.3; everything below this section is the 0.4.9.3 handover and still applies.
+
+- Stooq key support and "key needed" detection; new sources Tiingo, EODHD, data.go.kr, Bitstamp, Bitfinex, Coinbase Advanced Trade and the Binance mirror (USDT, labelled). See `MARKET_DATA.md` and the changelog.
+- Rune stones keep a real height at 640x460 (next step 2 below). The script that failed on the Windows runner in 0.4.9.3 passes there now. Step 4 (make the Windows job required) can go ahead once this branch's Windows job is fully green.
+- **None of the new sources has been checked live.** First job for whoever has a normal connection: run `Tools/probe_providers.py`, with keys set for the keyed ones, and record the result in `PROVIDER_PROBE.md`. Least certain: the data.go.kr request format, EODHD's free-plan exchange coverage, and whether Stooq's reply with a key is unchanged CSV.
+- Still open from the research: Yahoo's opt-in endpoint is throttled and against its terms; there is no free official ASX source.
+
+---
+
+## The 0.4.9.3 handover
 
 15 November 2026. For whoever picks this up next, human or AI.
 

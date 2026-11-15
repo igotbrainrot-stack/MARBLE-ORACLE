@@ -1,6 +1,6 @@
 {
- "release": "Marble Oracle 0.4.9.3",
- "generated_utc": "2026-11-15T11:39:08+00:00",
+ "release": "Marble Oracle 0.4.9.4",
+ "generated_utc": "2026-11-15T20:35:33+00:00",
  "schema": "sha256-inventory-v2",
  "excluded_from_hashes": [
   "Application/Documentation/BUILD_MANIFEST.json",
@@ -8,7 +8,7 @@
  ],
  "optional_note": "Entries marked optional are in the portable ZIP but not in Git; verify_release.py checks them when present.",
  "inventory_file_count": 470,
- "inventory_total_bytes": 115589988,
+ "inventory_total_bytes": 115464583,
  "files": [
   {
    "path": "Application/.gitignore",
@@ -22,8 +22,8 @@
   },
   {
    "path": "Application/Documentation/CHANGELOG.md",
-   "bytes": 8106,
-   "sha256": "45122c873950a4b022d5d093f5a472adf43c1188f129ed18bf40d6d04c2b7732"
+   "bytes": 10257,
+   "sha256": "e7e417e6f181596d7bd8a186846163dd23a0307f86d6a9daa6202b1ac06672b4"
   },
   {
    "path": "Application/Documentation/DEVELOPMENT.md",
@@ -37,8 +37,8 @@
   },
   {
    "path": "Application/Documentation/HANDOVER.md",
-   "bytes": 6038,
-   "sha256": "f08e68a67701d0a4526a4250ae4bb051450f2529697457f24b0d3511dbde3598"
+   "bytes": 7152,
+   "sha256": "65c2a47772bb36768a353aaf1220fb82111efa7f43909babdc91e9630dec0cb8"
   },
   {
    "path": "Application/Documentation/History/ALL_SECTIONS_TEXTURE_UPDATE.md",
@@ -422,8 +422,8 @@
   },
   {
    "path": "Application/Documentation/MARKET_DATA.md",
-   "bytes": 5953,
-   "sha256": "9bc49ccdd1158643eb99f87d7e5c909f1e16105a3f38909492633e1211d7bc53"
+   "bytes": 7798,
+   "sha256": "b1cd7d79920f41e098187831b75c53ecafe8d371b5182a2c76cb6b86456315d8"
   },
   {
    "path": "Application/Documentation/PROVIDER_PROBE.md",
@@ -436,21 +436,9 @@
    "sha256": "40819425b09ca1695273828a00ab8da3b5b61fc1d81112d1e7759ab9fdd782d2"
   },
   {
-   "path": "Application/Documentation/Research/Equities & Exchange Data.pdf",
-   "bytes": 56363,
-   "sha256": "f331af5143609a2dd2ee521f9ab529a21190f1dc2f81fc975e3e459c76a3ebbb",
-   "optional": true
-  },
-  {
-   "path": "Application/Documentation/Research/Free No-Login Market Data Sources.pdf",
-   "bytes": 116688,
-   "sha256": "c4675d34e07a15bfe4c567f947438042862a07407da802d9fa0b61636b7701b3",
-   "optional": true
-  },
-  {
    "path": "Application/Documentation/TESTING_REPORT.md",
-   "bytes": 7701,
-   "sha256": "28d335fda17272ea9bf02d8e0426d5679a10e874c0f112717fa926cb7ec98e10"
+   "bytes": 8524,
+   "sha256": "8a71b31db0e94d774db243e4a96fa393d9f1a18bb8a8dc7c8636bbaddbac050e"
   },
   {
    "path": "Application/Documentation/TROUBLESHOOTING.md",
@@ -535,7 +523,7 @@
   {
    "path": "Application/README.md",
    "bytes": 5350,
-   "sha256": "afb7917fce980a895bcaeaf012d2fd91824184e0098d044cd6ada365a814cf06"
+   "sha256": "39acb8e719497e8488466ebabfdfef6da12349aa68c55c0e6350b16cd53cc6a3"
   },
   {
    "path": "Application/Runtime/Launch_Marble_Oracle.vbs",
@@ -589,8 +577,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/Augurspex/augurspex/providers.py",
-   "bytes": 90514,
-   "sha256": "12cc2b409bf521fecf5fdbf5527ee309a14801534ffb9a47a364138c23f7d72e"
+   "bytes": 107101,
+   "sha256": "fb1dc6cd1ae9f7f782374186a7c820f34f9ef23a5edd4f894cd21033fb622858"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/Augurspex/augurspex/server.py",
@@ -1679,8 +1667,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/marble_oracle.py",
-   "bytes": 195364,
-   "sha256": "247c4168d6a188ec04b4327427ab39a61ef837f17d0e622702a1f05cbd40ade2"
+   "bytes": 196270,
+   "sha256": "f5d808332b9b1d360ea25506c878dadd73e010d4be8ec699f13660adbf70f9a1"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/marble_oracle_window.ico",
@@ -1759,8 +1747,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_augurspex_tab.py",
-   "bytes": 91350,
-   "sha256": "d2d29dcbe9a99fa3466f74ed18a3d261cb4dddd7aff368c167db56654561311a"
+   "bytes": 92657,
+   "sha256": "a5e9b6764927db325d94ccef7bbb1f7faf75f989e748eed85c585ac0a6bc65f0"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_bootstrap.py",
@@ -1889,8 +1877,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_version.py",
-   "bytes": 539,
-   "sha256": "d5256cdcb345fad26244cd32affffedfdb891e17fae81ec77ad04a1bf62d30f9"
+   "bytes": 558,
+   "sha256": "e33d30db9449f0e72c7f830ca309fc263d1710b65abacefbae9cdc8518e76012"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_vhs.py",
@@ -2033,6 +2021,11 @@
    "sha256": "fd20b6e693f4eb623e42b454f2ad3cd8195d76e044766aa50af248f31a247d7b"
   },
   {
+   "path": "Application/Tests/test_augurspex_backup_sources_0494.py",
+   "bytes": 18410,
+   "sha256": "a7822f89152951914f2a416f565f3e35c3d3e761a33c8fd8385fba56524a9cfb"
+  },
+  {
    "path": "Application/Tests/test_augurspex_chart_axes_and_history.py",
    "bytes": 4146,
    "sha256": "96bf45c62d18c8306eaa9b4cfff2013611a5cc0123e3b788e07223d615f9bfd8"
@@ -2069,8 +2062,8 @@
   },
   {
    "path": "Application/Tests/test_augurspex_multisource_0477.py",
-   "bytes": 5940,
-   "sha256": "6b6c89229d712181adf6698f2dd9e2f2f0358c1d0f3a46d9756fee19a7bf8952"
+   "bytes": 5995,
+   "sha256": "e5334243308fdcb0f568495185759b64d627d3965969fbe4822eb769f123b09e"
   },
   {
    "path": "Application/Tests/test_augurspex_native_tab.py",
@@ -2089,13 +2082,13 @@
   },
   {
    "path": "Application/Tests/test_augurspex_popular_markets_0488.py",
-   "bytes": 8245,
-   "sha256": "166d45c03176830860e7167837e4f045898c7249bba48dd6397e02650005a3c8"
+   "bytes": 8360,
+   "sha256": "bc3cedcd0f2d3eaabbf7a3fca920bf9429f79a5c455735339cdf4b15cf8339d4"
   },
   {
    "path": "Application/Tests/test_augurspex_provider_errors_0493.py",
-   "bytes": 25591,
-   "sha256": "b5e8661234ff344ca2edcbdb390ea139c7f5fcb89e96afc62e05e6eda7b6287a"
+   "bytes": 25793,
+   "sha256": "33bd18062794bcccc663cc548e572b872a4f31d453b51afd6060095bf8c6949a"
   },
   {
    "path": "Application/Tests/test_augurspex_provider_mappings.py",
@@ -2109,8 +2102,8 @@
   },
   {
    "path": "Application/Tests/test_augurspex_research_0482.py",
-   "bytes": 7892,
-   "sha256": "97dc75eb94cc984f4cce76e5fc07b97fb045d153e329f2b2747e3be6851b58aa"
+   "bytes": 8124,
+   "sha256": "2b4b3faac204a87cea0219e3138445721dc793de9191afd0b01ffbc6d72ebee7"
   },
   {
    "path": "Application/Tests/test_augurspex_review_0478.py",
@@ -2144,13 +2137,13 @@
   },
   {
    "path": "Application/Tests/test_augurspex_stock_fallback.py",
-   "bytes": 5311,
-   "sha256": "bc7573f3eec466f52f77235a08e896a6acdc949302f8009ab4153bc9738af154"
+   "bytes": 5362,
+   "sha256": "d2baf91f162db4ea3b857b57c8c118ecd96142fc1a8ff9dd3ecdbdd91b681371"
   },
   {
    "path": "Application/Tests/test_augurspex_stock_gui_0491.py",
-   "bytes": 3034,
-   "sha256": "8356cd18fba28510c22e8b1d97f2c97e4e819fa6411496f96adf9665b62817be"
+   "bytes": 3125,
+   "sha256": "3c40a96dc03b29411e9d3f80fb4826059386d2f6d72c875a951950819f1b60b8"
   },
   {
    "path": "Application/Tests/test_augurspex_stock_history_0491.py",
@@ -2278,6 +2271,11 @@
    "sha256": "99b45c3921a0f929ce85896d3dfcad37eaf4e3cfe0328e9be4c025517ec46b1d"
   },
   {
+   "path": "Application/Tests/test_rune_tall_fonts_0494.py",
+   "bytes": 3857,
+   "sha256": "aacc61cc54fd8eefd0ae6f95d16fbb29b5f9b952afaebc6e372283fddb719941"
+  },
+  {
    "path": "Application/Tests/test_source_ogg_texture.py",
    "bytes": 2984,
    "sha256": "d9bb16d474707dc9ba485811a9d1d7c47a79360a26821ce814c514fc800dccf6"
@@ -2304,8 +2302,8 @@
   },
   {
    "path": "Application/Tools/build_release.py",
-   "bytes": 7073,
-   "sha256": "a4724fcbe534703e40b4b2a1f3d16c1c083c7898b124ce98659902c9842aaae9"
+   "bytes": 6954,
+   "sha256": "6f0b4c98e172cc5cfe89891911eed7ee449f866897abe29503cc3b5725b1ae28"
   },
   {
    "path": "Application/Tools/capture_screens.py",

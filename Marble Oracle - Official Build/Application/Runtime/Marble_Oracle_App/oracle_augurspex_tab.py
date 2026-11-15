@@ -832,7 +832,7 @@ class AugurspexPanel(tk.Frame):
         self._button(dialog,'STOCK FEED GUIDE / CURRENT ROUTES',self._stock_feed_guide).pack(fill='x',padx=18,pady=(6,2))
         self._button(dialog,'OPTIONAL UNOFFICIAL STOCK ROUTES: ON / OFF',self._toggle_unofficial).pack(fill='x',padx=18,pady=(7,2))
         self._button(dialog,'REMOVE IMPORTED CSV FOR ACTIVE STOCK',self._clear_imported_csv).pack(fill='x',padx=18,pady=(2,2))
-        self._label(dialog,'Stooq may block requests; documented stock APIs usually need free keys.','muted',10,
+        self._label(dialog,'Stooq now needs a free key; other stock APIs usually need free keys too.','muted',10,
                     anchor='w').pack(fill='x',padx=18,pady=2)
         edit.focus_set()
 
@@ -844,25 +844,29 @@ class AugurspexPanel(tk.Frame):
         dialog=tk.Toplevel(self)
         dialog.title('AUGURSPEX · CONNECT STOCK DATA')
         dialog.configure(bg=self.p['panel'])
-        dialog.geometry('540x390')
-        dialog.minsize(430,360)
+        dialog.geometry('560x540')
+        dialog.minsize(450,500)
         dialog.transient(self.winfo_toplevel())
         dialog.grab_set()
         self._label(dialog,'CONNECT HISTORICAL STOCK FEEDS','accent',15,True,anchor='w').pack(
             fill='x',padx=17,pady=(12,5))
         self._label(dialog,'Keys are used only this session and are not saved in the ZIP or settings.',
                     'muted',10,anchor='w').pack(fill='x',padx=17,pady=(0,8))
-        fields=[('Twelve Data key','AUGURSPEX_TWELVE_DATA_KEY'),
-                ('Alpha Vantage key','AUGURSPEX_ALPHA_VANTAGE_KEY'),
-                ('Alpaca API key ID','AUGURSPEX_ALPACA_KEY_ID'),
-                ('Alpaca secret key','AUGURSPEX_ALPACA_SECRET_KEY')]
+        fields=[('Stooq key (US, ASX, Tokyo, indices)','AUGURSPEX_STOOQ_KEY'),
+                ('EODHD key (US, ASX, Tokyo, Korea, indices)','AUGURSPEX_EODHD_KEY'),
+                ('Tiingo key (US)','AUGURSPEX_TIINGO_KEY'),
+                ('Twelve Data key (US on free plan)','AUGURSPEX_TWELVE_DATA_KEY'),
+                ('Alpha Vantage key (US)','AUGURSPEX_ALPHA_VANTAGE_KEY'),
+                ('Alpaca API key ID (US)','AUGURSPEX_ALPACA_KEY_ID'),
+                ('Alpaca secret key','AUGURSPEX_ALPACA_SECRET_KEY'),
+                ('data.go.kr service key (Korea)','AUGURSPEX_DATA_GO_KR_KEY')]
         entries={}
         for label,key in fields:
             row=tk.Frame(dialog,bg=self.p['panel'])
             row.pack(fill='x',padx=17,pady=3)
             self._label(row,label,'muted',10,True,anchor='w').pack(side='left',padx=(0,8))
             entry=tk.Entry(row,show='●',bg=self.p['inset'],fg=self.p['ink'],
-                           insertbackground=self.p['accent'],relief='flat',width=30)
+                           insertbackground=self.p['accent'],relief='flat',width=24)
             entry.pack(side='right',fill='x',expand=True)
             entries[key]=entry
         def apply():
@@ -875,6 +879,7 @@ class AugurspexPanel(tk.Frame):
                 entry.delete(0,'end')
             if count:
                 # Never put credentials into UI text or exception traces.
+                if hasattr(self.router,'credentials_changed'):self.router.credentials_changed()
                 self._force_refresh()
                 self.status.set('STOCK API CREDENTIALS ACTIVE FOR THIS SESSION · REFRESHING')
             dialog.destroy()
@@ -882,8 +887,12 @@ class AugurspexPanel(tk.Frame):
         actions.pack(fill='x',padx=17,pady=(12,4))
         self._button(actions,'APPLY + REFRESH',apply).pack(side='left',expand=True,fill='x',padx=(0,4))
         self._button(actions,'CANCEL',dialog.destroy).pack(side='left',expand=True,fill='x')
-        self._label(dialog,'Get keys from the providers directly: twelvedata.com, alphavantage.co, alpaca.markets',
-                    'weak',9,anchor='w').pack(fill='x',padx=17,pady=3)
+        for help_line in ('Free keys from: eodhd.com, tiingo.com, twelvedata.com, alphavantage.co, alpaca.markets, data.go.kr',
+                          'Stooq: open stooq.com/q/d/?s=aapl.us&get_apikey in a browser, pass the captcha, copy the key.'):
+            help_label=self._label(dialog,help_line,'weak',9,anchor='w')
+            # Two lines rather than a sentence cut off at the dialog edge.
+            help_label.configure(wraplength=510,justify='left')
+            help_label.pack(fill='x',padx=17,pady=3)
         self._label(dialog,'Free plans and exchange permissions vary; do not share keys in chat or screenshots.',
                     'weak',9,anchor='w').pack(fill='x',padx=17,pady=3)
 
@@ -892,6 +901,9 @@ class AugurspexPanel(tk.Frame):
         active=', '.join(str(r).upper() for r in routes) or 'NONE'
         # Never display user keys or persist them in the portable application.
         keys={
+            'Stooq':'AUGURSPEX_STOOQ_KEY',
+            'EODHD':'AUGURSPEX_EODHD_KEY',
+            'Tiingo':'AUGURSPEX_TIINGO_KEY',
             'Twelve Data':'AUGURSPEX_TWELVE_DATA_KEY',
             'Alpaca IEX':'AUGURSPEX_ALPACA_KEY_ID + AUGURSPEX_ALPACA_SECRET_KEY',
             'Alpha Vantage':'AUGURSPEX_ALPHA_VANTAGE_KEY',
@@ -905,7 +917,10 @@ class AugurspexPanel(tk.Frame):
         messagebox.showinfo('AUGURSPEX · STOCK FEED GUIDE',
             'US stock routes presently available: '+active+'\n\n'
             'STRASMORE: documented no-key US EOD demo (500 rows / about one year).\n'
-            'STOOQ: keyless best-effort EOD history; can reject requests.\n'
+            'STOOQ: daily history for US, ASX, Tokyo and indices. Since 2026 it\n'
+            'asks for a free personal key (captcha on stooq.com); without one it\n'
+            'answers with a "get your key" page and the chart says KEY NEEDED.\n'
+            'EODHD: free key, about one year of daily bars, 20 calls a day.\n'
             'Other stock providers need an individual account/API key.\n'
             'Use MANAGE LIST → CONNECT API KEY to enter a key temporarily,\n'
             'or set environment variables before launching Marble Oracle.\n\n'
@@ -1438,15 +1453,15 @@ class AugurspexPanel(tk.Frame):
             details.append('No eligible provider configured for this market and interval.')
             details.append('Optional documented sources (requires your own key and access):')
             if symbol.endswith('.AX') or symbol.startswith('ASX:'):
-                details.append('  ASX: Twelve Data with appropriate XASX entitlement; free unrestricted ASX history is not available.')
+                details.append('  ASX: a free Stooq key (AUGURSPEX_STOOQ_KEY) or EODHD key (AUGURSPEX_EODHD_KEY); Twelve Data needs a paid plan.')
             elif symbol.endswith('.T') or symbol.startswith('TSE:'):
-                details.append('  Tokyo: J-Quants v2 (AUGURSPEX_JQUANTS_KEY) or Twelve Data with exchange access.')
+                details.append('  Tokyo: a free Stooq or EODHD key, or J-Quants v2 (AUGURSPEX_JQUANTS_KEY; free plan is 12 weeks delayed).')
             elif symbol.endswith(('.KS','.KQ')) or symbol.startswith(('KRX:','KOSDAQ:')):
-                details.append('  Korea: KRX approved service (AUGURSPEX_KRX_KEY) or Twelve Data with access.')
+                details.append('  Korea: data.go.kr (AUGURSPEX_DATA_GO_KR_KEY), EODHD, or the KRX approved service (AUGURSPEX_KRX_KEY).')
             elif market_category(symbol)=='fx':
                 details.append('  FX: Frankfurter v2 provides keyless daily reference history (not trading quotes).')
             elif symbol.startswith('^'):
-                details.append('  US index closes: FRED (AUGURSPEX_FRED_KEY), daily close only.')
+                details.append('  US indices: a free Stooq or EODHD key for daily candles; FRED (AUGURSPEX_FRED_KEY) is close only.')
             else:
                 details.append('  US stocks: Massive, Alpaca IEX, Twelve Data, FMP or Alpha Vantage (personal keys required); Stooq is best-effort.')
             details.append('See Application/Documentation/MARKET_DATA.md.')
@@ -1486,12 +1501,12 @@ class AugurspexPanel(tk.Frame):
             details.append('Manage List → STOCK FEED GUIDE gives setup/credential status.')
             details.append('Manage List → IMPORT STOCK CSV uses your actual dated data offline.')
             details.append('Strasmore no-key demo: delayed US daily bars, limited to one year/500 rows.')
-            details.append('No-key Stooq may return N/D or deny automated requests.')
+            details.append('Stooq asks for a free personal key since 2026 (AUGURSPEX_STOOQ_KEY).')
             details.append('Documented additional sources require personal API keys:')
-            details.append('  US: AUGURSPEX_MASSIVE_KEY, AUGURSPEX_FMP_KEY, AUGURSPEX_ALPHA_VANTAGE_KEY')
+            details.append('  US: AUGURSPEX_TIINGO_KEY, AUGURSPEX_EODHD_KEY, AUGURSPEX_MASSIVE_KEY, AUGURSPEX_FMP_KEY, AUGURSPEX_ALPHA_VANTAGE_KEY')
             details.append('  US alternative: AUGURSPEX_ALPACA_KEY_ID + AUGURSPEX_ALPACA_SECRET_KEY; Twelve Data.')
-            details.append('  Other supported exchanges: AUGURSPEX_TWELVE_DATA_KEY; verify exchange entitlement.')
-            details.append('  Tokyo: AUGURSPEX_JQUANTS_KEY; Korea: AUGURSPEX_KRX_KEY.')
+            details.append('  ASX / Tokyo / indices: AUGURSPEX_STOOQ_KEY or AUGURSPEX_EODHD_KEY.')
+            details.append('  Tokyo: AUGURSPEX_JQUANTS_KEY; Korea: AUGURSPEX_DATA_GO_KR_KEY or AUGURSPEX_KRX_KEY.')
         details.append('Data providers may limit requests or exchange licensing.')
         return '\n'.join(details)
 
