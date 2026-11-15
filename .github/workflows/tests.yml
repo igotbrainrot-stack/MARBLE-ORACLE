@@ -1,0 +1,46 @@
+name: tests
+
+on:
+  push:
+    branches: ['claude/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-gui:
+    name: Linux · Tk under Xvfb · FFmpeg
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Tk, Xvfb, FFmpeg and the Python libraries the suite uses
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            python3-tk python3-pil python3-pil.imagetk python3-mutagen python3-numpy python3-opencv \
+            xvfb xauth ffmpeg
+      - name: Versions
+        run: |
+          python3 --version
+          python3 -c "import tkinter; print('Tk', tkinter.Tcl().eval('info patchlevel'))"
+          ffmpeg -hide_banner -version | head -1
+      - name: Byte-compile every source file
+        run: python3 -m compileall -q "Marble Oracle - Official Build/Application"
+      - name: Regression tests
+        run: |
+          cd "Marble Oracle - Official Build"
+          xvfb-run -a -s "-screen 0 1920x1080x24" python3 Application/Tools/run_tests.py --json "$RUNNER_TEMP/test-results.json"
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-linux
+          path: ${{ runner.temp }}/test-results.json
+          if-no-files-found: ignore
