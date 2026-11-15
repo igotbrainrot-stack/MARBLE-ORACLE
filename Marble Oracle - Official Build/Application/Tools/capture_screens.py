@@ -85,11 +85,11 @@ class FixtureRouter:
 def capture_suite(size, out, extra=(), prefix=''):
     """The window exactly as a launch opens it (launch_plan), driven tab by tab."""
     from marble_oracle import WindowApp, launch_plan
-    width, height = (int(v) for v in size.split('x'))
     _args, options, _cls = launch_plan(['--selftest', '--no-network', *extra])
     app = WindowApp(options)
     root, scene = app.root, app.scene
     if not extra:               # the photographic CRT chooses its own fixed sizes
+        width, height = (int(v) for v in size.split('x'))
         root.geometry(f'{width}x{height}+0+0')
         root.update()
         scene.resized(width, height)
