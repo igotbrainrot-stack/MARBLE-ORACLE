@@ -10,6 +10,11 @@ on:
         description: 'Only run test scripts whose name contains one of these words (space separated)'
         required: false
         default: ''
+      screens_in_log:
+        description: 'Also print the screenshots into the job log as base64 JPEG (for review where artifacts cannot be downloaded)'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -47,6 +52,19 @@ jobs:
         run: |
           cd "Marble Oracle - Official Build"
           xvfb-run -a -s "-screen 0 1920x1080x24" python3 Application/Tools/capture_screens.py "$RUNNER_TEMP/screens" || true
+      - name: Print screenshots into the log (manual runs only)
+        if: ${{ always() && inputs.screens_in_log }}
+        run: |
+          python3 - "$RUNNER_TEMP/screens" <<'PY'
+          import base64, io, sys
+          from pathlib import Path
+          from PIL import Image
+          for path in sorted(Path(sys.argv[1]).glob('*.png')):
+              image = Image.open(path).convert('RGB')
+              buffer = io.BytesIO()
+              image.save(buffer, 'JPEG', quality=62)
+              print('SHOT', path.stem, base64.b64encode(buffer.getvalue()).decode())
+          PY
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4

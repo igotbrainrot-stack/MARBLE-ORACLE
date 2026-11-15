@@ -299,6 +299,8 @@ class Router(unittest.TestCase):
         with self.assertRaises(ProviderError):
             router.fetch('NASDAQ:AAPL', 'D', getter=getter)
 
+    @unittest.skipIf('faketime' in os.environ.get('LD_PRELOAD', '') or os.environ.get('FAKETIME'),
+                     'file timestamps and the clock disagree under faketime')
     def test_disk_cache_is_bounded_and_only_own_files_are_removed(self):
         with tempfile.TemporaryDirectory() as folder:
             folder = Path(folder)
