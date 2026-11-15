@@ -9,10 +9,13 @@ from __future__ import annotations
 import random
 import time
 import tkinter as tk
+from tkinter import font as tkfont
 
 from marble_uberata import FAMILY
 from oracle_ogg_texture import frame as ogl_frame, label as ogl_label, install as ogl_install
 from oggcultist_design_system import COLOR as C
+from oracle_design import HOME_LABEL
+from oracle_widgets import tooltip
 from oracle_assets import load_json, save_json
 
 LESSONS = (
@@ -229,6 +232,20 @@ class TouchTypePanel(tk.Frame):
         return ogl_label(parent, text=txt, fg=C[colour],
                         font=(FAMILY, size, 'bold' if bold else 'normal'), **kwargs)
 
+    def _fit_info(self):
+        """Show the coaching line whole when it fits beside the finger hint, shortened only when it cannot."""
+        try:
+            room = self._info_row.winfo_width() - self.finger_label.winfo_reqwidth() - 28
+        except (tk.TclError, AttributeError):
+            return
+        text = self._info_full
+        if room > 1 and self._info_font.measure(text) > room:
+            while len(text) > 1 and self._info_font.measure(text + '…') > room:
+                text = text[:-1]
+            text = text.rstrip() + '…'
+        if self.info_label.cget('text') != text:
+            self.info_label.configure(text=text)
+
     def _button(self, parent, text, callback, primary=False):
         btn = tk.Button(parent, text=text, command=lambda: self._invoke(callback), cursor='hand2',
                         relief='flat', bd=0, padx=12, pady=8,
@@ -282,7 +299,7 @@ class TouchTypePanel(tk.Frame):
         ogl_frame(self.rail, bg=C['sidebar']).pack(fill='both', expand=True)
         self.best_label = self._label(self.rail, 'BEST  —', 11, 'text_2')
         self.best_label.pack(anchor='w', padx=18, pady=(4, 6))
-        self._button(self.rail, '← BACK TO ORACLE', self.on_home).pack(fill='x', padx=12, pady=(0, 7))
+        self._button(self.rail, HOME_LABEL, self.on_home).pack(fill='x', padx=12, pady=(0, 7))
 
         head = ogl_frame(main, bg=C['canvas'])
         head.pack(fill='x', padx=20, pady=(9, 1))
@@ -350,6 +367,12 @@ class TouchTypePanel(tk.Frame):
         self.finger_label.pack(side='left')
         self.info_label = self._label(info, 'Focus: typing field', 10, 'text_2')
         self.info_label.pack(side='right')
+        # The coaching line uses the width the row really has. It used to be
+        # cut at 30 characters whatever the window size, so every hint ended in "…".
+        self._info_full = ''
+        self._info_font = tkfont.Font(font=self.info_label.cget('font'))
+        info.bind('<Configure>', lambda _e: self._fit_info(), add='+')
+        tooltip(self.info_label, lambda _e: self._info_full if self.info_label.cget('text') != self._info_full else '')
         self.status = self._label(main, '', 11, 'text_2', wraplength=650, justify='left')
         # Feedback is displayed on the compact bottom line; an extra row would
         # be clipped by the original Oracle CRT's short glass aperture.
@@ -542,7 +565,8 @@ class TouchTypePanel(tk.Frame):
         self.start_button.configure(text=action)
         self.finger_label.configure(text=finger_for(e.expected))
         self.status.configure(text=e.message)
-        self.info_label.configure(text=e.message if len(e.message) < 33 else e.message[:30] + '…')
+        self._info_full = e.message
+        self._fit_info()
         self.input_var.set(self._recent_keys if e.phase in ('running','paused') else
                            'TYPE HERE · SELECT START GAME' if e.phase == 'ready' else
                            'ROUND COMPLETE · PLAY AGAIN')

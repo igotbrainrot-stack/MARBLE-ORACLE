@@ -74,7 +74,7 @@ def test_scene_native_entry():
         scene.act('tab_augurspex');root.update()
         assert scene._which_overlay()=='aug'
         assert scene.aug is not None and scene.aug.frame.winfo_exists()
-        assert not scene.aug.frame._visible is False
+        assert scene.aug.frame._visible is not False
         assert scene.c.type(scene.aug.window)=='window'
         old=scene.aug
         scene.act('tab_home');root.update()

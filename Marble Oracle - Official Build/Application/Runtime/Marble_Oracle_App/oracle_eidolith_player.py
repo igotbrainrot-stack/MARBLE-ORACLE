@@ -13,8 +13,9 @@ import os
 import queue
 import subprocess
 import threading
-import time
 import tkinter as tk
+
+from oracle_eidolith_core import end_process
 
 
 FRAME_RATE = 12
@@ -104,7 +105,8 @@ class InTabVideoPlayer:
         self.file_title.pack(fill='x', padx=10, pady=(8, 5))
         surround = tk.Frame(self.root, bg='#070606', highlightthickness=1, highlightbackground=c['line_strong'])
         surround.pack(fill='both', expand=True, padx=10)
-        self.canvas = tk.Canvas(surround, bg='#090807', highlightthickness=0, bd=0, height=255)
+        # Asks for little and expands: a 255 px request pushed the volume row off a 580 px window.
+        self.canvas = tk.Canvas(surround, bg='#090807', highlightthickness=0, bd=0, height=110)
         self.canvas.pack(fill='both', expand=True)
         self.image_id = self.canvas.create_image(0, 0, anchor='center')
         self.placeholder_id = self.canvas.create_text(0, 0, anchor='center',
@@ -261,22 +263,14 @@ class InTabVideoPlayer:
 
     def _apply_volume(self):
         if self.phase == 'playing' and self.ffplay:
-            if self.audio_proc and self.audio_proc.poll() is None:
-                try:
-                    self.audio_proc.terminate()
-                except OSError:
-                    pass
+            end_process(self.audio_proc)
             self.audio_proc = None
             self._start_audio()
 
     def _kill_processes(self):
         self._generation += 1
         for proc in (self.play_proc, self.audio_proc):
-            if proc and proc.poll() is None:
-                try:
-                    proc.terminate()
-                except OSError:
-                    pass
+            end_process(proc)
         self.play_proc = None
         self.audio_proc = None
         # Old decode workers own old queues; new sessions create new queues.

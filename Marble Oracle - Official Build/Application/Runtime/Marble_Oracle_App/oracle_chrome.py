@@ -704,7 +704,6 @@ class ChromeMixin(PhotoBezelMixin):
         Keep all navigation within the previous menu row. Layout presets and
         the independent panels do not move when switching tabs.
         """
-        from oracle_skin import hexmix
         c = self.c
         _, y0, x1, y1 = self.rect["menu"]
         tabs = (("HOME", "tab_home"), ("OGGCULTIST", "tab_oggcultist"),
@@ -880,7 +879,7 @@ class ChromeMixin(PhotoBezelMixin):
         glyphs; one footer row holds HOLD, the headlines and the status.  In PANES and GLASS they sit on the ground, edge to edge, and the panels'
         hairlines are the only borders (with one round the whole window); in FLOAT the header and footer are bars of their own, like the panels,
         and the ground between them is see-through (Scene.ground)."""
-        from oracle_skin import bar, dot, hexmix, px
+        from oracle_skin import bar, hexmix, px
         c, r, k = self.c, self.rect, self.k
         W, H = self.W, self.H
         bg, acc, mag = self.col("bg"), self.col("cyan"), self.col("mag")
@@ -926,7 +925,7 @@ class ChromeMixin(PhotoBezelMixin):
         tab strip.  The ticker, HOLD and status sit in flat wells on a flat footer.  Same hot spots and ids as the 98 frame."""
         if getattr(self, "integrated", lambda: False)():
             return self._chrome_integrated()
-        from oracle_skin import bar, dot, hexmix, px
+        from oracle_skin import dot, hexmix, px
         c, r, k = self.c, self.rect, self.k
         W, H = self.W, self.H
         bg, edge, edge2, acc, mag = self.col("bg"), self.col("edge"), self.col("edge2"), self.col("cyan"), self.col("mag")
@@ -980,7 +979,6 @@ class ChromeMixin(PhotoBezelMixin):
     def _crt(self):
         """CRT layer: fine scanlines plus a little static.  It covers the WHOLE Windows-98 window (frame, title bar,
         menu row, status bar included) and stops at the ornamental plastic case, which sits above it."""
-        import tkinter as tk
         W, H, c = self.W, self.H, self.c
         self.crt_items = []
         self.crt_noise_id = None

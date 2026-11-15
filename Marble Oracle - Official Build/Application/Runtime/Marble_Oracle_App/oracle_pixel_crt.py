@@ -11,7 +11,6 @@ dashboard is never shown. The visible window is not photographed.
 """
 from __future__ import annotations
 
-import math
 import os
 import time
 import traceback
@@ -256,8 +255,6 @@ def _grab_fresh(widget):
 def _print_window(hwnd, width, height):
     """Ask the widget to paint into a bitmap. Flag 2 is not used: it copies the screen."""
     import ctypes
-    from ctypes import wintypes
-    from PIL import Image
     user32, gdi32 = ctypes.windll.user32, ctypes.windll.gdi32
     hwnd = int(hwnd)
     hdc = user32.GetDC(hwnd)

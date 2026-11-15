@@ -8,3 +8,6 @@ __pycache__/
 *.tmp
 *.part
 .venv/
+
+# Third-party research PDFs: shipped in the release ZIP, deliberately not kept in Git.
+Documentation/Research/

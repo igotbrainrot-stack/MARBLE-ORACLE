@@ -1,8 +1,11 @@
-"""Audit-fix regression tests for HOME network fetchers and the passphrase tab.
+"""Audit-fix regression tests for the passphrase tab.
+
+The HOME news and AUD-ticker fetchers these tests also covered were deleted in
+0.4.9.3 (see test_no_news_or_markets.py).
 
     xvfb-run -a python3 Application/Tests/test_audit_fixes.py
 
-No network is used: fetchers are driven with fake responses.
+No network is used.
 """
 from pathlib import Path
 import os
@@ -13,62 +16,10 @@ import time
 os.environ['MARBLE_ORACLE_STATE'] = tempfile.mkdtemp(prefix='audit-fixes-state-')
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'Runtime' / 'Marble_Oracle_App'))
 
-import marketdata  # noqa: E402
-import oracle_feeds  # noqa: E402
 import oracle_dicekey  # noqa: E402
 
 
-class FakeResponse:
-    def __init__(self, size):
-        self.size, self.asked = size, None
-
-    def read(self, n=-1):
-        self.asked = n
-        return b'x' * (self.size if n is None or n < 0 else min(n, self.size))
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *exc):
-        return False
-
-
 def main():
-    # News feed: downloads are capped and only http(s) is fetched.
-    seen = []
-
-    def opener(req, timeout=0):
-        seen.append(req.full_url)
-        response = FakeResponse(50 * 1024 * 1024)
-        seen.append(response)
-        return response
-    feed = oracle_feeds.WireFeed(url='https://example.invalid/rss', enabled=False)
-    feed.fetch(opener=opener)
-    assert seen[1].asked == oracle_feeds.MAX_FEED_BYTES, seen[1].asked
-    seen.clear()
-    for bad in ('file:///etc/passwd', 'ftp://example.invalid/x', '/etc/passwd'):
-        oracle_feeds.WireFeed(url=bad, enabled=False).fetch(opener=opener)
-    assert not seen, 'non-http(s) feed URL was fetched'
-    xml = '<rss><item><title>Example headline long enough to show</title></item></rss>'
-    assert oracle_feeds.parse_headlines(xml, 'T') == ['T: Example headline long enough to show']
-
-    # Market data: https only, response size capped.
-    try:
-        marketdata._get('file:///etc/passwd')
-        raise AssertionError('file:// market URL accepted')
-    except ValueError:
-        pass
-    real = marketdata.urllib.request.urlopen
-    try:
-        marketdata.urllib.request.urlopen = lambda req, timeout=0: FakeResponse(marketdata.MAX_BYTES + 10)
-        try:
-            marketdata._get('https://example.invalid/')
-            raise AssertionError('oversized market response accepted')
-        except ValueError as exc:
-            assert 'too large' in str(exc)
-    finally:
-        marketdata.urllib.request.urlopen = real
-
     # Passphrase generator: secure source, expected shape, honest strength figure.
     engine = oracle_dicekey.Dicekey()
     phrases = {engine.roll() for _ in range(200)}

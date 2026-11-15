@@ -84,6 +84,9 @@ def gui_tests():
         panel._invoke(panel._start)
         assert panel.engine.phase=='running'
         first=panel.engine.expected
+        # A person using the suite has its window active. A CI desktop does not
+        # hand focus to a new window on Windows, so make it the active one first.
+        root.focus_force();root.update()
         panel.focus_input();root.update()
         assert root.focus_get() == panel.typing_entry, 'typing field did not get focus'
         panel.typing_entry.event_generate('<KeyPress>', keysym=first)

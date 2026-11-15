@@ -35,6 +35,7 @@ import threading
 import time
 import uuid
 
+from oracle_eidolith_core import stop_process_tree
 from oracle_eidolith_core import (PROFILES, RESOLUTIONS, encoding_args, fit_resolution, is_hardware, profile_support,
                                   progress_seconds, seconds_label, safe_piece)
 
@@ -773,12 +774,7 @@ class QueueRunner:
         return f'Queue started: {len(pending)} job(s).'
 
     def _terminate_active(self):
-        proc = self.active_proc
-        if proc is not None and proc.poll() is None:
-            try:
-                proc.terminate()
-            except OSError:
-                pass
+        stop_process_tree(self.active_proc)
 
     def cancel_current(self) -> str:
         if not self.running() or self.current is None:
@@ -1091,7 +1087,7 @@ class QueueRunner:
         if proc is not None:
             try:
                 if proc.poll() is None:
-                    proc.terminate()
+                    stop_process_tree(proc)
                     proc.wait(timeout=10)
             except Exception:
                 try:

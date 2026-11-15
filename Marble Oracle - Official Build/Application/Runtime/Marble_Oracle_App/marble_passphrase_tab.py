@@ -6,13 +6,10 @@ password history, or external Python packages are required.
 
 from __future__ import annotations
 
-import argparse
 from pathlib import Path
-import sys
 import tkinter as tk
-from tkinter import messagebox
 
-from oracle_dicekey import Dicekey, NoWords, PARTS, PART_NAMES
+from oracle_dicekey import Dicekey, PARTS, PART_NAMES
 from marble_uberata import FAMILY, apply_tk_fonts
 from oracle_ogg_texture import frame as ogl_frame, label as ogl_label
 
@@ -20,6 +17,7 @@ from oracle_ogg_texture import frame as ogl_frame, label as ogl_label
 ROOT = Path(__file__).resolve().parent
 # Oggcultist Ember palette: one warm dark visual language across all three apps.
 from oggcultist_design_system import COLOR as OGG
+from oracle_design import HOME_LABEL
 BG = OGG["canvas"]
 PANEL = OGG["raised"]
 CARD = OGG["sunken_alt"]
@@ -84,7 +82,7 @@ class PassphrasePanel(tk.Frame):
                  font=(FAMILY, 23, "bold")).pack(anchor="w")
         ogl_label(heading, text="OFFLINE PASSWORD GENERATOR     •     EFF LONG WORDLIST     •     NO HISTORY",
                  fg=CYAN, bg=BG, font=(FAMILY, 10)).pack(anchor="w", pady=(3, 0))
-        self.home_button = action_button(top, "←  BACK TO ORACLE", self._home,
+        self.home_button = action_button(top, HOME_LABEL, self._home,
                                          color=TEXT, fill=CARD, pady=8)
         self.home_button.pack(side="right", anchor="n", padx=(12, 0))
 

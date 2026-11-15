@@ -11,9 +11,7 @@ Flags:   --fps N --wallpaper --fullscreen --theme NAME --layout NAME --no-diceke
          --no-bezel --os-frame --no-markets --no-network
          --selftest --version --install-startup --remove-startup
 """
-import base64
 import datetime
-import json
 import math
 import os
 import random
@@ -43,7 +41,7 @@ from oracle_chrome import (DECK_TAB_OFF, DECK_TAB_ON, DK_TAB_OFF, DK_TAB_ON, LD_
                            THEMES, THEME_NAMES, noise_tile_png, scan_tile_png, hexrgb, mix, ChromeMixin, bezel_geometry, bezel_step)
 from oracle_skin import SkinMixin, hexmix  # noqa: E402
 from oracle_augurspex_home import MarketCarousel
-from oracle_feeds import MarketFeed, NEWS_FEEDS, parse_headlines, WireFeed  # noqa: E402,F401
+from oracle_version import suite_title  # noqa: E402
 from oracle_audio import respell, synth_wav, VoiceBank, Sfx  # noqa: E402,F401
 try:
     import oracle_latin  # noqa: E402  (build 0955: IPA for the words that have none of their own; optional)
@@ -814,9 +812,7 @@ class Scene(ChromeMixin, SkinMixin):
         self.frame_no = 0
         self.deck = build_deck(self.rng)
         self.qi = 0
-        self.markets = MarketFeed(False, False)  # old fixed Bitcoin/gold ticker retired
         self.augurspex_chart = MarketCarousel(enabled=not opts.get('no_network', False) and not opts.get('no_markets', False))
-        self.news = WireFeed(enabled=False)  # bottom news runner removed: no RSS networking
         self.voice = VoiceBank()
         saved = load_json("voice.json", {})
         vol = saved.get("vol") if isinstance(saved, dict) else None
@@ -850,7 +846,6 @@ class Scene(ChromeMixin, SkinMixin):
         self.tick_off = 0.0
         self.drops, self.star = [], None
         self.mk_last = 0.0
-        self._mk_key = None                 # 1022 R2: what the market tape last drew (refresh_markets)
         self.crt_img = self.roll_img = self.roll_id = None
         self.crt_imgs = None
         self.crt_size = (0, 0)
@@ -1054,7 +1049,6 @@ class Scene(ChromeMixin, SkinMixin):
             except Exception:
                 pass
         self.mk_last = 0
-        self._mk_key = None                 # 1022 R2: the "mk" items went with "content"; the next refresh must draw
         self.need_build = False
         self._restack()
 
@@ -1723,67 +1717,6 @@ class Scene(ChromeMixin, SkinMixin):
         self.T(plot_l, y1-12*self.k,
                fit(label, self.font(10), width-26*self.k), 10, 'dim', 'w', tag)
 
-    def _mkt(self):
-        b = self.rect["mkt"]
-        self.mkt_hdr = self.panel(b, "THE TICKER", "AUD")[1]
-        self.mkt_box = b
-        self.mk_rows = {}
-
-    def refresh_markets(self):
-        c = self.c
-        snap = self.markets.snapshot()
-        sim = self.markets.any_sim() if snap else True
-        # 1022 R2: _dyn calls this every 1.5 s and the feed moves about every 3 s.  Same numbers, same picture: nothing is deleted or redrawn.
-        # build() deletes the "content" tag (every "mk" item has it) and clears the key, so a resize, VIEW or layout always redraws.
-        key = (sim, tuple((s, d["price"], d["pct"], d["sim"], tuple(d["series"])) if d else (s,) for s, d in ((s, snap.get(s)) for s in ("BTC", "USD", "XAU", "XAG"))))
-        if key == getattr(self, "_mk_key", None):
-            return
-        self._mk_key = key
-        c.delete("mk")
-        x0, y0, x1, y1 = self.mkt_box
-        hh = self.hdr_h()
-        c.itemconfigure(self.mkt_hdr, text="AUD" if self.clean() else ("AUD  SIM" if sim else "AUD  LIVE"), fill=self.col("orange" if sim else "lime"))
-        if not self.clean():                                        # 1046: the SIM/LIVE chip repeated the star already on each row
-            self.skin_chip(self.mkt_hdr, self.col("orange" if sim else "lime"), "mktchip")
-        if not snap:
-            self.T((x0 + x1) / 2, (y0 + y1) / 2, "MARKET DATA OFFLINE", 13, "dim", "center", ("content", "mk"))
-            return
-        rh = (y1 - y0 - hh - 8) / 4.0
-        for i, s in enumerate(("BTC", "USD", "XAU", "XAG")):
-            d = snap.get(s)
-            if not d:
-                continue
-            ry = y0 + hh + 6 + i * rh
-            if self.skin_on():                                   # 1031: each instrument on its own tile
-                try:
-                    self.skin_tile((x0 + 7, ry + 1, x1 - 7, ry + rh - 3), ("content", "mk"))
-                except Exception:
-                    self.skin_ok = False
-            up = d["pct"] >= 0
-            colr = "lime" if up else "red"
-            sym = self.T(x0 + 12 + (4 if self.skin_on() else 0), ry + 4, s + ("*" if d["sim"] else ""), 15, "cyan", "nw", ("content", "mk"), True)
-            if self.skin_on():                                   # 1032: the move on a tinted chip beside the symbol, the price under it
-                bb = c.bbox(sym)
-                mv = self.T(bb[2] + int(14 * self.k), (bb[1] + bb[3]) / 2, self.markets.fmt_pct(d["pct"]), 11, colr, "w", ("content", "mk"), True)
-                self.skin_chip(mv, self.col(colr), "mkchip%d" % i, ("mk",))
-                self.T(x0 + 16, ry + rh * 0.52, self.markets.fmt_price(s, d["price"]), 13, "txt", "nw", ("content", "mk"))
-            else:
-                self.T(x0 + 12, ry + rh * 0.52, "%s %s" % (self.markets.fmt_price(s, d["price"]), self.markets.fmt_pct(d["pct"])),
-                       13, colr, "nw", ("content", "mk"))
-            sx0, sx1 = x0 + (x1 - x0) * 0.56, x1 - 14
-            ser = d["series"]
-            lo, hi = min(ser), max(ser)
-            span = (hi - lo) or 1.0
-            pts = []
-            for j, v in enumerate(ser):
-                pts += [sx0 + (sx1 - sx0) * j / float(len(ser) - 1), ry + rh * 0.82 - (v - lo) / span * rh * 0.62]
-            if self.skin_on():                                   # 1031: a soft area under the line
-                base = ry + rh * 0.86
-                c.create_polygon(*(pts + [sx1, base, sx0, base]), fill=hexmix(hexmix(self.skin_fill(), "#ffffff", 0.06), self.col(colr), 0.16), outline="", tags=("content", "mk"))
-            c.create_line(*pts, fill=self.col(colr), width=2, tags=("content", "mk"))
-            if not self.skin_on():
-                c.create_line(x0 + 10, ry + rh - 2, x1 - 10, ry + rh - 2, fill=self.col("edge2"), tags=("content", "mk"))
-
     def _cards(self):
         self.cards_hdr = self.panel(self.rect["cards"], "THREE CUTS", "TODAY")[1]
         if not self.clean():
@@ -2376,7 +2309,7 @@ class Scene(ChromeMixin, SkinMixin):
 
     # ------------------------------------------------------------------ overlay glue
     def overlay_box(self):
-        panels = [self.rect[n] for n in ("arch", "lex", "trans", "mkt", "cards") if n in self.rect]
+        panels = [self.rect[n] for n in ("arch", "lex", "trans", "cards") if n in self.rect]
         return (min(r[0] for r in panels), min(self.rect["menu"][3] + 6, min(r[1] for r in panels)),          # 1055: never shorter than the panels,
                 max(r[2] for r in panels), max(self.rect["status"][1] - 6, max(r[3] for r in panels)))        # so no sliver of them shows above it
 
@@ -2968,13 +2901,15 @@ class WindowApp:
         self.o = opts
         set_app_identity()
         self.root = root = tk.Tk()
-        root.title("%s %s" % (TITLE, VERSION_NAME))
+        root.title(suite_title())
         apply_window_icon(root)
+        from oracle_widgets import install_interaction_defaults
+        install_interaction_defaults(root)     # one hover / focus / disabled look for every workspace
         self.fps = max(5, min(60, int(opts.get("fps", 30))))
         sw, sh = root.winfo_screenwidth(), root.winfo_screenheight()
         if opts.get("bezel", True):
             try:
-                from oracle_photo_bezel import photo_zip, photo_fit_size, SOURCE_W, SOURCE_H
+                from oracle_photo_bezel import photo_zip, photo_fit_size
             except Exception:
                 photo_zip = None
             if photo_zip is not None and photo_zip() is not None:
@@ -3244,7 +3179,7 @@ class WindowApp:
         if mode == "move":
             self.root.geometry("+%d+%d" % (wx + ex - x0, wy + ey - y0))
         else:
-            from oracle_photo_bezel import photo_zip, photo_fit_size, PHOTO_STEPS, photo_geometry
+            from oracle_photo_bezel import photo_zip, PHOTO_STEPS, photo_geometry
             if self.o.get('bezel', True) and photo_zip() is not None:
                 # Resize by selecting a complete image size. No partial photo
                 # tiles and no non-uniform scaling, even on frameless Windows.
@@ -3402,7 +3337,6 @@ class WindowApp:
             cached_eido = getattr(self.scene, '_eido_cached', None)
             if cached_eido is not None and not cached_eido.shutdown():
                 return   # protect an ongoing video conversion from accidental interruption
-            self.scene.markets.stop()
             self.scene.augurspex_chart.close()
             self.scene.close_overlays()
             # Release the reused Rune animation ZIP descriptor on exit.
@@ -3696,7 +3630,6 @@ def parse(argv):
     p.add_argument("--flat", action="store_true", help="the flat 1030 look (no modern panels, shadows or glass bars)")
     p.add_argument("--os-frame", action="store_true", help="keep the normal OS title bar / border")
     p.add_argument("--horizon", default=None, help=argparse.SUPPRESS)
-    p.add_argument("--wire", default=None, help="optional RSS URL for ticker headlines")
     p.add_argument("--selftest", action="store_true")
     p.add_argument("--version", action="store_true")
     p.add_argument("--install-startup", action="store_true")
@@ -3724,10 +3657,12 @@ def hide_console():
         pass
 
 
-def main(argv=None):
-    if sys.stdout is None:                 # pythonw: no console streams
-        sys.stdout = sys.stderr = open(os.devnull, "w")
-    hide_console()
+def launch_plan(argv=None):
+    """Turn a command line into (namespace, options, application class), exactly as a launch does.
+
+    Kept separate from main() so tools and tests open the same window a user
+    gets (no bezel unless one is asked for) instead of re-deriving the options.
+    """
     args = list(argv if argv is not None else sys.argv[1:])
     if not any(x in args for x in ("--crt-v2", "--legacy-bezel", "--retro", "--no-bezel", "--wallpaper", "--fullscreen")):
         args.insert(0, "--no-bezel")
@@ -3741,17 +3676,9 @@ def main(argv=None):
         os.environ.pop("MARBLE_ORACLE_CRT_V2", None)
     if a.calm:
         os.environ["MARBLE_ORACLE_CALM"] = "1"                 # read by oracle_vhs when each tab builds its art
-    if a.version:
-        print("%s %s" % (TITLE, VERSION_NAME))
-        return 0
-    if a.install_startup or a.remove_startup:
-        return startup(a.install_startup, startup_flags(a))
-    if a.check_webui or a.check_ollama:                # 1058: THE LIEN is gone; the old checks print that and exit, as they always exited
-        print("THE LIEN was removed in build 1058: there is no model to check.")
-        return 0
     opts = dict(theme=a.theme, layout=a.layout or "CLASSIC", fps=a.fps, frameless=a.frameless, crt_v2=use_v2,
                 no_dicekey=a.no_dicekey, no_markets=a.no_markets,
-                no_network=a.no_network or a.selftest, crt=not a.no_crt, wire=a.wire, bezel=not a.no_bezel, osframe=a.os_frame or a.no_bezel, flat=a.flat,
+                no_network=a.no_network or a.selftest, crt=not a.no_crt, bezel=not a.no_bezel, osframe=a.os_frame or a.no_bezel, flat=a.flat,
                 retro=a.retro, look=a.look, no_pixel_barrel=a.no_pixel_barrel, no_audio_scope=a.no_audio_scope)
     if not is_retro(opts):
         # A photographic CRT monitor MUST have restrained scanlines by default,
@@ -3770,6 +3697,22 @@ def main(argv=None):
         cls = Fullscreen
     else:
         cls = WindowApp
+    return a, opts, cls
+
+
+def main(argv=None):
+    if sys.stdout is None:                 # pythonw: no console streams
+        sys.stdout = sys.stderr = open(os.devnull, "w")
+    hide_console()
+    a, opts, cls = launch_plan(argv)
+    if a.version:
+        print("%s (%s %s, build %s)" % (suite_title(), TITLE, VERSION_NAME, BUILD))
+        return 0
+    if a.install_startup or a.remove_startup:
+        return startup(a.install_startup, startup_flags(a))
+    if a.check_webui or a.check_ollama:                # 1058: THE LIEN is gone; the old checks print that and exit, as they always exited
+        print("THE LIEN was removed in build 1058: there is no model to check.")
+        return 0
     cls(opts).run()
     return 0
 

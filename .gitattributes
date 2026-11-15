@@ -1,0 +1,16 @@
+# Keep launchers runnable whatever the contributor's Git line-ending setting.
+*.sh   text eol=lf
+*.py   text eol=lf
+*.pyw  text eol=lf
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+# Binary assets: never normalise or diff as text.
+*.zip  binary
+*.png  binary
+*.gif  binary
+*.ico  binary
+*.ttf  binary
+*.otf  binary
+*.pdf  binary
+*.wav  binary
+*.ogg  binary

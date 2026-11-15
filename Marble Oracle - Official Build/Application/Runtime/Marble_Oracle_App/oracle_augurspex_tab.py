@@ -6,11 +6,10 @@ There is no fabricated quote, alternate ticker substitution, or login.
 """
 from __future__ import annotations
 
-import math
 import csv
 import os
 import re
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 import queue
 import threading
 import time
@@ -23,27 +22,25 @@ from collections import deque
 from pathlib import Path
 
 from Augurspex.augurspex.core import (
-    LAYOUTS, WORKSPACES, INTERVALS, CHART_TYPES, FILTERS, read_settings,
+    LAYOUTS, WORKSPACES, INTERVALS, read_settings,
     save_settings, merge_watchlists, update_watchlist, clean_item,
     market_category, reset_to_popular_markets_once, app_folder,
 )
 from Augurspex.augurspex.providers import (MarketRouter, shared_market_router,
     local_stock_path, read_local_stock_csv, LOCAL_IMPORT_LIMIT)
 from marble_uberata import FAMILY
+from oracle_design import HOME_LABEL, MARKET_COLORS, MARKET_LABELS, flow_layout
+from oracle_widgets import tooltip
+# Re-exported on purpose: tests and oracle_augurspex_insights import these names from this module.
+from oracle_augurspex_logic import (  # noqa: F401
+    CARD_CHROME_H, CARD_CHROME_W, CARD_GAP, CHART_PAD_B, CHART_PAD_L, CHART_PAD_R, CHART_PAD_T,
+    MIN_CARD_H, MIN_CARD_W, SHORT_STATUS, _blend, _darken, _plotted_candles, _rgb,
+    chart_date_ticks, chart_display_bars, chart_geometry, chart_grid_plan, csv_safe, fit_date_ticks,
+    fit_text_pixels, format_price, format_quote, history_health, observed_at, plot_points,
+    provider_diagnostics, status_for_error,
+)
 
 DEFAULT_FILE = Path(__file__).resolve().parent / 'Augurspex' / 'augurspex' / 'default_watchlist.json'
-
-
-def _rgb(value):
-    value=str(value).strip().lstrip('#')
-    try:
-        return tuple(int(value[i:i+2],16) for i in (0,2,4))
-    except (TypeError,ValueError):
-        return (29,23,20)
-
-
-def _darken(value, amount):
-    return '#%02x%02x%02x' % tuple(round(v*(1-amount)) for v in _rgb(value))
 
 
 def _parent_bg(widget, fallback):
@@ -86,247 +83,6 @@ class FontMeasure:
 
     def measure(self, text):
         return int(self._tk.call('font', 'measure', self._spec, str(text)))
-
-
-def fit_text_pixels(text, font, max_width):
-    """Fit a single line in measured pixels; preserve recognisable ticker prefixes.
-
-    Tk label and list rows never truncate blindly by character count, since
-    Uberata Clear has variable-width glyphs and can change with font scaling.
-    """
-    text=str(text or '')
-    if max_width<=0:return ''
-    if font.measure(text)<=max_width:return text
-    ellipsis='…'
-    if font.measure(ellipsis)>max_width:return ''
-    low,high=0,len(text)
-    while low<high:
-        mid=(low+high+1)//2
-        if font.measure(text[:mid]+ellipsis)<=max_width:low=mid
-        else:high=mid-1
-    return text[:low].rstrip()+ellipsis
-
-
-def chart_geometry(n):
-    """Stable grid dimensions, suited to the narrow CRT viewport."""
-    return {1:(1,1),2:(1,2),4:(2,2),6:(2,3),9:(3,3)}[n]
-
-
-# Chart grid geometry (0.4.8.5). One chart fills the chart area; more charts
-# share it; vertical scrolling is used only when the legible minimum card size
-# cannot fit. Kept free of Tk so it can be tested directly.
-CARD_GAP = 12
-MIN_CARD_W, MIN_CARD_H = 420, 320
-CARD_CHROME_W, CARD_CHROME_H = 100, 160   # header, info strip and axes inside a card
-
-
-def chart_grid_plan(count, view_w, view_h):
-    """Columns, rows and card size for `count` charts in a view_w x view_h area."""
-    count = max(0, int(count))
-    view_w, view_h = max(1, int(view_w)), max(1, int(view_h))
-    if count == 0:
-        return dict(cols=0, rows=0, card_w=0, card_h=0, scroll=False, total_h=view_h)
-    best = None
-    for cols in range(1, min(3, count) + 1):
-        rows = -(-count // cols)
-        card_w = view_w // cols - CARD_GAP
-        if cols > 1 and card_w < MIN_CARD_W:
-            continue
-        fit_h = view_h // rows - CARD_GAP
-        scroll = fit_h < MIN_CARD_H
-        card_h = max(MIN_CARD_H, fit_h)
-        # When an embedded CRT has less vertical room than one minimum-height
-        # card, give the single-chart view a *larger* scrollable canvas rather
-        # than making it imperceptibly smaller than a four-chart card.
-        if count == 1 and scroll:
-            card_h = max(card_h, MIN_CARD_H + 48)
-        # Charts are time series: score the drawable plot, valuing width up to
-        # about twice the height, so 2 charts sit side by side when roomy.
-        score = min(card_w - CARD_CHROME_W, 2.2 * (card_h - CARD_CHROME_H))
-        # Prefer no scrolling; then the larger plot (or, when scrolling, fewer
-        # rows); then an even grid (4 -> 2x2, not 3+1); then fewer columns.
-        key = (0 if scroll else 1, -rows if scroll else score, count % cols == 0, -cols)
-        if best is None or key > best[0]:
-            best = (key, dict(cols=cols, rows=rows, card_w=max(1, card_w), card_h=card_h, scroll=scroll,
-                              total_h=max(view_h, rows * (card_h + CARD_GAP))))
-    return best[1]
-
-
-SHORT_STATUS = {'DATA SOURCE LIMITED': 'LIMITED', 'NETWORK ISSUE': 'NETWORK',
-                'LISTING NOT SUPPORTED': 'UNSUPPORTED', 'NO HISTORY FROM PROVIDER': 'NO HISTORY',
-                'MARKET DATA UNAVAILABLE': 'UNAVAILABLE', 'DATA SOURCE SETUP NEEDED': 'NEEDS SETUP',
-                'NETWORK DISABLED': 'OFFLINE', 'AWAITING DATA': 'WAITING'}
-
-
-# Reserve a real date axis along the bottom and price tick labels on the
-# right. The same geometry is used by the candles/lines, ticks and grid.
-CHART_PAD_L, CHART_PAD_T, CHART_PAD_R, CHART_PAD_B = 13, 16, 74, 51
-
-
-def _plotted_candles(candles, limit=120):
-    """Validate actual provider OHLC without changing values or timestamps.
-
-    Render callers may limit their window; CSV export and freshness checks
-    must examine the *complete* received history, not just its last 120 rows.
-    """
-    valid=[]
-    series=candles if limit is None else candles[-limit:]
-    for row in series:
-        if not isinstance(row, dict):continue
-        try:
-            o,h,l,cl=(float(row[x]) for x in ('open','high','low','close'))
-            if not all(math.isfinite(x) and x >= 0 for x in (o,h,l,cl)):continue
-            if h < max(o,cl) or l > min(o,cl):continue
-        except (KeyError,TypeError,ValueError):continue
-        valid.append(row)
-    return valid
-
-
-def plot_points(candles, width, height, style='1'):
-    """Scale real provider values into the chart viewport, retaining API shape."""
-    bars=_plotted_candles(candles, limit=None)
-    if not bars:return [], None
-    lo=min(float(v['low']) for v in bars)
-    hi=max(float(v['high']) for v in bars)
-    if hi==lo:
-        hi+=max(hi*.01,.01)
-        lo=max(0,lo-max(lo*.01,.01))
-    w=max(1,width-CHART_PAD_L-CHART_PAD_R)
-    h=max(1,height-CHART_PAD_T-CHART_PAD_B)
-    points=[]
-    for i,row in enumerate(bars):
-        x=CHART_PAD_L+(i+.5)*w/len(bars)
-        def yy(v):return CHART_PAD_T+(hi-float(v))*h/(hi-lo)
-        points.append((x,yy(row['open']),yy(row['high']),yy(row['low']),yy(row['close'])))
-    return points,(lo,hi)
-
-
-def chart_date_ticks(candles, width, max_ticks=5):
-    """Choose spaced, truthful date labels from provider timestamp strings.
-
-    Narrow multi-chart panels show fewer dates; ranges crossing years include
-    the year. No clock-derived or synthesized dates are displayed.
-    """
-    bars=_plotted_candles(candles, limit=None)
-    if not bars:return []
-    dated=[]
-    for i,row in enumerate(bars):
-        raw=str(row.get('time') or '').strip()
-        try:moment=datetime.fromisoformat(raw.replace('Z','+00:00'))
-        except (ValueError,OverflowError):continue
-        dated.append((i,moment))
-    if not dated:return []
-    span=(dated[-1][1]-dated[0][1]).total_seconds()/86400
-    if span<1:
-        fmt='%d %b %H:%M'
-    elif span<75:
-        fmt='%d %b'
-    elif span<900:
-        fmt="%b '%y"
-    else:
-        fmt='%Y'
-    # Do not crowd the labels on 2x3 or 3x3 cards.
-    count=min(max_ticks,len(dated),max(2,int(max(0,width-CHART_PAD_R)/82)))
-    picks=sorted(set(round(k*(len(dated)-1)/(count-1)) for k in range(count))) if count>1 else [0]
-    w=max(1,width-CHART_PAD_L-CHART_PAD_R)
-    ticks=[]
-    for j in picks:
-        i,moment=dated[j]
-        x=CHART_PAD_L+(i+.5)*w/len(bars)
-        label=moment.strftime(fmt).upper()
-        if ticks and ticks[-1][1]==label:continue
-        ticks.append((x,label))
-    return ticks
-
-
-def chart_display_bars(candles, width, style='1', view_bars='MAX'):
-    """Show recent *real* OHLC bars at a readable density on small cards.
-
-    Candle mode limits the visible window rather than synthesising or averaging
-    quotes. The date axis and prices use precisely the same visible records.
-    Line mode retains the full available history.
-    """
-    bars=_plotted_candles(candles, limit=None)
-    # A BARS view is an observation-count window, not a claim about calendar
-    # duration or the provider having supplied additional history.
-    if str(view_bars) in ('30','90'):
-        bars=bars[-int(view_bars):]
-    if style != '1' or any(bar.get('close_only') for bar in bars):
-        return bars
-    plot_width=max(1,width-CHART_PAD_L-CHART_PAD_R)
-    max_bars=max(8,int(plot_width//6.0))
-    return bars[-max_bars:]
-
-
-def _blend(colour, other, fraction):
-    a=_rgb(colour);b=_rgb(other)
-    return '#%02x%02x%02x' % tuple(round(a[i]*(1-fraction)+b[i]*fraction) for i in range(3))
-
-
-def observed_at(data):
-    """Best truthful observation timestamp; never use receipt time as a price date.
-
-    The newest parseable candle timestamp takes precedence over inconsistent
-    provider metadata. Fixtures with synthetic candle IDs may supply a valid
-    latest_observation instead. Unknown timestamps do not imply fresh data.
-    """
-    if not isinstance(data, dict):return None
-    samples=[]
-    for item in _plotted_candles(data.get('candles') or [], limit=None):
-        if item.get('time') is not None:
-            samples.append(str(item['time']))
-    values=[]
-    for raw in samples[-320:]:
-        try:
-            dt=datetime.fromisoformat(raw.replace('Z','+00:00'))
-            if dt.tzinfo is None:dt=dt.replace(tzinfo=timezone.utc)
-            if dt.year>=1990:values.append(dt.astimezone(timezone.utc))
-        except (ValueError,TypeError,OverflowError):pass
-    if values:return max(values)
-    try:
-        dt=datetime.fromisoformat(str(data.get('latest_observation','')).replace('Z','+00:00'))
-        if dt.tzinfo is None:dt=dt.replace(tzinfo=timezone.utc)
-        return dt.astimezone(timezone.utc)
-    except (ValueError,TypeError,OverflowError):return None
-
-
-def csv_safe(value):
-    """Stop formula injection if exported provider strings open in a spreadsheet."""
-    if isinstance(value,str) and (value.startswith(('\t','\r','\n','\ufeff')) or value.lstrip().startswith(('=','+','-','@','＝','＋','－','＠'))):
-        return "'"+value
-    return value
-
-
-def history_health(data, symbol, period='D', now=None):
-    """Separate historical existence from freshness and source availability.
-
-    Trading holidays/weekends are tolerated without claiming live coverage.
-    Weekly/monthly series need wider thresholds. A future observation is
-    suspicious, not a reason to call data current.
-    """
-    exists=bool(isinstance(data,dict) and _plotted_candles(data.get('candles') or []))
-    date=observed_at(data) if exists else None
-    if not exists:return 'missing', None
-    if date is None:return 'undated', None
-    now=now or datetime.now(timezone.utc)
-    if now.tzinfo is None:now=now.replace(tzinfo=timezone.utc)
-    days=(now.astimezone(timezone.utc)-date).total_seconds()/86400
-    if days < -1:return 'future',date
-    period=str(period).upper()
-    if period=='M':allowed=48
-    elif period=='W':allowed=17
-    elif period=='D':allowed=3 if symbol.endswith('-USD') else 8
-    else:allowed=3 if symbol.endswith('-USD') else 8
-    return ('recent' if days<=allowed else 'stale'),date
-
-
-def format_price(value):
-    """Right-axis price labels preserve useful decimals for low-price assets."""
-    v=float(value)
-    if abs(v)>=1000:return f'{v:,.0f}'
-    if abs(v)>=10:return f'{v:,.2f}'
-    if abs(v)>=1:return f'{v:,.3f}'
-    return f'{v:,.4f}'
 
 
 class PriceChart(tk.Frame):
@@ -452,26 +208,7 @@ class PriceChart(tk.Frame):
             self._fit_card_labels()
 
     def _message_for_error(self, error):
-        text=str(error or '').lower()
-        if not text:return 'AWAITING DATA'
-        if 'network disabled' in text:return 'NETWORK DISABLED'
-        if 'no eligible provider' in text:return 'DATA SOURCE SETUP NEEDED'
-        # Composite errors include every attempted public source. A 429 or
-        # network failure from the last source is more informative than an
-        # earlier Stooq N/D and should not be hidden under NO HISTORY.
-        if ('http 429' in text or 'http 403' in text or 'cooling down' in text
-                or 'quota' in text or 'html challenge' in text or 'rate or plan limit' in text):
-            return 'STOCK FEED LIMITED' if market_category(getattr(self,'symbol',''))=='stocks' else 'DATA SOURCE LIMITED'
-        if ('network problem' in text or 'name resolution' in text
-                or 'timeout' in text or 'temporary failure' in text):
-            return 'NETWORK ISSUE'
-        if ('mapping unavailable' in text or 'supports this market' in text
-                or 'requires a 6-digit korean listing' in text):
-            return 'LISTING NOT SUPPORTED'
-        if ('no usable candles' in text or 'no ohlc' in text or 'no csv' in text
-                or 'returned no history' in text or 'returned no candles' in text):
-            return 'NO HISTORY FROM PROVIDER'
-        return 'MARKET DATA UNAVAILABLE'
+        return status_for_error(error, getattr(self,'symbol',''))
 
     def _draw_texture(self, width, height):
         """Tile the original bundled Oggcultist grain behind charts, not labels."""
@@ -491,29 +228,7 @@ class PriceChart(tk.Frame):
     @staticmethod
     def _provider_diagnostics(error):
         """Short visible status for each attempted market source."""
-        if not error:return ''
-        pieces=[]
-        for raw in str(error).split(' | '):
-            prefix,sep,rest=raw.partition(':')
-            if not sep:continue
-            name=prefix.strip().upper()
-            if name not in ('YAHOO','NASDAQ','STOOQ','NAVER','ALPHA','TWELVE','COINBASE','KRAKEN',
-                            'MASSIVE','JQUANTS','KRX','FRED','COINGECKO','COINPAPRIKA','FRANKFURTER-HISTORY'):
-                continue
-            low=rest.lower()
-            if any(tag in low for tag in ('http 429','http 403','quota','cooling down','plan limit')):
-                status='LIMITED'
-            elif 'network problem' in low or 'timeout' in low or 'name resolution' in low:
-                status='NETWORK'
-            elif ('mapping unavailable' in low or 'unsupported' in low
-                  or 'subscription' in low or 'entitlement' in low):
-                status='UNSUPPORTED/PLAN'
-            elif 'no history' in low or 'no csv' in low or 'no usable candles' in low or 'no candles' in low:
-                status='NO HISTORY'
-            else:
-                status='ERROR'
-            pieces.append(name+' '+status)
-        return ' · '.join(pieces[:5])
+        return provider_diagnostics(error)
 
     def display(self,symbol,name,data,error,loading,style,selected,auto_note='',period='D',view_bars='MAX'):
         self.symbol=symbol;self.name=name;self.result=data;self.error=error;self.auto_note=auto_note
@@ -540,7 +255,7 @@ class PriceChart(tk.Frame):
             last=float(window[-1]['close']) if window else float(candles[-1]['close'])
             first=float(window[0]['close']) if window else last
             change=((last/first)-1)*100 if first else 0
-            self.price.configure(text=f'{last:,.4f}' if last<1 else f'{last:,.2f}',
+            self.price.configure(text=format_quote(last),
                                  fg=self.p['green'] if change>=0 else self.p['red'])
             src=data.get('source','');cur=data.get('currency','');obs=data.get('latest_observation','')[:10]
             health,last_at=history_health(data,symbol,period)
@@ -599,10 +314,16 @@ class PriceChart(tk.Frame):
                            outline=grid_major,width=1.2,tags=('plot-frame',))
         tick_count=5 if height>=250 else 4 if height>=180 else 3
         axis_size=11 if width>=370 else 9
+        price_labels=[format_price(mx-(mx-mn)*k/(tick_count-1)) for k in range(tick_count)]
+        # Six-figure and sub-cent prices are wider than the reserved band at
+        # the normal size: step the axis font down instead of clipping them.
+        price_size=axis_size
+        for price_size in dict.fromkeys((axis_size,9,8,7)):
+            fitter=FontMeasure(c,(FAMILY,price_size,'bold'))
+            if max(fitter.measure(text) for text in price_labels)<=CHART_PAD_R-12:break
         for k in range(tick_count):
             f=k/(tick_count-1)
             yy=CHART_PAD_T+(plot_bottom-CHART_PAD_T)*f
-            price=mx-(mx-mn)*f
             c.create_line(CHART_PAD_L,yy,plot_right,yy,
                           fill=grid_major if k in (0,tick_count-1) else grid_minor,
                           dash=() if k in (0,tick_count-1) else (3,4),
@@ -610,18 +331,20 @@ class PriceChart(tk.Frame):
                           tags=('chart-grid','horizontal-grid'))
             c.create_line(plot_right,yy,plot_right+5,yy,
                           fill=grid_major,width=1.3)
-            c.create_text(plot_right+8,yy,text=format_price(price),
-                          fill=self.p['ink'],font=(FAMILY,axis_size,'bold'),anchor='w')
-        dates=chart_date_ticks(visible,width)
-        for j,(x,label) in enumerate(dates):
-            if j not in (0,len(dates)-1):
+            c.create_text(plot_right+8,yy,text=price_labels[k],
+                          fill=self.p['ink'],font=(FAMILY,price_size,'bold'),anchor='w',
+                          tags=('axis-label','price-label'))
+        date_font=FontMeasure(c,(FAMILY,axis_size,'bold'))
+        dates=fit_date_ticks(chart_date_ticks(visible,width),date_font.measure)
+        for x,label,anchor in dates:
+            if anchor=='n':
                 c.create_line(x,CHART_PAD_T,x,plot_bottom,
                               fill=grid_minor,dash=(3,5),width=1.1,
                               tags=('chart-grid','vertical-grid'))
             c.create_line(x,plot_bottom,x,plot_bottom+5,fill=grid_major,width=1.3)
-            anchor=('nw' if j==0 else 'ne' if j==len(dates)-1 else 'n')
             c.create_text(x,plot_bottom+8,text=label,anchor=anchor,
-                          fill=self.p['ink'],font=(FAMILY,axis_size,'bold'))
+                          fill=self.p['ink'],font=(FAMILY,axis_size,'bold'),
+                          tags=('axis-label','date-label'))
         if render_as_candles:
             step=max(1.0,(plot_right-CHART_PAD_L)/len(points))
             body=max(3.8,min(11.5,step*.72))
@@ -699,7 +422,7 @@ class AugurspexPanel(tk.Frame):
         self._load_watchlist()
         self.search=tk.StringVar(value='');self.search.trace_add('write',lambda *_:self._refresh_watch())
         self.symbol_input=tk.StringVar(value='')
-        self.status=tk.StringVar(value='MULTI-SOURCE HISTORY · LICENSED STOCK DATA MAY REQUIRE A PERSONAL API KEY')
+        self.status=tk.StringVar(value='HISTORY, NOT LIVE QUOTES · STOCKS DELAYED / END OF DAY · CRYPTO VENUE PRICES · SEE SOURCE DETAILS')
         self._build_ui()
         self._refresh_watch();self._refresh_charts()
 
@@ -714,6 +437,17 @@ class AugurspexPanel(tk.Frame):
                          fg=self.p['accent'] if active else self.p['ink'],
                          highlightthickness=1,highlightbackground=self.p['border'],
                          font=(FAMILY,11,'bold'),padx=9,pady=6)
+
+    def _watch_tip(self,event):
+        """The full symbol and name of the watchlist row under the pointer, if it was shortened."""
+        try:
+            row=self.watch.nearest(event.y)
+            box=self.watch.bbox(row)
+        except tk.TclError:
+            return ''
+        if not box or not (box[1]<=event.y<=box[1]+box[3]) or not 0<=row<len(self._watch_full):
+            return ''
+        return self._watch_full[row]
 
     def _entry(self,parent,variable):
         return tk.Entry(parent,textvariable=variable,relief='flat',bd=0,
@@ -737,6 +471,11 @@ class AugurspexPanel(tk.Frame):
         width=max(20,int(width)-2*int(label.cget('padx') or 0)-2)
         fitted=fit_text_pixels(text,FontMeasure(self,label.cget('font')),width)
         if label.cget('text')!=fitted:label.configure(text=fitted)
+        # The full wording is one hover away whenever it had to be shortened.
+        label._full_text=text if fitted!=text else ''
+        if not getattr(label,'_has_tip',False):
+            label._has_tip=True
+            tooltip(label,lambda _e,l=label:getattr(l,'_full_text',''))
 
     def _build_ui(self):
         # Native layout matches the palette and proportions of EIDOLITH/Oggcultist.
@@ -750,25 +489,23 @@ class AugurspexPanel(tk.Frame):
         self.rail.pack(fill='both',expand=True)
         tk.Frame(self,bg=self.p['border'],width=1).pack(side='left',fill='y')
         self.work=ogg_frame(self,bg='#1D1714');self.work._oracle_bg=self.p['bg'];self.work.pack(side='left',fill='both',expand=True)
-        self._label(self.rail,'AUGURSPEX','accent',19,True,anchor='w').pack(fill='x',padx=12,pady=(12,1))
-        self._label(self.rail,'MARKET OBSERVATORY','muted',11,anchor='w').pack(fill='x',padx=12,pady=(0,12))
+        self._label(self.rail,'AUGURSPEX','accent',19,True,anchor='w').pack(fill='x',padx=12,pady=(10,6))
         self._label(self.rail,'FIND MARKET','muted',11,True,anchor='w').pack(fill='x',padx=12)
         self._entry(self.rail,self.search).pack(fill='x',padx=12,pady=(2,5))
         filt=ogg_frame(self.rail,bg='#130F0D');filt._oracle_bg=self.p['rail'];filt.pack(fill='x',padx=10,pady=(0,6))
         self.filters={}
-        for index,(text,name) in enumerate([('ALL','all'),('STOCKS','stocks'),
-                                            ('CURRENCIES','fx'),('CRYPTO','crypto'),
+        # Each category filter is lettered in the colour its rows use in the
+        # list below, so the filters double as the legend (the label carries
+        # the meaning; the colour only repeats it).
+        for index,(text,name) in enumerate([('ALL','all'),(MARKET_LABELS['stocks'],'stocks'),
+                                            (MARKET_LABELS['fx'],'fx'),(MARKET_LABELS['crypto'],'crypto'),
                                             ('★ SAVED','favorites')]):
             btn=self._button(filt,text,lambda n=name:self._set_filter(n))
-            btn.grid(row=index//2,column=index%2,padx=2,pady=2,sticky='ew')
+            btn.configure(padx=4)
+            btn.grid(row=index//3,column=index%3,padx=2,pady=2,sticky='ew')
             self.filters[name]=btn
-        filt.columnconfigure(0,weight=1,uniform='filter')
-        filt.columnconfigure(1,weight=1,uniform='filter')
-        category_legend=tk.Frame(self.rail,bg=self.p['rail'])
-        category_legend.pack(fill='x',padx=12,pady=(0,5))
-        for text,colour in (('● STOCKS','#FFB667'),('● FX','#77DCC2'),('● CRYPTO','#CCAAFF')):
-            tk.Label(category_legend,text=text,bg=self.p['rail'],fg=colour,
-                     font=(FAMILY,10,'bold')).pack(side='left',padx=(0,10))
+        for column in range(3):
+            filt.columnconfigure(column,weight=1,uniform='filter')
         sourcing=ogg_frame(self.rail,bg='#130F0D');sourcing._oracle_bg=self.p['rail']
         sourcing.pack(fill='x',padx=10,pady=(0,5))
         self.sourced_button=self._button(sourcing,'SHOW ALL MARKETS',self._toggle_sourced)
@@ -780,42 +517,51 @@ class AugurspexPanel(tk.Frame):
         bottom=ogg_frame(self.rail,bg='#130F0D');bottom._oracle_bg=self.p['rail']
         bottom.pack(side='bottom',fill='x',padx=10,pady=(2,6))
         self._button(bottom,'MANAGE LIST',self._manage_watchlist).pack(side='left',fill='x',expand=True,padx=(0,2))
-        self._button(bottom,'HOME',self.on_home).pack(side='right',fill='x',expand=True,padx=(2,0))
+        self.home_button=self._button(bottom,HOME_LABEL,self.on_home)
+        self.home_button.pack(side='right',fill='x',expand=True,padx=(2,0))
         lst=ogg_frame(self.rail,bg='#130F0D');lst._oracle_bg=self.p['rail'];lst.pack(fill='both',expand=True,padx=10)
         self.watch=tk.Listbox(lst,selectmode='browse',exportselection=False,
                               bg=self.p['inset'],fg=self.p['ink'],selectbackground=self.p['active'],
                               selectforeground=self.p['accent'],relief='flat',bd=0,
                               highlightthickness=1,highlightbackground=self.p['border'],
                               activestyle='none',font=(FAMILY,13,'bold'))
+        self._watch_full=[]
+        tooltip(self.watch,self._watch_tip)        # a shortened row shows its whole name on hover
         sb=tk.Scrollbar(lst,orient='vertical',command=self.watch.yview)
         self.watch.configure(yscrollcommand=sb.set)
         self.watch.pack(side='left',fill='both',expand=True);sb.pack(side='right',fill='y')
         self.watch.bind('<<ListboxSelect>>',lambda _e:self._choose_from_list())
         self.watch.bind('<Configure>',lambda _e:self._watch_resize(),add='+')
 
+        # One header row: the market the selected chart shows, and the actions
+        # that apply to it. The actions are packed first so they are never the
+        # part that gets clipped in a narrow window; the name gives way instead.
         header=ogg_frame(self.work,bg='#261F1B');header._oracle_bg=self.p['panel'];header.pack(fill='x',padx=8,pady=(8,4))
-        self._label(header,'MARKET OBSERVATORY','ink',16,True).pack(side='left',padx=8,pady=5)
-        self._button(header,'REFRESH',self._force_refresh).pack(side='right',padx=4)
-        self._button(header,'SOURCE DETAILS',self._show_source_details).pack(side='right',padx=4)
-        self._button(header,'CSV',self._export_chart_csv).pack(side='right',padx=4)
+        self._button(header,'REFRESH',self._force_refresh).pack(side='right',padx=(4,6),pady=4)
+        self._button(header,'SOURCE DETAILS',self._show_source_details).pack(side='right',padx=4,pady=4)
+        self._button(header,'CSV',self._export_chart_csv).pack(side='right',padx=4,pady=4)
+        self._selected_text='Choose a market'
+        self.selected_market=tk.Label(header,text=self._selected_text,bg=self.p['panel'],
+                                      fg=self.p['ink'],font=(FAMILY,15,'bold'),anchor='w')
+        self.selected_market.pack(side='left',fill='x',expand=True,padx=(8,4),pady=5)
+        self.selected_market.bind('<Configure>',lambda _e:self._fit(self.selected_market,self._selected_text),add='+')
         # Secondary tools: a whole-watchlist comparison and an accessible
-        # provider-observation table. Separate toolbar avoids squeezing headers.
+        # provider-observation table. Equal columns; the captions shorten
+        # (see _reflow_tools) rather than run off the edge.
         tools=tk.Frame(self.work,bg=self.p['bg'])
         tools.pack(fill='x',padx=12,pady=(0,5))
-        for caption,command in (('◈ MARKET ATLAS',self._show_market_atlas),
-                                ('▣ SIGNALS',self._show_market_signals),
-                                ('▤ OBSERVATION TABLE',self._show_observation_table),
-                                ('? SHORTCUTS',self._show_shortcuts)):
-            self._button(tools,caption,command).pack(side='left',fill='x',expand=True,padx=(0,5),pady=1)
-        selected_box=ogg_frame(self.work,bg='#261F1B')
-        selected_box._oracle_bg=self.p['panel']
-        selected_box.pack(fill='x',padx=10,pady=(0,5))
-        self._label(selected_box,'ACTIVE CHART MARKET','muted',10,True,anchor='w').pack(fill='x')
-        self.selected_market=tk.Label(selected_box,text='Choose a market',bg=self.p['panel'],
-                                      fg=self.p['ink'],font=(FAMILY,12,'bold'),anchor='w',
-                                      wraplength=660,justify='left')
-        self.selected_market.pack(fill='x',pady=(3,0))
-        selected_box.bind('<Configure>',lambda e:self.selected_market.configure(wraplength=max(160,e.width-8)),add='+')
+        self.tool_buttons=[]
+        for column,(caption,short,command) in enumerate((
+                ('◈ MARKET ATLAS','◈ ATLAS',self._show_market_atlas),
+                ('▣ SIGNALS','▣ SIGNALS',self._show_market_signals),
+                ('▤ OBSERVATION TABLE','▤ TABLE',self._show_observation_table),
+                ('? SHORTCUTS','? KEYS',self._show_shortcuts))):
+            button=self._button(tools,caption,command)
+            button.grid(row=0,column=column,sticky='ew',padx=(0,5),pady=1)
+            tools.columnconfigure(column,weight=1,uniform='augurspex-tools')
+            self.tool_buttons.append((button,caption,short))
+        self._tools_compact=None
+        tools.bind('<Configure>',lambda e:self._reflow_tools(e.width),add='+')
         opts=ogg_frame(self.work,bg='#1D1714');opts._oracle_bg=self.p['bg'];opts.pack(fill='x',padx=8,pady=(0,4))
         self.workspace_var=tk.StringVar(value=self.settings['workspace'])
         self.layout_var=tk.StringVar(value=str(self.settings['layout']))
@@ -835,8 +581,12 @@ class AugurspexPanel(tk.Frame):
             self._label(part,label,'muted',11,True).pack(side='left',padx=(0,3))
             self._option(part,var,items,fn).pack(side='left')
             self.option_parts.append(part)
-        # At narrow widths, two compact rows keep the DISPLAY option visible
-        # instead of losing it behind the right side of the CRT viewport.
+            # A menu showing a longer value (LINE -> CANDLES) grows; re-flow so
+            # it never runs into its neighbour.
+            part.bind('<Configure>',lambda _e:self._options_changed(),add='+')
+        # The options flow left to right and wrap where the window ends, so
+        # they use as few rows as the width allows and none is ever cut off.
+        self.options_bar=opts
         opts.bind('<Configure>',lambda e:self._reflow_options(e.width),add='+')
         self._reflow_options(1000)  # initial geometry; updates after layout
         # Requested chart spaces vs slots with real data, always stated.
@@ -872,18 +622,12 @@ class AugurspexPanel(tk.Frame):
             widget.bind('<MouseWheel>',self._scroll_charts,add='+')
             widget.bind('<Button-4>',self._scroll_charts,add='+')
             widget.bind('<Button-5>',self._scroll_charts,add='+')
+        # One footer row: what kind of data this is, then the latest status.
         footer=ogg_frame(self.work,bg='#261F1B');footer._oracle_bg=self.p['panel'];footer.pack(fill='x',side='bottom',padx=8,pady=(0,7))
         footer_tag=self._label(footer,'LOCAL · NO LOGIN', 'accent',11,True)
         footer_tag.pack(side='left',padx=8,pady=5)
-        self.footer_note=self._label(footer,'', 'muted',10,anchor='w')
-        self.footer_note.pack(side='left',padx=4,fill='x',expand=True)
-        footer_text='STOCKS: DELAYED / EOD · CRYPTO: VENUE PRICES · SEE SOURCE DETAILS'
-        footer.bind('<Configure>',lambda e:self._fit(self.footer_note,footer_text,
-                    e.width-footer_tag.winfo_reqwidth()-32),add='+')
-        status_row=ogg_frame(self.work,bg='#1D1714');status_row._oracle_bg=self.p['bg']
-        status_row.pack(side='bottom',fill='x',padx=11,pady=2)
-        self.status_label=tk.Label(status_row,text='',anchor='w',bg=self.p['bg'],fg=self.p['weak'],font=(FAMILY,11))
-        self.status_label.pack(fill='x')
+        self.status_label=tk.Label(footer,text='',anchor='w',bg=self.p['panel'],fg=self.p['muted'],font=(FAMILY,10))
+        self.status_label.pack(side='left',padx=4,fill='x',expand=True)
         # Fitted to measured pixels: a long status was cropped on both sides.
         self.status.trace_add('write',lambda *_:self._fit(self.status_label,self.status.get()))
         self.status_label.bind('<Configure>',lambda _e:self._fit(self.status_label,self.status.get()),add='+')
@@ -894,13 +638,30 @@ class AugurspexPanel(tk.Frame):
         self._render_grid()
 
     def _reflow_options(self,width):
-        columns=4 if width>=850 else 2 if width>=440 else 1
-        if columns==self._option_columns:return
-        self._option_columns=columns
-        for i,part in enumerate(self.option_parts):
-            part.grid_forget()
-            part.grid(row=i//columns,column=i%columns,sticky='w',
-                      padx=(2,8),pady=(0,2))
+        """Flow the option groups across `width`, wrapping to a new row when one does not fit."""
+        positions,height=flow_layout([(part.winfo_reqwidth(),part.winfo_reqheight()) for part in self.option_parts],
+                                     width,gap_x=10,gap_y=3)
+        signature=(tuple(positions),height)
+        if signature==self._option_columns:return
+        self._option_columns=signature
+        for part,(x,y) in zip(self.option_parts,positions):
+            part.place(x=x+2,y=y)
+        self.options_bar.configure(height=height+2)
+
+    def _options_changed(self):
+        bar=getattr(self,'options_bar',None)
+        if bar is not None and bar.winfo_width()>1:self._reflow_options(bar.winfo_width())
+
+    def _reflow_tools(self,width):
+        """Full captions when all four fit in equal columns, short ones otherwise."""
+        if not self.tool_buttons:return
+        measure=FontMeasure(self,self.tool_buttons[0][0].cget('font')).measure
+        column=max(1,width)/len(self.tool_buttons)
+        compact=any(measure(caption)+34>column for _button,caption,_short in self.tool_buttons)
+        if compact==self._tools_compact:return
+        self._tools_compact=compact
+        for button,caption,short in self.tool_buttons:
+            button.configure(text=short if compact else caption)
 
     def _toggle_sourced(self):
         self.sourced_only=not self.sourced_only
@@ -1038,7 +799,7 @@ class AugurspexPanel(tk.Frame):
         if health in ('undated','future'):return 'UNVERIFIED DATE'
         if health=='recent':return 'WITH DATA'
         if key in self._errors:
-            text=PriceChart._message_for_error(None,self._errors[key])
+            text=status_for_error(self._errors[key],symbol)
             return SHORT_STATUS.get(text,text)
         if self.offline:return 'OFFLINE'
         return 'QUEUED'
@@ -1243,6 +1004,7 @@ class AugurspexPanel(tk.Frame):
                    (filt not in ('crypto','stocks','fx') or market_category(row['symbol'])==filt) and
                    (not term or term in (row['symbol']+' '+row['name']).lower())]
         self.watch.delete(0,'end')
+        self._watch_full=[]
         self._watch_font=FontMeasure(self,(FAMILY,13,'bold')) if not hasattr(self,'_watch_font') else self._watch_font
         for i,item in enumerate(self.rows):
             tag='★ ' if item['symbol'] in fav else '  '
@@ -1250,17 +1012,20 @@ class AugurspexPanel(tk.Frame):
             display=tag+({'fx':'FX  ', 'crypto':'₿  ', 'stocks':'STK '}[kind])+item['symbol']
             if item['name'] and item['name']!=item['symbol']:
                 display+='  '+item['name']
-            display=fit_text_pixels(display,self._watch_font,max(120,self.watch.winfo_width()-16))
-            self.watch.insert('end',display)
-            category_colour={'stocks':'#FFB667','fx':'#77DCC2','crypto':'#CCAAFF'}[kind]
+            fitted=fit_text_pixels(display,self._watch_font,max(120,self.watch.winfo_width()-16))
+            self._watch_full.append(display if fitted!=display else '')
+            self.watch.insert('end',fitted)
+            category_colour=MARKET_COLORS[kind]
             try:self.watch.itemconfig(i,foreground=category_colour)
             except tk.TclError:pass
             if item['symbol']==old:self.watch.selection_set(i)
         self._source_summary()
         for key,button in self.filters.items():
             on=key==filt
+            rest=MARKET_COLORS.get(key,self.p['ink'])
             button.configure(bg=self.p['active'] if on else self.p['control'],
-                             fg=self.p['accent'] if on else self.p['ink'])
+                             fg=self.p['accent'] if on and key not in MARKET_COLORS else rest,
+                             highlightbackground=self.p['accent'] if on else self.p['border'])
 
     def _watch_resize(self):
         current_width=self.watch.winfo_width()
@@ -1276,7 +1041,8 @@ class AugurspexPanel(tk.Frame):
         shown,auto=plan[index] if 0<=index<len(plan) else (sym,False)
         label=self._names.get(shown,shown) if shown else 'Choose a market from the list'
         if auto:label+='  · AUTO-FILLED'
-        self.selected_market.configure(text=label)
+        self._selected_text=label
+        self._fit(self.selected_market,label)
 
     def _selected(self):
         if not hasattr(self,'watch'):return None
@@ -1659,7 +1425,7 @@ class AugurspexPanel(tk.Frame):
         # optional documented provider when a user configured credentials.
         try:
             routes=self.router._routes(symbol,'auto',period)
-        except (AttributeError,ValueError) as exc:
+        except (AttributeError,ValueError):
             routes=[]
         if routes:details.append('Provider order: '+', '.join(routes))
         if hasattr(self.router,'provider_plan'):
@@ -1683,7 +1449,7 @@ class AugurspexPanel(tk.Frame):
                 details.append('  US index closes: FRED (AUGURSPEX_FRED_KEY), daily close only.')
             else:
                 details.append('  US stocks: Massive, Alpaca IEX, Twelve Data, FMP or Alpha Vantage (personal keys required); Stooq is best-effort.')
-            details.append('See Application/Documentation/AUGURSPEX_PROVIDER_RESEARCH_IMPLEMENTATION_0.4.8.2.md.')
+            details.append('See Application/Documentation/MARKET_DATA.md.')
         data=self._data.get(key)
         if data:
             health,observed=self._market_health(symbol,period)
@@ -1703,6 +1469,7 @@ class AugurspexPanel(tk.Frame):
             return '\n'.join(details)
         failed=self._errors.get(key)
         if failed:
+            details.append('Status: '+status_for_error(failed,symbol))
             details.append('Source attempts:')
             details.extend('  '+s[:170] for s in str(failed).split(' | ')[:8])
             when=self._failed_at.get(key)

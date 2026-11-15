@@ -6,7 +6,6 @@ substitutes securities, contacts an endpoint, or assumes a market is trading.
 from __future__ import annotations
 
 import csv
-from datetime import datetime, timezone
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 

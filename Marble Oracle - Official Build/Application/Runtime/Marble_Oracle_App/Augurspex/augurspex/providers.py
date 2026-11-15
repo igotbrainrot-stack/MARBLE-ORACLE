@@ -40,7 +40,7 @@ SOURCE_INFO = {
     'ecb-fx': {'name':'European Central Bank SDMX', 'coverage':'Seven curated FX cross-rates from independent ECB daily EUR reference series', 'timeliness':'Daily reference, never intraday or live', 'credentials':False},
     'boc-fx': {'name':'Bank of Canada Valet', 'coverage':'Seven curated FX cross-rates from independent CAD reference observations', 'timeliness':'Daily indicative reference, not a live quote', 'credentials':False},
     'gemini': {'name':'Gemini Exchange', 'coverage':'Verified USD pairs BTC/ETH/SOL/XRP/DOGE, spot OHLC', 'timeliness':'Exchange venue observations; not consolidated crypto price', 'credentials':False},
-    'cryptocompare': {'name':'CoinDesk Data / CryptoCompare', 'coverage':'Aggregated USD crypto OHLC as a third public-data option; may require API key', 'timeliness':'Exchange-aggregated historical bars, not a tradeable venue quote', 'credentials':False},
+    'cryptocompare': {'name':'CoinDesk Data / CryptoCompare', 'coverage':'Aggregated USD crypto OHLC; a personal API key is required (set AUGURSPEX_CRYPTOCOMPARE_KEY)', 'timeliness':'Exchange-aggregated historical bars, not a tradeable venue quote', 'credentials':True},
     'fmp': {'name':'Financial Modeling Prep', 'coverage':'US equity/ETF historical OHLC, personal API key and plan permission', 'timeliness':'Daily historical bars; subscription-dependent', 'credentials':True},
     'alpaca': {'name':'Alpaca Market Data', 'coverage':'US stock/ETF historical IEX OHLC; personal key and secret required', 'timeliness':'IEX feed is not a consolidated SIP quote', 'credentials':True},
     'frankfurter': {'name':'Frankfurter', 'coverage':'Currency reference rates', 'timeliness':'Central-bank reference; not live', 'credentials':False},
@@ -87,9 +87,121 @@ CACHE_TTL = {'kraken':50,'coinbase':50,'strasmore':4*3600,'stooq':6*3600,'yahoo'
              'gemini':60, 'fmp':12*3600, 'alpaca':12*3600,
              'frankfurter-history':8*3600, 'ecb-fx':8*3600, 'boc-fx':8*3600}
 MAX_BODY = 2_000_000
+PROVIDER_COOLDOWN = 900        # seconds a source is left alone after a rate limit, refusal or rejected key
+STALE_HORIZON = 7*86400        # a cached reply older than this is never shown, even labelled stale
+CACHE_FILE_LIMIT = 400         # on-disk history files kept per cache folder
+
+# Why a request produced no usable history. The interface shows these as
+# distinct states instead of one generic "unavailable" (see error_kind()).
+ERROR_KINDS = (
+    'offline',           # networking switched off for this run
+    'not_configured',    # no eligible source without the user's own key/plan
+    'auth',              # credentials missing, rejected or not entitled
+    'rate_limited',      # provider quota / HTTP 429 / automated-access challenge
+    'refused',           # provider refused the request (HTTP 403)
+    'cooldown',          # this app is deliberately waiting before retrying
+    'network',           # DNS, connection or timeout problem on the way
+    'unsupported',       # the provider does not offer this listing or interval
+    'no_data',           # reachable, but no rows for this listing
+    'invalid_response',  # reachable, but the reply failed validation
+    'provider_failure',  # provider-side fault (HTTP 5xx)
+    'unknown',
+)
+
+_KIND_RULES = (
+    ('offline', ('network disabled',)),
+    ('not_configured', ('no eligible provider', 'no eligible source', 'not configured')),
+    ('cooldown', ('cooling down',)),
+    ('rate_limited', ('http 429', 'quota', 'rate or plan limit', 'rate limit', 'too many requests',
+                      'daily hits limit', 'demo limit', 'html challenge')),
+    ('auth', ('http 401', 'credential denied', 'authentication', 'not approved', 'entitlement',
+              'api key', 'key/secret', 'subscription', 'unauthorized', 'unauthorised')),
+    ('refused', ('http 403',)),
+    ('network', ('network problem', 'name resolution', 'timeout', 'timed out', 'temporary failure',
+                 'connection refused', 'connection reset', 'unreachable')),
+    ('provider_failure', ('http 500', 'http 502', 'http 503', 'http 504', 'provider is having problems')),
+    ('unsupported', ('http 404', 'mapping unavailable', 'unsupported', 'supports this market', 'only supports',
+                     'requires a 6-digit', 'requires six-digit', 'not mapped', 'not verified for', 'only maps',
+                     'only mapped', 'cannot supply', 'cannot guarantee', 'daily history only', 'daily bars only',
+                     'not suitable for', 'not intraday', 'is daily, not', 'are daily, not', 'unknown source',
+                     'no verified usd spot', 'not in curated', 'supplies daily', 'daily only', 'no such listing')),
+    ('no_data', ('no usable candles', 'no ohlc', 'no csv', 'returned no history', 'returned no candles',
+                 'no history', 'no valid', 'no common-date', 'no verifiable', 'no historical', 'returned no',
+                 'supplied no')),
+    ('invalid_response', ('invalid', 'not valid json', 'not json', 'non-json', 'unexpected', 'different listing',
+                          'different security', 'different ticker', 'different exchange', 'schema', 'safety limit',
+                          'pagination')),
+)
+
+
+def classify_error_text(text):
+    """Best-effort kind for one provider message (see ERROR_KINDS)."""
+    low = str(text or '').lower()
+    if not low.strip():
+        return 'unknown'
+    for kind, needles in _KIND_RULES:
+        if any(needle in low for needle in needles):
+            return kind
+    return 'unknown'
+
+
+# When several sources were tried, report the most actionable reason first:
+# a rate limit or a missing key tells the user more than an earlier "N/D".
+_KIND_PRIORITY = ('offline', 'not_configured', 'rate_limited', 'refused', 'cooldown', 'auth', 'network',
+                  'provider_failure', 'unsupported', 'no_data', 'invalid_response', 'unknown')
+
+
+def split_attempts(text):
+    """'stooq: HTTP 429 … | yahoo: …' -> [(provider, message), …]; provider may be ''."""
+    attempts = []
+    for raw in str(text or '').split(' | '):
+        raw = raw.strip()
+        if not raw:
+            continue
+        prefix, sep, rest = raw.partition(':')
+        name = prefix.strip().lower()
+        if sep and name in SOURCE_INFO:
+            attempts.append((name, rest.strip()))
+        else:
+            attempts.append(('', raw))
+    return attempts
+
+
+def error_kind(error):
+    """Overall kind for an exception or a (possibly multi-provider) message."""
+    explicit = getattr(error, 'kind', None)
+    if explicit in ERROR_KINDS and explicit != 'unknown' and not getattr(error, 'attempts', None):
+        return explicit
+    kinds = {classify_error_text(message) for _name, message in split_attempts(str(error))}
+    whole = classify_error_text(str(error))
+    if whole in ('offline', 'not_configured'):
+        return whole
+    for kind in _KIND_PRIORITY:
+        if kind in kinds:
+            return kind
+    return 'unknown'
+
 
 class ProviderError(Exception):
-    pass
+    """A source could not supply usable history.
+
+    `kind` is one of ERROR_KINDS. `attempts` lists every source tried as
+    {'provider', 'kind', 'message'} when the router gave up on all of them.
+    Messages never contain URLs or credentials.
+    """
+
+    def __init__(self, message='', kind=None, attempts=None):
+        super().__init__(message)
+        self.attempts = list(attempts or [])
+        self.kind = kind if kind in ERROR_KINDS else classify_error_text(message)
+
+
+_HTTP_MESSAGES = {
+    401: ('auth', 'HTTP 401; provider rejected the credentials'),
+    403: ('refused', 'HTTP 403; provider refused the request'),
+    404: ('unsupported', 'HTTP 404; provider has no such listing or endpoint'),
+    429: ('rate_limited', 'HTTP 429; provider rate limit reached'),
+}
 
 def get_bytes(url, timeout=9, extra_headers=None):
     # This method accepts only URLs hard-coded in this module's provider functions.
@@ -102,7 +214,7 @@ def get_bytes(url, timeout=9, extra_headers=None):
     if url.startswith(URL_NASDAQ):
         headers.update({'Origin':'https://www.nasdaq.com','Referer':'https://www.nasdaq.com/'})
     if extra_headers is not None:
-        allowed={'x-api-key','AUTH_KEY'}
+        allowed={'x-api-key','AUTH_KEY','APCA-API-KEY-ID','APCA-API-SECRET-KEY'}
         if any(k not in allowed for k in extra_headers):
             raise ProviderError('Unsupported custom provider header')
         headers.update(extra_headers)
@@ -110,14 +222,34 @@ def get_bytes(url, timeout=9, extra_headers=None):
     try:
         with urlopen(req,timeout=timeout) as response:
             data=response.read(MAX_BODY+1)
-        if len(data)>MAX_BODY: raise ProviderError('Response exceeded safety limit')
+        if len(data)>MAX_BODY: raise ProviderError('Response exceeded safety limit',kind='invalid_response')
         return data
     except HTTPError as exc:
-        raise ProviderError(f'HTTP {exc.code}; provider refused the request') from exc
+        kind,message=_HTTP_MESSAGES.get(exc.code,(None,None))
+        if kind is None:
+            if 500<=exc.code<600:
+                kind,message='provider_failure',f'HTTP {exc.code}; provider is having problems'
+            else:
+                kind,message='refused',f'HTTP {exc.code}; provider refused the request'
+        raise ProviderError(message,kind=kind) from None
     except (URLError, TimeoutError, OSError) as exc:
-        raise ProviderError(f'Network problem: {str(exc)[:130]}') from exc
+        # str(exc) names the failure (DNS, timeout…), never the request URL.
+        raise ProviderError(f'Network problem: {str(exc)[:130]}',kind='network') from None
+
+
+def _json(raw, provider):
+    """Decode a provider reply; an HTML challenge page is not 'no data'."""
+    try:
+        return json.loads(raw.decode('utf-8'))
+    except (ValueError, UnicodeError, AttributeError):
+        head=bytes(raw[:200]).lstrip().lower() if isinstance(raw,(bytes,bytearray)) else b''
+        if head.startswith((b'<!doctype',b'<html',b'<')):
+            raise ProviderError(provider+' sent a web page instead of data (HTML challenge; automated access blocked)',
+                                kind='rate_limited') from None
+        raise ProviderError(provider+' reply was not valid JSON',kind='invalid_response') from None
 
 def as_number(value):
+    if isinstance(value,bool):return None
     try:
         num=float(str(value).replace(',',''))
         return num if math.isfinite(num) and num>=0 else None
@@ -126,6 +258,9 @@ def as_number(value):
 def candle(t,o,h,l,c,v=0):
     numbers=[as_number(x) for x in (o,h,l,c,v)]
     if any(x is None for x in numbers[:4]):return None
+    # A zero is a provider's placeholder for "no trade", never a real price
+    # for these instruments; drawing it would invent a crash to nothing.
+    if min(numbers[:4])<=0:return None
     if numbers[1]<numbers[2] or numbers[1]<max(numbers[0],numbers[3]) or numbers[2]>min(numbers[0],numbers[3]):return None
     return {'time':t,'open':numbers[0],'high':numbers[1],'low':numbers[2],'close':numbers[3],'volume':numbers[4] or 0}
 
@@ -179,7 +314,7 @@ def read_kraken(symbol, period, getter=get_bytes):
     if symbol not in CRYPTO:raise ProviderError('Kraken only supports configured USD crypto pairs')
     minutes,_=INTERVALS[period]
     url=URL_KRAKEN+'?'+urlencode({'pair':CRYPTO[symbol][0],'interval':minutes})
-    data=json.loads(getter(url).decode('utf-8'))
+    data=_json(getter(url),'Kraken')
     if data.get('error'):raise ProviderError('Kraken: '+str(data['error'])[:180])
     rows=data.get('result',{});market=next((v for k,v in rows.items() if k!='last'),None)
     if not isinstance(market,list):raise ProviderError('Kraken returned no OHLC rows')
@@ -198,7 +333,7 @@ def read_coinbase(symbol, period, getter=get_bytes):
     # 250 buckets (< 300 request limit); must remain literal allowed crypto pair.
     url=URL_COINBASE+CRYPTO[symbol][1]+'/candles?'+urlencode({'granularity':seconds,
          'start':start.isoformat().replace('+00:00','Z'),'end':end.isoformat().replace('+00:00','Z')})
-    data=json.loads(getter(url).decode('utf-8'))
+    data=_json(getter(url),'Coinbase')
     if not isinstance(data,list):raise ProviderError('Coinbase candle response unavailable')
     rows=[]
     for x in data:
@@ -228,7 +363,7 @@ def read_strasmore(symbol, period, getter=get_bytes):
          "FROM global_markets.stocks_daily_aggs "
          f"WHERE ticker = '{ticker}' ORDER BY date DESC LIMIT 320")
     url=URL_STRASMORE+'?'+urlencode({'sql':sql})
-    payload=json.loads(getter(url).decode('utf-8'))
+    payload=_json(getter(url),'Strasmore demo')
     if not isinstance(payload,dict):
         raise ProviderError('Strasmore demo did not return a JSON object')
     if payload.get('error'):
@@ -352,7 +487,7 @@ def read_yahoo(symbol, period, getter=get_bytes):
     window={'1':'5d','5':'1mo','15':'1mo','60':'1mo','240':'1mo',
             'D':'1y','W':'2y','M':'5y'}[period]
     url=URL_YAHOO_CHART+quote(actual,safe='')+'?'+urlencode({'range':window,'interval':granularity})
-    payload=json.loads(getter(url).decode('utf-8'))
+    payload=_json(getter(url),'Yahoo chart')
     response=payload.get('chart') if isinstance(payload,dict) else None
     if not isinstance(response,dict):raise ProviderError('Yahoo chart returned invalid JSON')
     errors=response.get('error')
@@ -442,8 +577,7 @@ def read_nasdaq(symbol, period, getter=get_bytes):
     url=(URL_NASDAQ+quote(actual,safe='')+'/historical?'+urlencode({
         'assetclass':asset_class,'fromdate':begin.isoformat(),
         'todate':end.isoformat(),'limit':300}))
-    try:data=json.loads(getter(url).decode('utf-8'))
-    except (ValueError,UnicodeError) as exc:raise ProviderError('Nasdaq website response not valid JSON') from exc
+    data=_json(getter(url),'Nasdaq website')
     body=(data or {}).get('data') if isinstance(data,dict) else None
     if not isinstance(body,dict):raise ProviderError('Nasdaq website returned no historical table')
     table=body.get('tradesTable') or {}
@@ -475,8 +609,7 @@ def read_alpha(symbol, period, getter=get_bytes):
         raise ProviderError('Alpha Vantage free daily history cannot supply intraday bars')
     fn={'D':'TIME_SERIES_DAILY','W':'TIME_SERIES_WEEKLY','M':'TIME_SERIES_MONTHLY'}[period]
     url=URL_ALPHA+'?'+urlencode({'function':fn,'symbol':actual,'outputsize':'compact','apikey':key})
-    try:data=json.loads(getter(url).decode('utf-8'))
-    except (ValueError,UnicodeError) as exc:raise ProviderError('Alpha Vantage invalid response') from exc
+    data=_json(getter(url),'Alpha Vantage')
     if not isinstance(data,dict):raise ProviderError('Alpha Vantage invalid response')
     if 'Note' in data or 'Information' in data:raise ProviderError('Alpha Vantage rate or plan limit')
     if 'Error Message' in data:raise ProviderError('Alpha Vantage rejected ticker')
@@ -530,8 +663,7 @@ def read_twelve(symbol,period,getter=get_bytes):
            'timezone':'UTC','apikey':key}
     if mic:query['mic_code']=mic
     url=URL_TWELVE+'?'+urlencode(query)
-    try:doc=json.loads(getter(url).decode('utf-8'))
-    except (ValueError,UnicodeError) as exc:raise ProviderError('Twelve Data returned invalid JSON') from exc
+    doc=_json(getter(url),'Twelve Data')
     if not isinstance(doc,dict):raise ProviderError('Twelve Data returned invalid response')
     if doc.get('status')=='error' or doc.get('code'):
         status=str(doc.get('code') or '')
@@ -600,7 +732,7 @@ def read_frankfurter(base='AUD',quote='USD',getter=get_bytes):
     base=base.upper();quote=quote.upper()
     if base not in allowed or quote not in allowed or base==quote:raise ProviderError('Unsupported currency pair')
     url=URL_FRANKFURTER+'?'+urlencode({'base':base,'quotes':quote})
-    data=json.loads(getter(url).decode('utf-8'))
+    data=_json(getter(url),'Frankfurter')
     if not isinstance(data,list):raise ProviderError('Frankfurter returned unexpected data')
     entries=[r for r in data if isinstance(r,dict) and r.get('base','').upper()==base and r.get('quote','').upper()==quote]
     if not entries:raise ProviderError('FX reference rate unavailable')
@@ -631,7 +763,7 @@ def read_frankfurter_history(symbol, period, getter=get_bytes):
     begin=(datetime.now(timezone.utc)-timedelta(days=410 if period=='D' else 740)).date()
     url=URL_FRANKFURTER+'?'+urlencode({'from':begin.isoformat(),
                                       'base':base,'quotes':quote_currency})
-    payload=json.loads(getter(url).decode('utf-8'))
+    payload=_json(getter(url),'Frankfurter')
     if not isinstance(payload,list):raise ProviderError('Frankfurter historical response is not a rate series')
     rows=[]
     for item in payload:
@@ -671,7 +803,7 @@ def read_fred(symbol,period,getter=get_bytes):
     since=today-timedelta(days=750 if period in ('W','M') else 420)
     url=URL_FRED+'?'+urlencode({'series_id':series,'api_key':key,'file_type':'json',
                                 'observation_start':since.isoformat(),'observation_end':today.isoformat()})
-    data=json.loads(getter(url).decode('utf-8'))
+    data=_json(getter(url),'FRED')
     if not isinstance(data,dict) or not isinstance(data.get('observations'),list):
         raise ProviderError('FRED returned no authorized index series')
     rows=[]
@@ -700,7 +832,7 @@ def read_massive(symbol,period,getter=get_bytes):
     start=today-timedelta(days=720 if period in ('W','M') else 420)
     url=(URL_MASSIVE+quote(ticker,safe='')+'/range/1/day/'+start.isoformat()+'/'+today.isoformat()+'?'+
          urlencode({'adjusted':'false','sort':'asc','limit':50000,'apiKey':key}))
-    result=json.loads(getter(url).decode('utf-8'))
+    result=_json(getter(url),'Massive')
     if not isinstance(result,dict):raise ProviderError('Massive returned invalid JSON')
     if result.get('ticker') and str(result['ticker']).upper()!=ticker:
         raise ProviderError('Massive returned a different ticker')
@@ -740,7 +872,7 @@ def read_jquants(symbol,period,getter=get_bytes):
         query=dict(params)
         if cursor:query['pagination_key']=cursor
         url=URL_JQUANTS+'?'+urlencode(query)
-        payload=json.loads(_with_headers(getter,url,{'x-api-key':key}).decode('utf-8'))
+        payload=_json(_with_headers(getter,url,{'x-api-key':key}),'J-Quants')
         if not isinstance(payload,dict) or not isinstance(payload.get('data'),list):
             raise ProviderError('J-Quants v2 returned no authorized data')
         records.extend(payload['data'])
@@ -789,7 +921,7 @@ def read_krx(symbol,period,getter=get_bytes):
         date=today-timedelta(days=offset)
         if date.weekday()>=5:continue
         url=URL_KRX+endpoint+'?'+urlencode({'basDd':date.strftime('%Y%m%d')})
-        doc=json.loads(_with_headers(getter,url,{'AUTH_KEY':key}).decode('utf-8'))
+        doc=_json(_with_headers(getter,url,{'AUTH_KEY':key}),'KRX')
         if not isinstance(doc,dict):raise ProviderError('KRX returned invalid JSON')
         if doc.get('error') or doc.get('ERROR') or doc.get('code') in ('401','403','429'):
             raise ProviderError('KRX authentication, approval or rate limit denied')
@@ -835,7 +967,7 @@ def read_coingecko(symbol,period,getter=get_bytes):
         raise ProviderError('CoinGecko free public API cannot guarantee this minute interval')
     days=7 if period in ('60','240') else 90
     url=URL_COINGECKO+quote(ident[0],safe='')+'/market_chart?'+urlencode({'vs_currency':'usd','days':days})
-    data=json.loads(getter(url).decode('utf-8'))
+    data=_json(getter(url),'CoinGecko')
     if not isinstance(data,dict) or not isinstance(data.get('prices'),list):
         raise ProviderError('CoinGecko returned no historical prices')
     return _aggregate_closes(data['prices'],'CoinGecko (aggregated market)',period,
@@ -851,7 +983,7 @@ def read_coinpaprika(symbol,period,getter=get_bytes):
     start=(datetime.now(timezone.utc)-timedelta(hours=22 if period in ('60','240') else 175*24)).isoformat()
     interval='1h' if period in ('60','240') else '1d'
     url=URL_COINPAPRIKA+quote(ident[1],safe='')+'/historical?'+urlencode({'start':start,'interval':interval,'quote':'USD'})
-    obj=json.loads(getter(url).decode('utf-8'))
+    obj=_json(getter(url),'CoinPaprika')
     if not isinstance(obj,list):raise ProviderError('CoinPaprika returned no price series')
     points=[]
     for item in obj:
@@ -901,7 +1033,10 @@ def read_ecb_fx(symbol, period, getter=get_bytes):
     # SDMX key allows '+' for several currencies without changing base identity.
     key='D.'+'+'.join(needed)+'.EUR.SP00.A'
     url=URL_ECB+key+'?'+urlencode({'format':'csvdata','startPeriod':begin.isoformat()})
-    text=getter(url).decode('utf-8-sig',errors='replace')
+    # The ECB's SDMX service is often slow; the default 9 s timed out for five
+    # of seven pairs in the live probe of 15 Nov 2026.
+    raw=get_bytes(url,timeout=20) if getter is get_bytes else getter(url)
+    text=raw.decode('utf-8-sig',errors='replace')
     records=csv.DictReader(io.StringIO(text))
     if not records.fieldnames or not {'TIME_PERIOD','OBS_VALUE'}.issubset(records.fieldnames):
         raise ProviderError('ECB did not supply SDMX CSV observation columns')
@@ -929,7 +1064,7 @@ def read_boc_fx(symbol, period, getter=get_bytes):
     series=['FX'+code+'CAD' for code in required]
     begin=(datetime.now(timezone.utc)-timedelta(days=740 if period!='D' else 410)).date()
     url=URL_BOC+','.join(series)+'/json?'+urlencode({'start_date':begin.isoformat()})
-    payload=json.loads(getter(url).decode('utf-8'))
+    payload=_json(getter(url),'Bank of Canada')
     if not isinstance(payload,dict) or not isinstance(payload.get('observations'),list):
         raise ProviderError('Bank of Canada returned no historical reference records')
     values=[]
@@ -957,7 +1092,7 @@ def read_gemini(symbol,period,getter=get_bytes):
     interval={'1':'1m','5':'5m','15':'15m','60':'1h','240':'1h',
               'D':'1day','W':'1day','M':'1day'}[period]
     url=URL_GEMINI+pair+'/'+interval
-    data=json.loads(getter(url).decode('utf-8'))
+    data=_json(getter(url),'Gemini')
     if not isinstance(data,list):raise ProviderError('Gemini returned no historical OHLC list')
     rows=[]
     for r in data[:1800]:
@@ -980,7 +1115,7 @@ def read_cryptocompare(symbol,period,getter=get_bytes):
     key=os.environ.get('AUGURSPEX_CRYPTOCOMPARE_KEY','').strip()
     if key:query['api_key']=key
     url=URL_CRYPTOCOMPARE+endpoint+'?'+urlencode(query)
-    payload=json.loads(getter(url).decode('utf-8'))
+    payload=_json(getter(url),'CoinDesk Data')
     if not isinstance(payload,dict) or payload.get('Response')=='Error':
         raise ProviderError('CoinDesk Data unavailable: '+str(payload.get('Message','rejected'))[:110] if isinstance(payload,dict) else 'CoinDesk Data invalid response')
     outer=payload.get('Data')
@@ -1010,7 +1145,7 @@ def read_fmp(symbol,period,getter=get_bytes):
         raise ProviderError('FMP stock adapter only supports daily US equity/ETF history')
     begin=(datetime.now(timezone.utc)-timedelta(days=740)).date().isoformat()
     url=URL_FMP+'?'+urlencode({'symbol':ticker,'from':begin,'apikey':key})
-    data=json.loads(getter(url).decode('utf-8'))
+    data=_json(getter(url),'FMP')
     if not isinstance(data,list):raise ProviderError('FMP returned no authorized stock history; check plan entitlement')
     rows=[]
     for r in data:
@@ -1031,7 +1166,7 @@ def read_alpaca(symbol,period,getter=get_bytes):
         raise ProviderError('Alpaca IEX stock history supports daily US equities/ETFs here')
     begin=(datetime.now(timezone.utc)-timedelta(days=740)).date().isoformat()
     url=URL_ALPACA+quote(ticker,safe='')+'/bars?'+urlencode({'timeframe':'1Day','start':begin,'limit':1000,'feed':'iex'})
-    payload=json.loads(_with_headers(getter,url,{'APCA-API-KEY-ID':key,'APCA-API-SECRET-KEY':secret}).decode('utf-8'))
+    payload=_json(_with_headers(getter,url,{'APCA-API-KEY-ID':key,'APCA-API-SECRET-KEY':secret}),'Alpaca')
     data=payload.get('bars') if isinstance(payload,dict) else None
     if not isinstance(data,list):raise ProviderError('Alpaca IEX returned no authorized historical bars')
     rows=[]
@@ -1121,6 +1256,10 @@ def read_local_stock_csv(source_path, symbol, period='D'):
     return result
 
 
+_CACHE_FILE = re.compile(r'history-[0-9a-f]{64}\.json')
+_CACHE_TEMP = re.compile(r'history-[0-9a-f]{64}\.json\.\d+\.tmp')
+
+
 class MarketRouter:
     """Thread-safe local cache, single-flight-ish cooldown. Never makes calls for bad symbols."""
     def __init__(self,clock=time.time,cache_dir=None,import_dir=None):
@@ -1131,7 +1270,11 @@ class MarketRouter:
         digest=hashlib.sha256(repr(key).encode('utf-8')).hexdigest()
         return self.cache_dir / ('history-'+digest+'.json')
     def _cached(self,key):
-        if key in self.cache:return self.cache[key]
+        if key in self.cache:
+            item=self.cache[key]
+            if self.clock()-item['at']>STALE_HORIZON and not (isinstance(key,tuple) and key[0]=='fx'):
+                del self.cache[key];return None
+            return item
         if not self.cache_dir:return None
         try:
             target=self._file(key)
@@ -1155,6 +1298,30 @@ class MarketRouter:
             temp.write_text(json.dumps(item,ensure_ascii=False),encoding='utf-8')
             os.chmod(temp,0o600);os.replace(temp,target)
         except OSError:pass
+        self._prune(at)
+    def _prune(self,now):
+        """Keep the disk cache bounded: drop replies too old to ever be shown.
+
+        Runs at most hourly. Only this router's own `history-<sha256>.json`
+        files (and its abandoned temporaries) in its own folder are touched.
+        """
+        if not self.cache_dir or now-getattr(self,'_pruned_at',float('-inf'))<3600:return
+        self._pruned_at=now
+        try:
+            found=[]
+            for entry in os.scandir(self.cache_dir):
+                if not entry.is_file(follow_symlinks=False):continue
+                name=entry.name
+                if _CACHE_TEMP.fullmatch(name):
+                    if time.time()-entry.stat(follow_symlinks=False).st_mtime>3600:os.unlink(entry.path)
+                elif _CACHE_FILE.fullmatch(name):
+                    found.append((entry.stat(follow_symlinks=False).st_mtime,entry.path))
+            found.sort(reverse=True)
+            wall=time.time()
+            for position,(modified,path) in enumerate(found):
+                if position>=CACHE_FILE_LIMIT or wall-modified>STALE_HORIZON:
+                    os.unlink(path)
+        except OSError:pass
     def _routes(self,symbol,source,period='D'):
         symbol=symbol.upper()
         allowed=('auto','coinbase','kraken','strasmore','stooq','naver','yahoo','nasdaq','alpha','twelve',
@@ -1165,16 +1332,19 @@ class MarketRouter:
         unofficial=(os.environ.get('AUGURSPEX_ALLOW_UNOFFICIAL_SOURCES','').strip()=='1'
                     or getattr(self,'allow_unofficial',False))
         has=lambda name: bool(os.environ.get(name,'').strip())
+        # CoinDesk Data answers 401 without a key (live probe, 15 Nov 2026), so
+        # it is only a route when the user has configured one.
+        keyed_crypto=['cryptocompare'] if has('AUGURSPEX_CRYPTOCOMPARE_KEY') else []
         if FX_SYMBOL.fullmatch(symbol):
             return ['frankfurter-history','ecb-fx','boc-fx'] if period in ('D','W','M') else []
         if symbol in CRYPTO:
             result=['coinbase','kraken']
             if symbol in GEMINI_USD:result.append('gemini')
             if period in ('60','240','D','W','M'):
-                result+=['coingecko','coinpaprika','cryptocompare']
+                result+=['coingecko','coinpaprika']+keyed_crypto
             return result
         if symbol in COIN_IDENTITIES:
-            return ['coingecko','coinpaprika','cryptocompare'] if period in ('60','240','D','W','M') else []
+            return ['coingecko','coinpaprika']+keyed_crypto if period in ('60','240','D','W','M') else []
         if _krx_code(symbol):
             choices=['krx'] if has('AUGURSPEX_KRX_KEY') and period=='D' else []
             if has('AUGURSPEX_TWELVE_DATA_KEY'):choices.append('twelve')
@@ -1291,7 +1461,7 @@ class MarketRouter:
                     raise ProviderError('Imported stock CSV invalid: '+str(exc)) from exc
         routes=self._routes(symbol,source,period)
         if not routes:
-            raise ProviderError('NO ELIGIBLE PROVIDER: No authenticated stock feed configured for this market or interval. Open STOCK FEEDS to connect a free-key API or import your own dated CSV.')
+            raise ProviderError('NO ELIGIBLE PROVIDER: No authenticated stock feed configured for this market or interval. Open STOCK FEEDS to connect a free-key API or import your own dated CSV.',kind='not_configured')
         # Source-specific entries are intentionally distinct to make cache
         # provenance truthful even when the first provider is unavailable.
         with self.lock:
@@ -1308,7 +1478,7 @@ class MarketRouter:
             if fresh_hits:
                 winner=max(fresh_hits,key=lambda x:(x[0],x[1]))
                 return {**winner[2],'cache':'fresh'}
-        failures=[];stale=[]
+        failures=[];stale=[];attempts=[]
         functions={'kraken':read_kraken,'coinbase':read_coinbase,
                    'strasmore':read_strasmore,'stooq':read_stooq,'naver':read_naver,'yahoo':read_yahoo,
                    'nasdaq':read_nasdaq,'alpha':read_alpha,'twelve':read_twelve,
@@ -1326,11 +1496,13 @@ class MarketRouter:
                     return {**hit['value'],'cache':'fresh'}
                 # Limited fresh data may still be better than none, but do not
                 # immediately stop: another provider may have fresh history.
-                if hit and 0 <= now-hit['at'] < 7*86400:
+                if hit and 0 <= now-hit['at'] < STALE_HORIZON:
                     stale.append((hit['at'],provider,hit['value']))
                 blocked_until=self.blocked.get(provider,0)
                 if now < blocked_until:
-                    failures.append(f'{provider}: cooling down (retry in {max(1,int(blocked_until-now))}s)')
+                    message=f'cooling down (retry in {max(1,int(blocked_until-now))}s)'
+                    failures.append(f'{provider}: {message}')
+                    attempts.append({'provider':provider,'kind':'cooldown','message':message})
                     continue
                 gap={'strasmore':6.5,'massive':12.5,'jquants':12.5,'coingecko':10.0,'coinpaprika':2.0,
                      'frankfurter-history':1.5,'ecb-fx':2.0,'boc-fx':2.0,
@@ -1345,10 +1517,15 @@ class MarketRouter:
                     self._save(key,self.clock(),value)
                     self.blocked.pop(provider,None)
                 if failures:
-                    value={**value,'provider_attempts':failures[:8]}
+                    value={**value,'provider_attempts':failures[:8],'provider_attempts_detail':attempts[:8]}
                 return {**value,'cache':'network'}
-            except (ProviderError,ValueError,KeyError,TypeError,UnicodeError,json.JSONDecodeError) as exc:
-                err=str(exc)
+            except (ProviderError,ValueError,KeyError,TypeError,UnicodeError,AttributeError,IndexError) as exc:
+                if isinstance(exc,ProviderError):
+                    err=str(exc);kind=exc.kind
+                else:
+                    # A reply whose shape the adapter did not expect. Never
+                    # surface a raw Python error (or anything it may quote).
+                    err='reply had an unexpected structure and was rejected';kind='invalid_response'
                 for secret in (os.environ.get('AUGURSPEX_ALPHA_VANTAGE_KEY','').strip(),
                                os.environ.get('AUGURSPEX_TWELVE_DATA_KEY','').strip(),
                                os.environ.get('AUGURSPEX_MASSIVE_KEY','').strip(),
@@ -1362,16 +1539,19 @@ class MarketRouter:
                     if secret:err=err.replace(secret,'[REDACTED]')
                 err=err[:160]
                 failures.append(f'{provider}: {err}')
+                attempts.append({'provider':provider,'kind':kind,'message':err})
                 # Real rate limits are respected, not bypassed or retried
                 # aggressively. A global provider block prevents a 9-panel
-                # dashboard from hammering the same service on failure.
-                if any(x in err.lower() for x in ('http 429','http 403','quota','rate or plan limit','html challenge','daily hits limit','demo limit','credential denied','authentication','not approved','entitlement')):
-                    with self.lock:self.blocked[provider]=self.clock()+900
+                # dashboard from hammering the same service on failure, and a
+                # rejected key is not re-sent on every refresh.
+                if kind in ('rate_limited','refused','auth'):
+                    with self.lock:self.blocked[provider]=self.clock()+PROVIDER_COOLDOWN
         if stale:
             at,provider,value=max(stale,key=lambda row:row[0])
             return {**value,'cache':'stale','warning':'All current feeds failed: '+' | '.join(failures[:4]),
-                    'provider_attempts':failures[:8]}
-        raise ProviderError(' | '.join(failures[:8]) or 'No configured historical source supports this market')
+                    'provider_attempts':failures[:8],'provider_attempts_detail':attempts[:8]}
+        message=' | '.join(failures[:8]) or 'No configured historical source supports this market'
+        raise ProviderError(message,kind=error_kind(message),attempts=attempts[:8])
 
     def fx(self,base,quote,getter=get_bytes):
         key=('fx',base,quote);now=self.clock()

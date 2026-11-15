@@ -1,0 +1,160 @@
+name: tests
+
+on:
+  push:
+    branches: ['claude/**']
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      filters:
+        description: 'Only run test scripts whose name contains one of these words (space separated)'
+        required: false
+        default: ''
+      screens_in_log:
+        description: 'Also print the screenshots into the job log as base64 JPEG (for review where artifacts cannot be downloaded)'
+        type: boolean
+        required: false
+        default: false
+      probe_providers:
+        description: 'Also ask the real market-data providers for the starter watchlist (no keys, no prices recorded)'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-gui:
+    name: Linux · Tk under Xvfb · FFmpeg
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Tk, Xvfb, FFmpeg and the Python libraries the suite uses
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            python3-tk python3-pil python3-pil.imagetk python3-mutagen python3-numpy python3-opencv \
+            xvfb xauth ffmpeg
+      - name: Versions
+        run: |
+          python3 --version
+          python3 -c "import tkinter; print('Tk', tkinter.Tcl().eval('info patchlevel'))"
+          ffmpeg -hide_banner -version | head -1
+      - name: Byte-compile every source file
+        run: python3 -m compileall -q "Marble Oracle - Official Build/Application"
+      - name: Lint (ruff.toml; the rules that find real mistakes)
+        run: pipx run ruff check .
+      - name: Regression tests
+        run: |
+          cd "Marble Oracle - Official Build"
+          xvfb-run -a -s "-screen 0 1920x1080x24" python3 Application/Tools/run_tests.py --tail 150 --json "$RUNNER_TEMP/test-results.json" ${{ inputs.filters }}
+      - name: Screenshots of every workspace at the supported window sizes
+        if: always()
+        run: |
+          cd "Marble Oracle - Official Build"
+          xvfb-run -a -s "-screen 0 1920x1080x24" python3 Application/Tools/capture_screens.py "$RUNNER_TEMP/screens" || true
+      - name: Print screenshots into the log (manual runs only)
+        if: ${{ always() && inputs.screens_in_log }}
+        run: |
+          python3 - "$RUNNER_TEMP/screens" <<'PY'
+          import base64, io, sys
+          from pathlib import Path
+          from PIL import Image
+          for path in sorted(Path(sys.argv[1]).glob('*.png')):
+              image = Image.open(path).convert('RGB')
+              buffer = io.BytesIO()
+              image.save(buffer, 'JPEG', quality=62)
+              print('SHOT', path.stem, base64.b64encode(buffer.getvalue()).decode())
+          PY
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-linux
+          path: ${{ runner.temp }}/test-results.json
+          if-no-files-found: ignore
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-linux
+          path: ${{ runner.temp }}/screens
+          if-no-files-found: ignore
+
+  time-travel:
+    # Fixtures with fixed calendar dates pass today and fail next month.
+    # Running the display-free tests with the clock moved forward finds them
+    # before they bite. Informational: it never blocks a merge.
+    name: Linux · clock +60 days (date-dependent fixtures)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Tk, Xvfb, FFmpeg, faketime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            python3-tk python3-pil python3-pil.imagetk python3-mutagen python3-numpy python3-opencv \
+            xvfb xauth ffmpeg faketime
+      - name: AUGURSPEX tests, 60 days from now
+        run: |
+          cd "Marble Oracle - Official Build"
+          xvfb-run -a -s "-screen 0 1920x1080x24" faketime -f '+60d' \
+            python3 Application/Tools/run_tests.py --tail 40 augurspex market_atlas
+
+  windows:
+    # Real Windows Tk (not a physical PC, but the genuine Windows build of
+    # Python, Tk and FFmpeg). Informational until it has a clean record.
+    name: Windows · native Tk · FFmpeg
+    runs-on: windows-latest
+    timeout-minutes: 45
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Give the session a 1920x1080 desktop (the runner default is 1024x768)
+        run: Set-DisplayResolution -Width 1920 -Height 1080 -Force
+      - name: Install the Python libraries the suite uses, and FFmpeg
+        run: |
+          python -m pip install --disable-pip-version-check pillow mutagen numpy opencv-python
+          choco install ffmpeg -y --no-progress
+      - name: Versions
+        run: |
+          python --version
+          python -c "import tkinter; print('Tk', tkinter.Tcl().eval('info patchlevel'))"
+          ffmpeg -hide_banner -version | Select-Object -First 1
+      - name: Regression tests
+        run: |
+          cd "Marble Oracle - Official Build"
+          python Application/Tools/run_tests.py --tail 60 ${{ inputs.filters }}
+
+  live-providers:
+    # Manual only: the one check that talks to the real providers.
+    name: Live provider probe (manual)
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.probe_providers }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ask each no-key source for each starter market
+        run: |
+          cd "Marble Oracle - Official Build"
+          python3 Application/Tools/probe_providers.py --markdown "$RUNNER_TEMP/provider-probe.md" --json "$RUNNER_TEMP/provider-probe.json"
+          cat "$RUNNER_TEMP/provider-probe.md" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-probe
+          path: |
+            ${{ runner.temp }}/provider-probe.md
+            ${{ runner.temp }}/provider-probe.json
+          if-no-files-found: ignore
