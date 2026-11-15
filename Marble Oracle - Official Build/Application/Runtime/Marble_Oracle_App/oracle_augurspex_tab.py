@@ -30,7 +30,7 @@ from Augurspex.augurspex.core import (
 from Augurspex.augurspex.providers import (MarketRouter, shared_market_router,
     local_stock_path, read_local_stock_csv, LOCAL_IMPORT_LIMIT)
 from marble_uberata import FAMILY
-from oracle_design import HOME_LABEL, MARKET_COLORS, MARKET_LABELS
+from oracle_design import HOME_LABEL, MARKET_COLORS, MARKET_LABELS, flow_layout
 # Re-exported on purpose: tests and oracle_augurspex_insights import these names from this module.
 from oracle_augurspex_logic import (  # noqa: F401
     CARD_CHROME_H, CARD_CHROME_W, CARD_GAP, CHART_PAD_B, CHART_PAD_L, CHART_PAD_R, CHART_PAD_T,
@@ -621,21 +621,14 @@ class AugurspexPanel(tk.Frame):
 
     def _reflow_options(self,width):
         """Flow the option groups across `width`, wrapping to a new row when one does not fit."""
-        gap_x,gap_y=10,3
-        x=y=row_height=0
-        placement=[]
-        for part in self.option_parts:
-            w,h=part.winfo_reqwidth(),part.winfo_reqheight()
-            if x and x+w>max(1,width):
-                x=0;y+=row_height+gap_y;row_height=0
-            placement.append((part,x,y))
-            x+=w+gap_x;row_height=max(row_height,h)
-        signature=tuple((x,y) for _part,x,y in placement)+(y+row_height,)
+        positions,height=flow_layout([(part.winfo_reqwidth(),part.winfo_reqheight()) for part in self.option_parts],
+                                     width,gap_x=10,gap_y=3)
+        signature=(tuple(positions),height)
         if signature==self._option_columns:return
         self._option_columns=signature
-        for part,x,y in placement:
+        for part,(x,y) in zip(self.option_parts,positions):
             part.place(x=x+2,y=y)
-        self.options_bar.configure(height=y+row_height+2)
+        self.options_bar.configure(height=height+2)
 
     def _options_changed(self):
         bar=getattr(self,'options_bar',None)
@@ -1436,7 +1429,7 @@ class AugurspexPanel(tk.Frame):
                 details.append('  US index closes: FRED (AUGURSPEX_FRED_KEY), daily close only.')
             else:
                 details.append('  US stocks: Massive, Alpaca IEX, Twelve Data, FMP or Alpha Vantage (personal keys required); Stooq is best-effort.')
-            details.append('See Application/Documentation/AUGURSPEX_PROVIDER_RESEARCH_IMPLEMENTATION_0.4.8.2.md.')
+            details.append('See Application/Documentation/MARKET_DATA.md.')
         data=self._data.get(key)
         if data:
             health,observed=self._market_health(symbol,period)

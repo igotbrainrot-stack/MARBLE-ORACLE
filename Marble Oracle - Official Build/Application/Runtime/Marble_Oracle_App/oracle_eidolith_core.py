@@ -9,6 +9,56 @@ import os
 import re
 import subprocess
 from pathlib import Path
+import threading
+
+
+def stop_process_tree(proc) -> None:
+    """Ask a helper process, and anything it started, to stop. Returns at once.
+
+    On Windows, terminate() ends only the process it is given. FFmpeg installed
+    with Chocolatey or Scoop is a small launcher that starts the real ffmpeg.exe
+    as its child; ending the launcher left the real one running, still holding
+    the video open (seen on Windows CI: the file stayed "in use" after STOP).
+    taskkill /T ends the whole tree and ships with every Windows.
+    """
+    if proc is None or proc.poll() is not None:
+        return
+    if os.name == 'nt':
+        try:
+            subprocess.run(['taskkill', '/PID', str(proc.pid), '/T', '/F'], stdin=subprocess.DEVNULL,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5,
+                           creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+        except (OSError, subprocess.SubprocessError):
+            pass
+    if proc.poll() is None:
+        try:
+            proc.terminate()
+        except OSError:
+            pass
+
+
+def end_process(proc, grace: float = 0.4) -> None:
+    """Stop a helper process tree and collect it, so the files it had open are released.
+
+    Without the wait, every pause or seek left a defunct process behind on
+    Linux until the suite closed. A process that ignores the request is killed
+    and collected off the calling thread, so the interface never waits longer
+    than `grace`.
+    """
+    if proc is None:
+        return
+    try:
+        stop_process_tree(proc)
+        proc.wait(timeout=grace)
+    except subprocess.TimeoutExpired:
+        try:
+            proc.kill()
+        except OSError:
+            pass
+        threading.Thread(target=proc.wait, name='eidolith-reap', daemon=True).start()
+    except OSError:
+        pass
+
 
 PROFILES = {
     'High fidelity': dict(container='mkv', codec='libsvtav1', crf=24, preset='4', pix_fmt='yuv420p10le', desc='CPU AV1 10-bit · CRF 24 · preset 4 · very slow, maximum detail'),

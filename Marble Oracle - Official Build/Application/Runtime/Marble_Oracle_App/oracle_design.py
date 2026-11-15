@@ -27,3 +27,23 @@ HOME_LABEL = 'HOME'
 
 def market_color(category: str) -> str:
     return MARKET_COLORS.get(category, COLOR['text'])
+
+
+def flow_layout(sizes, width, gap_x=8, gap_y=4):
+    """Positions for items laid left to right that wrap to a new row at `width`.
+
+    `sizes` is a sequence of (item width, item height). Returns ([(x, y), ...],
+    total height). An item wider than the whole row still gets a row of its
+    own rather than being dropped. Pure arithmetic, so the rule every wrapping
+    toolbar in the suite follows can be tested without a display.
+    """
+    width = max(1, int(width))
+    positions = []
+    x = y = row_height = 0
+    for item_width, item_height in sizes:
+        if x and x + item_width > width:
+            x, y, row_height = 0, y + row_height + gap_y, 0
+        positions.append((x, y))
+        x += item_width + gap_x
+        row_height = max(row_height, item_height)
+    return positions, (y + row_height if positions else 0)

@@ -127,5 +127,10 @@ if __name__=='__main__':
                test_media_path_preserves_existing_path,
                test_missing_python_venv_requests_desktop_authorization,
                test_windows_private_install_uses_upstream_verified_downloader):
+        # The python3-venv authorisation path exists only on Linux (apt/pkexec);
+        # launch_suite takes it only when sys.platform is linux.
+        if fn is test_missing_python_venv_requests_desktop_authorization and not sys.platform.startswith('linux'):
+            print('SKIP',fn.__name__,'(Linux-only decision path)')
+            continue
         fn()
         print('PASS',fn.__name__)

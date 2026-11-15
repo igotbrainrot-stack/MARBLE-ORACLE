@@ -24,6 +24,7 @@ from marble_uberata import FAMILY
 from oracle_ogg_texture import frame as ogl_frame, label as ogl_label, install as ogl_install
 from oggcultist_design_system import COLOR as C
 from oracle_design import HOME_LABEL
+from oracle_widgets import flow, wrap_to_parent
 from oracle_assets import load_json, save_json, state_dir
 from oracle_eidolith_core import (PROFILES, PROFILE_ORDER, DEFAULT_PROFILE, LEGACY_PROFILE_NAMES, NAME_MODES, RESOLUTIONS, RESOLUTION_ORDER, output_name,
                                   detect_encoders, profile_support, seconds_label)
@@ -312,7 +313,7 @@ class EidolithPanel(tk.Frame):
         head.pack(fill='x', pady=(0, 6))
         self._label(head, title, 15, 'text_bright', bold=True).pack(anchor='w')
         if subtitle:
-            self._label(head, subtitle, 10, 'text_3').pack(anchor='w')
+            wrap_to_parent(self._label(head, subtitle, 10, 'text_3')).pack(anchor='w')
         box = ogl_frame(outer, bg=C['raised'])
         box.pack(fill='both', expand=True)
         return outer, box
@@ -336,7 +337,7 @@ class EidolithPanel(tk.Frame):
                                     activestyle='none', bg=C['canvas'], fg=C['text'], bd=0,
                                     highlightthickness=1, highlightbackground=C['control_line'],
                                     selectbackground=C['hover'], selectforeground=C['text_bright'],
-                                    font=(FAMILY, 10))
+                                    font=(FAMILY, 10), height=4)
         ys = tk.Scrollbar(list_frame, orient='vertical', command=self.file_list.yview)
         self.file_list.config(yscrollcommand=ys.set)
         self.file_list.pack(side='left', fill='both', expand=True)
@@ -393,7 +394,7 @@ class EidolithPanel(tk.Frame):
         outer.pack(fill='both', expand=True)
         body = ogl_frame(box, bg=C['raised'])
         body.pack(fill='both', expand=True, padx=10, pady=10)
-        self.probe_text = self._text(body, height=8)
+        self.probe_text = self._text(body, height=3)
         scroll = tk.Scrollbar(body, command=self.probe_text.yview)
         self.probe_text.configure(yscrollcommand=scroll.set)
         self.probe_text.pack(side='left', fill='both', expand=True)
@@ -413,7 +414,7 @@ class EidolithPanel(tk.Frame):
         self.profile_menu.config(relief='flat', bd=0, font=(FAMILY, 10), bg=C['control'], fg=C['text'], activebackground=C['hover'], activeforeground=C['text'])
         self.profile_menu['menu'].config(font=(FAMILY, 10), bg=C['control'], fg=C['text'])
         self.profile_menu.pack(fill='x', pady=(4, 0))
-        self.profile_desc = self._label(row1, '', 10, 'text_3')
+        self.profile_desc = wrap_to_parent(self._label(row1, '', 10, 'text_3'))
         self.profile_desc.pack(anchor='w', pady=(6, 0))
 
         row2 = ogl_frame(box, bg=C['raised'])
@@ -423,29 +424,29 @@ class EidolithPanel(tk.Frame):
         audio_menu.config(relief='flat', bd=0, font=(FAMILY, 10), bg=C['control'], fg=C['text'], activebackground=C['hover'], activeforeground=C['text'])
         audio_menu['menu'].config(font=(FAMILY, 10), bg=C['control'], fg=C['text'])
         audio_menu.pack(fill='x', pady=(4, 0))
-        self._label(row2, 'Copy audio by default; optional Opus transcode.', 10, 'text_3').pack(anchor='w', pady=(4, 0))
+        wrap_to_parent(self._label(row2, 'Copy audio by default; optional Opus transcode.', 10, 'text_3')).pack(anchor='w', pady=(4, 0))
         self._label(row2, 'RESOLUTION', 11, 'text_3', bold=True).pack(anchor='w', pady=(8, 0))
         res_menu = tk.OptionMenu(row2, self.resolution, *RESOLUTION_ORDER, command=lambda *_: self._save_state())
         res_menu.config(relief='flat', bd=0, font=(FAMILY, 10), bg=C['control'], fg=C['text'], activebackground=C['hover'], activeforeground=C['text'])
         res_menu['menu'].config(font=(FAMILY, 10), bg=C['control'], fg=C['text'])
         res_menu.pack(fill='x', pady=(4, 0))
-        self._label(row2, 'Scale down only, keeping aspect ratio. From 1080p, 720p encodes about 2–3× faster (more for grainy video).',
-                    10, 'text_3', wraplength=430, justify='left').pack(anchor='w', pady=(4, 0))
-        tk.Checkbutton(row2, text='SLIM OUTPUT: video + main audio track only', variable=self.slim_output,
+        wrap_to_parent(self._label(row2, 'Scale down only, keeping aspect ratio. From 1080p, 720p encodes about 2–3× faster (more for grainy video).',
+                                   10, 'text_3', wraplength=430, justify='left')).pack(anchor='w', pady=(4, 0))
+        wrap_to_parent(tk.Checkbutton(row2, text='SLIM OUTPUT: video + main audio track only', variable=self.slim_output,
                        command=self._save_state, anchor='w', font=(FAMILY, 10, 'bold'), bg=C['raised'],
                        fg=C['text_2'], selectcolor=C['control'], activebackground=C['raised'],
-                       activeforeground=C['text'], highlightthickness=0, bd=0).pack(anchor='w', fill='x', pady=(8, 0))
-        self._label(row2, 'Drops extra audio tracks, subtitles, cover art, fonts, chapters and metadata. '
-                          'Every drop is listed in the job log.', 10, 'text_3',
-                    wraplength=430, justify='left').pack(anchor='w', pady=(2, 0))
+                       activeforeground=C['text'], highlightthickness=0, bd=0), margin=28).pack(anchor='w', fill='x', pady=(8, 0))
+        wrap_to_parent(self._label(row2, 'Drops extra audio tracks, subtitles, cover art, fonts, chapters and metadata. '
+                                         'Every drop is listed in the job log.', 10, 'text_3',
+                                   wraplength=430, justify='left')).pack(anchor='w', pady=(2, 0))
         for text, variable in (('Slim: keep English subtitles', self.slim_subs),
                                ('Slim: prefer English audio over the default track', self.slim_eng_audio),
                                ('Skip files already converted to this folder', self.skip_converted),
                                ("Don't re-encode video that is already compact AV1/HEVC", self.smart_copy)):
-            tk.Checkbutton(row2, text=text, variable=variable, command=self._save_state, anchor='w',
+            wrap_to_parent(tk.Checkbutton(row2, text=text, variable=variable, command=self._save_state, anchor='w',
                            font=(FAMILY, 10), bg=C['raised'], fg=C['text_2'], selectcolor=C['control'],
                            activebackground=C['raised'], activeforeground=C['text'],
-                           highlightthickness=0, bd=0).pack(anchor='w', fill='x')
+                           highlightthickness=0, bd=0), margin=28).pack(anchor='w', fill='x')
 
         row3 = ogl_frame(box, bg=C['raised'])
         row3.pack(fill='x', padx=pad, pady=(0, 8))
@@ -475,33 +476,34 @@ class EidolithPanel(tk.Frame):
             item.pack(side='left', fill='x', expand=True, padx=(0, 10))
             self._label(item, label, 10, 'text_3').pack(anchor='w')
             self._entry(item, variable).pack(fill='x', pady=(2, 0))
-        self._label(naming, 'Season/episode overrides apply to one selected file only.', 10, 'text_3').pack(anchor='w', pady=(3, 2))
+        wrap_to_parent(self._label(naming, 'Season/episode overrides apply to one selected file only.', 10, 'text_3')).pack(anchor='w', pady=(3, 2))
         for text, variable in (('Add episode title', self.name_episode_title),
                                ('Add format tag, e.g. [AV1 720p]', self.name_format_tag)):
-            tk.Checkbutton(naming, text=text, variable=variable, command=self._save_state, anchor='w',
+            wrap_to_parent(tk.Checkbutton(naming, text=text, variable=variable, command=self._save_state, anchor='w',
                            font=(FAMILY, 10), bg=C['raised'], fg=C['text_2'], selectcolor=C['control'],
                            activebackground=C['raised'], activeforeground=C['text'],
-                           highlightthickness=0, bd=0).pack(anchor='w', fill='x')
-        self.name_preview = self._label(naming, 'OUTPUT: Select a source file to preview its name.', 10, 'text_3')
+                           highlightthickness=0, bd=0), margin=28).pack(anchor='w', fill='x')
+        self.name_preview = wrap_to_parent(self._label(naming, 'OUTPUT: Select a source file to preview its name.', 10, 'text_3'))
         self.name_preview.pack(anchor='w', fill='x', pady=(0, 2))
         self._update_name_preview()
 
         row4 = ogl_frame(box, bg=C['raised'])
         row4.pack(fill='x', padx=pad, pady=(0, 12))
-        self._button(row4, 'QUEUE SELECTED', self.queue_selected, primary=True).pack(side='left')
-        self._button(row4, 'START QUEUE', self.start_queue).pack(side='left', padx=(8, 0))
-        self._button(row4, 'CANCEL JOB', self.cancel_current).pack(side='left', padx=(8, 0))
+        flow(row4, [self._button(row4, 'QUEUE SELECTED', self.queue_selected, primary=True),
+                    self._button(row4, 'START QUEUE', self.start_queue),
+                    self._button(row4, 'CANCEL JOB', self.cancel_current)], gap_x=8)
         self._update_profile_desc()
 
     def _section_queue(self, parent):
         tools = ogl_frame(parent, bg=C['canvas'])
         tools.pack(fill='x', pady=(0, 8))
-        self._button(tools, 'START QUEUE', self.start_queue, primary=True).pack(side='left')
-        self._button(tools, 'STOP QUEUE', self.stop_queue).pack(side='left', padx=(7, 0))
-        self._button(tools, 'CANCEL CURRENT', self.cancel_current).pack(side='left', padx=(7, 0))
-        self._button(tools, 'RETRY FAILED', self.retry_failed).pack(side='left', padx=(7, 0))
-        self._button(tools, 'CLEAR FINISHED', self.clear_finished).pack(side='left', padx=(7, 0))
-        self._button(tools, 'CLEAR ALL', self.clear_all).pack(side='left', padx=(7, 0))
+        # Wrapping rows: at 900 px the last two buttons used to be cut off.
+        flow(tools, [self._button(tools, 'START QUEUE', self.start_queue, primary=True),
+                     self._button(tools, 'STOP QUEUE', self.stop_queue),
+                     self._button(tools, 'CANCEL CURRENT', self.cancel_current),
+                     self._button(tools, 'RETRY FAILED', self.retry_failed),
+                     self._button(tools, 'CLEAR FINISHED', self.clear_finished),
+                     self._button(tools, 'CLEAR ALL', self.clear_all)])
 
         # Current job: index/total, state, a real progress bar (or an
         # indeterminate sweep when duration is unknown), timings and the
@@ -523,23 +525,23 @@ class EidolithPanel(tk.Frame):
         self.queue_list = tk.Listbox(box, activestyle='none', bg=C['canvas'], fg=C['text'], bd=0,
                                      highlightthickness=1, highlightbackground=C['control_line'],
                                      selectbackground=C['hover'], selectforeground=C['text_bright'],
-                                     exportselection=False, selectmode='extended', font=(FAMILY, 11), height=8)
+                                     exportselection=False, selectmode='extended', font=(FAMILY, 11), height=3)
         self.queue_list.pack(fill='both', expand=True, padx=12, pady=(12, 6))
         self.queue_list.bind('<<ListboxSelect>>', lambda e: self._update_progress_panel())
         self.queue_list.bind('<Delete>', lambda e: self.remove_selected_jobs())
         self.queue_list.bind('<BackSpace>', lambda e: self.remove_selected_jobs())
         logtools = ogl_frame(box, bg=C['raised'])
         logtools.pack(fill='x', padx=12, pady=(0, 10))
-        self._button(logtools, 'REMOVE SELECTED', self.remove_selected_jobs).pack(side='left')
-        self._button(logtools, 'OPEN LOG', self.open_job_log).pack(side='left', padx=(7, 0))
-        self._button(logtools, 'COPY DIAGNOSTICS', self.copy_diagnostics).pack(side='left', padx=(7, 0))
-        self._button(logtools, 'LOG FOLDER', self.open_log_folder).pack(side='left', padx=(7, 0))
-        self._button(logtools, 'RETRY SELECTED', self.retry_selected).pack(side='left', padx=(7, 0))
+        flow(logtools, [self._button(logtools, 'REMOVE SELECTED', self.remove_selected_jobs),
+                        self._button(logtools, 'OPEN LOG', self.open_job_log),
+                        self._button(logtools, 'COPY DIAGNOSTICS', self.copy_diagnostics),
+                        self._button(logtools, 'LOG FOLDER', self.open_log_folder),
+                        self._button(logtools, 'RETRY SELECTED', self.retry_selected)])
 
         outer2, logbox = self._section_frame(parent, 'CONVERSION LOG',
                                              'Recent events. Full FFmpeg output is kept in one log file per job.')
         outer2.pack(fill='both', expand=True)
-        self.log_text = self._text(logbox, height=9)
+        self.log_text = self._text(logbox, height=3)
         self.log_text.pack(fill='both', expand=True, padx=12, pady=12)
 
     def _selected_job(self):
