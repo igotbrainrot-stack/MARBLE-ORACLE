@@ -5,6 +5,11 @@ on:
     branches: ['claude/**']
   pull_request:
   workflow_dispatch:
+    inputs:
+      filters:
+        description: 'Only run test scripts whose name contains one of these words (space separated)'
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -36,7 +41,7 @@ jobs:
       - name: Regression tests
         run: |
           cd "Marble Oracle - Official Build"
-          xvfb-run -a -s "-screen 0 1920x1080x24" python3 Application/Tools/run_tests.py --json "$RUNNER_TEMP/test-results.json"
+          xvfb-run -a -s "-screen 0 1920x1080x24" python3 Application/Tools/run_tests.py --tail 150 --json "$RUNNER_TEMP/test-results.json" ${{ inputs.filters }}
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4

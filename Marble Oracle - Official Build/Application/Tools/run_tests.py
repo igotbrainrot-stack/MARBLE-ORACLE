@@ -49,7 +49,7 @@ def discover(filters):
     return found
 
 
-def run_one(path: Path, timeout: float):
+def run_one(path: Path, timeout: float, tail_lines: int = 12):
     state = Path(tempfile.mkdtemp(prefix='marble-oracle-test-'))
     env = dict(os.environ)
     env.update({
@@ -75,7 +75,7 @@ def run_one(path: Path, timeout: float):
     finally:
         shutil.rmtree(state, ignore_errors=True)
     seconds = time.monotonic() - started
-    tail = [line for line in output.strip().splitlines() if line.strip()][-12:]
+    tail = [line for line in output.strip().splitlines() if line.strip()][-tail_lines:]
     if code == 0:
         status, reason = 'PASS', ''
     elif code is None:
@@ -94,6 +94,7 @@ def main(argv=None):
     parser.add_argument('filters', nargs='*', help='only run tests whose file name contains one of these')
     parser.add_argument('--timeout', type=float, default=420, help='seconds allowed per test script')
     parser.add_argument('--json', dest='json_path', help='also write the results to this JSON file')
+    parser.add_argument('--tail', type=int, default=12, help='output lines to keep for each failed test')
     parser.add_argument('--verbose', action='store_true', help='print the output tail of every test')
     args = parser.parse_args(argv)
     tests = discover(args.filters)
@@ -102,7 +103,7 @@ def main(argv=None):
         return 2
     results = []
     for path in tests:
-        result = run_one(path, args.timeout)
+        result = run_one(path, args.timeout, max(1, args.tail))
         results.append(result)
         note = f' — {result["reason"]}' if result['reason'] else ''
         print(f'{result["status"]:4} {result["seconds"]:6.1f}s  {result["test"]}{note}', flush=True)
