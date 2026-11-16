@@ -340,7 +340,8 @@ class PriceChart(tk.Frame):
         date_font=FontMeasure(c,(FAMILY,axis_size,'bold'))
         dates=axis_date_labels(visible,width,date_font.measure)
         for x,label,anchor in dates:
-            if anchor=='n':
+            # Calendar ticks sit inside the plot, so the end labels get a grid line too.
+            if anchor=='n' or CHART_PAD_L+3<x<plot_right-3:
                 c.create_line(x,CHART_PAD_T,x,plot_bottom,
                               fill=grid_minor,dash=(3,5),width=1.1,
                               tags=('chart-grid','vertical-grid'))

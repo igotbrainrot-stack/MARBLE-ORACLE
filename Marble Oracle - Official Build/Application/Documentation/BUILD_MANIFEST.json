@@ -3,7 +3,7 @@
   "version": "0.4.9.6",
   "title": "Design prototype: contrast, focus, Escape, EIDOLITH Convert, AUGURSPEX grid",
   "release_date": "2026-11-16",
-  "generated_utc": "2026-11-16T05:55:54+00:00",
+  "generated_utc": "2026-11-16T06:12:24+00:00",
   "platform_targets": [
     "Windows 11",
     "Linux Mint"
@@ -27,7 +27,7 @@
   "inventory_file_count": 473,
   "python_source_count": 228,
   "test_script_count": 103,
-  "total_bytes": 115508386,
+  "total_bytes": 115508613,
   "previous_release": {
     "version": "0.4.9.4",
     "branch": "claude/marble-oracle-0494-data-sources"

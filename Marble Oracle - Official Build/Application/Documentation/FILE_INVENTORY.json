@@ -1,6 +1,6 @@
 {
  "release": "Marble Oracle 0.4.9.6",
- "generated_utc": "2026-11-16T05:55:54+00:00",
+ "generated_utc": "2026-11-16T06:12:24+00:00",
  "schema": "sha256-inventory-v2",
  "excluded_from_hashes": [
   "Application/Documentation/BUILD_MANIFEST.json",
@@ -8,7 +8,7 @@
  ],
  "optional_note": "Entries marked optional are in the portable ZIP but not in Git; verify_release.py checks them when present.",
  "inventory_file_count": 473,
- "inventory_total_bytes": 115508386,
+ "inventory_total_bytes": 115508613,
  "files": [
   {
    "path": "Application/.gitignore",
@@ -22,8 +22,8 @@
   },
   {
    "path": "Application/Documentation/CHANGELOG.md",
-   "bytes": 16380,
-   "sha256": "945872e03c54e9819c165c9add8a23bf8201fc1e83c347aba39aefd11138cce1"
+   "bytes": 16486,
+   "sha256": "ef8702f0bbe81e3a2838f252f96fcc4446cf25bdbff57a5500832153b38479f8"
   },
   {
    "path": "Application/Documentation/DEVELOPMENT.md",
@@ -1747,8 +1747,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_augurspex_tab.py",
-   "bytes": 94530,
-   "sha256": "5830d6997b656337f44c5f88bf1df267091907107854341f99533d2569f5d69f"
+   "bytes": 94651,
+   "sha256": "6385de8ab58fa400a17d8ce1716ca0cfcd35e44044c30bb5d7dca4529a212533"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_bootstrap.py",

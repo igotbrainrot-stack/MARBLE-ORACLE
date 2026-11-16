@@ -13,7 +13,7 @@ The first slice of the redesign in the design document (phase 7). Built on 0.4.9
 - **No GRADE footer on workspaces.** GRADE changes only HOME; workspaces gain its 30 px.
 - **EIDOLITH Convert.** QUEUE SELECTED and START QUEUE sit in the page title row at every size; they were the last controls of a scrolling form. The output folder comes first. ADD FILES is secondary, so the page has one main button. Cancelling stays on QUEUE. The rail shows the suite version, not 0.4.7.
 - **AUGURSPEX.** The minimum chart card is 380x260 px (was 420x320), so four charts form a 2x2 grid at the default window instead of one scrolling column.
-- **AUGURSPEX month axis.** Month and year labels now sit on the first bar of each month (or year) and step evenly, counting back from the newest: JUL, SEP, NOV rather than JUN, AUG, SEP, NOV. When the labels would not fit the axis font, the card asks for fewer at a wider step instead of dropping one from the middle. The smaller cards made the uneven spacing more visible. Labels still name only dates the provider returned.
+- **AUGURSPEX month axis.** Month and year labels now sit on the first bar of each month (or year) and step evenly, counting back from the newest: JUL, SEP, NOV rather than JUN, AUG, SEP, NOV. When the labels would not fit the axis font, the card asks for fewer at a wider step instead of dropping one from the middle. Because month labels now sit inside the plot, the first and last labels get a vertical grid line as well. The smaller cards made the uneven spacing more visible. Labels still name only dates the provider returned.
 
 ### Tests
 
