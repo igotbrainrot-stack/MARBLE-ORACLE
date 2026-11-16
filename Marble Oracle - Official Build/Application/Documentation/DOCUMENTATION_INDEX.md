@@ -32,4 +32,4 @@ Written when each part was built; still accurate for how that part works, but ea
 
 ## History
 
-`History/` keeps every earlier handover, changelog, audit report and manifest, and `History/ReleaseNotes/` the notes for 0.4.7.1 to 0.4.9.2. They describe the program as it was; launch instructions in them may be obsolete.
+`History/` keeps every earlier handover (`HANDOVER_0.4.9.3-0.4.9.5.md` for the most recent ones), changelog, audit report and manifest, and `History/ReleaseNotes/` the notes for 0.4.7.1 to 0.4.9.2. They describe the program as it was; launch instructions in them may be obsolete.
