@@ -250,29 +250,9 @@ class PriceChart(tk.Frame):
             self._company_text=f'AUTO-FILLED · {auto_note}'
         self.company.configure(fg=self.p['accent'] if auto_note else self.p['muted'])
         candles=(data or {}).get('candles',[])
+        self._view_period=period
         if candles:
-            # The percentage must describe the same real observations as the
-            # selected visible window, not an unrelated provider-wide span.
-            display_style='2' if any(b.get('close_only') for b in _plotted_candles(candles,limit=None)) else style
-            window=chart_display_bars(candles,max(200,self.canvas.winfo_width()),display_style,self.view_bars)
-            last=float(window[-1]['close']) if window else float(candles[-1]['close'])
-            first=float(window[0]['close']) if window else last
-            change=((last/first)-1)*100 if first else 0
-            self.price.configure(text=format_quote(last),
-                                 fg=self.p['green'] if change>=0 else self.p['red'])
-            src=data.get('source','');cur=data.get('currency','');obs=data.get('latest_observation','')[:10]
-            health,last_at=history_health(data,symbol,period)
-            stale_tag=(f' · STALE {last_at:%Y-%m-%d}' if health=='stale' else
-                       ' · DATE UNVERIFIED' if health in ('undated','future') else '')
-            close_only=any(bool(row.get('close_only')) for row in _plotted_candles(candles,limit=None))
-            bar_count=len(_plotted_candles(candles,limit=None))
-            visible_count=len(chart_display_bars(candles,max(200,self.canvas.winfo_width()),style,self.view_bars))
-            history_label=('CLOSE-ONLY HISTORY · ' if close_only else
-                           f'LAST {visible_count} OF {bar_count} REAL BARS · '
-                           if visible_count<bar_count and style=='1' else '')
-            self._info_text=(history_label+f'{src} · {cur} · {obs} · VIEW {change:+.2f}%'
-                             + stale_tag
-                             + (' · CACHED' if data.get('cache')=='stale' else ''))
+            self._info_text=self._view_summary()
         else:
             self.price.configure(text='')
             if not symbol:info='Click a market on the left to assign'
@@ -282,6 +262,38 @@ class PriceChart(tk.Frame):
             self._info_text=info
         self._fit_card_labels()
         self.redraw()
+
+    def _view_summary(self):
+        """Footer text and price for the window the chart actually draws.
+
+        Called from display() and again from redraw(), because a card that is
+        resized (a new grid, a maximised window) draws a different number of
+        bars; the footer's bar count and VIEW change must follow it.
+        """
+        data=self.result or {};candles=data.get('candles',[]);style=self.style
+        symbol=self.symbol;period=getattr(self,'_view_period','D')
+        # The percentage must describe the same real observations as the
+        # selected visible window, not an unrelated provider-wide span.
+        display_style='2' if any(b.get('close_only') for b in _plotted_candles(candles,limit=None)) else style
+        window=chart_display_bars(candles,max(200,self.canvas.winfo_width()),display_style,self.view_bars)
+        last=float(window[-1]['close']) if window else float(candles[-1]['close'])
+        first=float(window[0]['close']) if window else last
+        change=((last/first)-1)*100 if first else 0
+        self.price.configure(text=format_quote(last),
+                             fg=self.p['green'] if change>=0 else self.p['red'])
+        src=data.get('source','');cur=data.get('currency','');obs=data.get('latest_observation','')[:10]
+        health,last_at=history_health(data,symbol,period)
+        stale_tag=(f' · STALE {last_at:%Y-%m-%d}' if health=='stale' else
+                   ' · DATE UNVERIFIED' if health in ('undated','future') else '')
+        close_only=any(bool(row.get('close_only')) for row in _plotted_candles(candles,limit=None))
+        bar_count=len(_plotted_candles(candles,limit=None))
+        visible_count=len(chart_display_bars(candles,max(200,self.canvas.winfo_width()),style,self.view_bars))
+        history_label=('CLOSE-ONLY HISTORY · ' if close_only else
+                       f'LAST {visible_count} OF {bar_count} REAL BARS · '
+                       if visible_count<bar_count and style=='1' else '')
+        return (history_label+f'{src} · {cur} · {obs} · VIEW {change:+.2f}%'
+                + stale_tag
+                + (' · CACHED' if data.get('cache')=='stale' else ''))
 
     def redraw(self):
         c=self.canvas;c.delete('all')
@@ -304,6 +316,10 @@ class PriceChart(tk.Frame):
             return
         self._plot_bars=visible
         self._plot_points=points
+        if self.symbol and candles:
+            summary=self._view_summary()
+            if summary!=self._info_text:
+                self._info_text=summary;self._fit_card_labels()
         mn,mx=bounds
         plot_right=max(CHART_PAD_L+1,width-CHART_PAD_R)
         plot_bottom=max(CHART_PAD_T+1,height-CHART_PAD_B)

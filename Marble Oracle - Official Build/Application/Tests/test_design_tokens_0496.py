@@ -89,6 +89,31 @@ for start, n in ((datetime(2026, 5, 20, tzinfo=timezone.utc), 180), (datetime(20
 years = [label for _x, label in logic.chart_date_ticks(daily(datetime(2018, 3, 1, tzinfo=timezone.utc), 300, 10), 700)]
 check('year axis: steady step', len({int(b) - int(a) for a, b in zip(years, years[1:])}) == 1, years)
 
+# A card's footer describes the bars it draws, also after the card is resized
+# (0.4.9.5 kept the count from the first layout: "LAST 18 OF 160" over 52 candles).
+import re  # noqa: E402
+import tkinter as tk  # noqa: E402
+from oracle_augurspex_tab import PriceChart, palette  # noqa: E402
+
+_root = tk.Tk()
+_root.geometry('420x300')
+card = PriceChart(_root, palette(), 0, lambda *_: None)
+card.pack(fill='both', expand=True)
+_root.update()
+card.display('BTC-USD', 'Bitcoin', dict(candles=daily(datetime(2026, 6, 1, tzinfo=timezone.utc), 160),
+                                       source='TEST', currency='USD', latest_observation='2026-11-07'),
+             None, False, '1', False)
+_root.update()
+for size in ('900x420', '520x320', '1400x500'):
+    _root.geometry(size)
+    _root.update()
+    _root.update()
+    shown = re.search(r'LAST (\d+) OF', card._info_text)
+    drawn = len(card._plot_bars)
+    check(f'card footer bar count follows a resize to {size}',
+          (int(shown.group(1)) if shown else 160) == drawn, (card._info_text, drawn))
+_root.destroy()
+
 from marble_oracle import WindowApp, launch_plan  # noqa: E402
 
 _a, options, _c = launch_plan(['--selftest', '--no-network'])
