@@ -48,7 +48,8 @@ def _parent_bg(widget, fallback):
     return getattr(widget,'_oracle_bg',fallback)
 
 
-C_TEXT_BRIGHT='#FFF4E6'        # titles, as oracle_shell draws them in every workspace
+from oggcultist_design_system import COLOR as _SUITE  # noqa: E402
+C_TEXT_BRIGHT=_SUITE['text_bright']   # titles, as oracle_shell draws them in every workspace
 
 
 def palette(theme=None):
@@ -454,7 +455,7 @@ class AugurspexPanel(tk.Frame):
     def _entry(self,parent,variable):
         return tk.Entry(parent,textvariable=variable,relief='flat',bd=0,
                         bg=self.p['inset'],fg=self.p['ink'],insertbackground=self.p['accent'],
-                        highlightthickness=1,highlightbackground=self.p['border'],font=(FAMILY,12))
+                        highlightthickness=1,highlightbackground=self.p['border'],font=shell.font('body'))
 
     def _option(self,parent,var,values,command):
         btn=tk.OptionMenu(parent,var,*values,command=command)
@@ -553,7 +554,11 @@ class AugurspexPanel(tk.Frame):
         header=ogg_frame(self.work,bg='#1D1714');header._oracle_bg=self.p['bg']
         header.pack(fill='x',padx=mx,pady=(shell.HEADER_PADY[0],8))
         self._button(header,'REFRESH',self._force_refresh).pack(side='right',padx=(6,0))
-        self._button(header,'SOURCE DETAILS',self._show_source_details).pack(side='right',padx=(6,0))
+        details=self._button(header,'SOURCE DETAILS',self._show_source_details)
+        details.pack(side='right',padx=(6,0))
+        # In a narrow window the caption shortens rather than push CSV off the row.
+        header.bind('<Configure>',lambda e,b=details:b.configure(
+            text='SOURCES' if e.width<520 else 'SOURCE DETAILS') if e.widget is header else None,add='+')
         self._button(header,'CSV',self._export_chart_csv).pack(side='right',padx=(6,0))
         self._selected_text='Choose a market'
         self.selected_market=tk.Label(header,text=self._selected_text,bg=self.p['bg'],

@@ -15,15 +15,23 @@ The workspaces had grown their own layouts: side rails of 208, 225, 240 and 312 
 - **PASSPHRASE:** now has the rail (options, keys, privacy note, HOME). The parts are compact cards instead of tall empty ones, each word is sized to fit its card, and in a narrow window the rail steps aside so the five parts stay on one row.
 - **AUGURSPEX:** uses the suite's surface colours (it was 10-24 % darker than every other tab), the shared brand, title and status line, and a full-width HOME at the foot of the rail. Its rail stays wider (312 px) because it is the market list.
 - **OGGCULTIST:** the extra title bar above it is gone (its rail already shows the name and version); HOME is at the foot of its rail. Oggcultist's own pages are unchanged.
-- **All rails narrow together** below an 850 px workspace, and the page description is hidden in a very short window, so small windows behave the same in every tab.
+- **All rails narrow together** below an 850 px workspace, and in a very short window every tab drops the same things first (page description, the line under the name, the version line) and tightens its rail items, so small windows behave the same in every tab.
+
+### Review fixes (before release)
+
+- Windows: at 900x580 the larger buttons squeezed EIDOLITH's MEDIA PROBE box to 28 px (the Windows CI job failed). The file list now asks for two rows instead of three; it still grows with the window.
+- At the 640x460 minimum: HOME had dropped off OGGCULTIST's short rail (it now claims its place first), EIDOLITH's wordmark was clipped in the narrowed rail (it is redrawn smaller), and AUGURSPEX's CSV button was pushed off its row (SOURCE DETAILS shortens to SOURCES). EIDOLITH and TOUCH TYPE now show HOME at that size too, which they did not before.
+- OGGCULTIST's narrow-rail HOME no longer uses a house symbol the suite font does not have.
+- AUGURSPEX's search box uses the suite field size, and its title colour comes from the shared palette.
 
 ### Tests
 
-- `test_unified_shell_0495.py` (53 checks): rail widths, brand and title type, HOME position and size on all five tabs, button type, AUGURSPEX colours, and no PASSPHRASE word cut off from 640x460 up.
+- `test_unified_shell_0495.py` (58 checks): rail widths, brand and title type, HOME position and size on all five tabs, button type, AUGURSPEX colours, no PASSPHRASE word cut off from 640x460 up, and at 640x460 HOME visible on every tab and the EIDOLITH wordmark inside its rail.
 
 ### Not changed
 
 - The HOME dashboard (the oracle, runes and panels) is drawn on its own canvas and was left as it is.
+- At the 640x460 minimum some EIDOLITH buttons and AUGURSPEX tool captions are still clipped, as they were in 0.4.9.4.
 
 ## 0.4.9.4 · 16 November 2026 · Backup data sources
 

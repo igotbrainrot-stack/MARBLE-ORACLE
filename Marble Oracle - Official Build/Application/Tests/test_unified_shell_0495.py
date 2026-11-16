@@ -167,6 +167,23 @@ for width, height in ((1216, 848), (900, 580), (640, 460)):
     inside = copy.winfo_rooty() + copy.winfo_height() <= dk.winfo_rooty() + dk.winfo_height()
     check(f'PASSPHRASE {width}x{height}: actions on screen', copy.winfo_ismapped() and inside)
 
+# ---- the smallest window: HOME stays reachable and the logo fits ----------------
+# (0.4.9.5 review: HOME had dropped off OGGCULTIST's short rail and the
+# EIDOLITH wordmark was cut at the narrowed rail.)
+root.geometry('640x460+0+0'); root.update()
+scene.resized(root.winfo_width(), root.winfo_height()); pump()
+for action in ('tab_oggcultist', 'tab_eidolith', 'tab_touch_type', 'tab_augurspex'):
+    frame = open_tab(action)
+    homes = [w for w in descendants(frame) if isinstance(w, tk.Button) and w.cget('text') == 'HOME']
+    visible = [h for h in homes if h.winfo_ismapped() and h.winfo_height() > 10
+               and h.winfo_rooty() + h.winfo_height() <= frame.winfo_rooty() + frame.winfo_height() + 1]
+    check(f'640x460 {action}: HOME visible', len(visible) == 1, [(h.winfo_ismapped(), h.winfo_height()) for h in homes])
+eido = open_tab('tab_eidolith')
+logo = eido.shell._logo[0]
+items = [logo.bbox(i) for i in logo.find_all() if logo.type(i) == 'text']
+check('640x460 EIDOLITH wordmark fits its rail', items and max(b[2] for b in items) <= int(logo.cget('width')),
+      (items, logo.cget('width')))
+
 app.quit()
 print(f'UNIFIED SHELL: {checks - len(failures)}/{checks} checks passed')
 sys.exit(1 if failures else 0)

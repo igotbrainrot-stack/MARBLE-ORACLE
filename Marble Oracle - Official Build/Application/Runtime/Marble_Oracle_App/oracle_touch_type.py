@@ -263,8 +263,10 @@ class TouchTypePanel(tk.Frame):
         main = self.shell.main
 
         self.home_button, _version = self.shell.home(self.on_home, 'KEYBOARD · LOCAL')
-        self.best_label = shell.label(self.shell.rail_bottom(), 'BEST  —', 'small', 'text_2')
+        self.best_label = shell.label(self.shell.rail_bottom(), 'BEST  —', 'small', 'text_2', justify='left',
+                                      wraplength=shell.RAIL_WIDTH - 2 * shell.RAIL_PADX)
         self.best_label.pack(anchor='w', pady=(0, 8), before=self.home_button)
+        self.shell._wrapped.append(self.best_label)     # re-wraps when the rail narrows
         self.rail_title, self.rail_subtitle = self.shell.brand('TOUCH TYPE', 'LEARN · PLAY · IMPROVE')
         self.shell.group('TRAINING GAMES')
         games = self.shell.nav_group()

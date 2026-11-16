@@ -207,7 +207,8 @@ class EidolithPanel(tk.Frame):
         canvas.create_line(16, 9, 16, 31, fill=fg, width=2)
         canvas.create_line(16, 20, 28, 20, fill=fg, width=2)
         canvas.create_line(10, 31, 28, 9, fill=line, width=2)
-        canvas.create_text(48, 20, text=APP_NAME, anchor='w', fill=fg, font=shell.font('brand'))
+        canvas.create_text(48, 20, text=APP_NAME, anchor='w', fill=fg,
+                           font=shell.brand_font(int(canvas.cget('width'))))
 
     def _build_main(self):
         self.page_title, self.page_subtitle, _right = self.shell.header(
@@ -314,7 +315,7 @@ class EidolithPanel(tk.Frame):
                                     activestyle='none', bg=C['canvas'], fg=C['text'], bd=0,
                                     highlightthickness=1, highlightbackground=C['control_line'],
                                     selectbackground=C['hover'], selectforeground=C['text_bright'],
-                                    font=shell.font('body'), height=3)
+                                    font=shell.font('body'), height=2)   # grows with the window; asks little so MEDIA PROBE keeps room
         ys = tk.Scrollbar(list_frame, orient='vertical', command=self.file_list.yview)
         self.file_list.config(yscrollcommand=ys.set)
         self.file_list.pack(side='left', fill='both', expand=True)

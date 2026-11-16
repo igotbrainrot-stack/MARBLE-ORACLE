@@ -58,6 +58,20 @@ RAIL_TOP = 14
 MAIN_PADX = 20
 HEADER_PADY = (14, 10)
 BUTTON_PAD = (14, 7)
+NAV_PADY = 8              # rail item padding; NAV_PADY_SHORT in short windows
+NAV_PADY_SHORT = 3
+
+
+def _descendants(widget):
+    for child in widget.winfo_children():
+        yield child
+        yield from _descendants(child)
+
+
+def brand_font(canvas_width):
+    """The brand type, a step smaller when a drawn logo must fit a narrowed rail."""
+    size, weight = TYPE['brand']
+    return (FAMILY, size if canvas_width >= RAIL_WIDTH - 2 * RAIL_PADX else size - 4, weight)
 
 
 def font(role):
@@ -88,10 +102,11 @@ def button(parent, text, command, *, primary=False, width=None, padx=None, pady=
 def nav_button(parent, text, command):
     """A rail item: flat on the rail, outlined in the accent when it is the current page."""
     btn = tk.Button(parent, text=text, command=command, cursor='hand2', relief='flat', bd=0,
-                    padx=12, pady=8, anchor='w', justify='left', font=font('nav'),
+                    padx=12, pady=NAV_PADY, anchor='w', justify='left', font=font('nav'),
                     bg=C['sidebar'], fg=C['text'], activebackground=C['hover'],
                     activeforeground=C['text_bright'], highlightthickness=1,
                     highlightbackground=C['sidebar'], highlightcolor=C['focus'])
+    btn._shell_nav = True
     btn.pack(fill='x', pady=2)
     return btn
 
@@ -117,6 +132,9 @@ class Shell:
         self.collapsed = False
         self._wrapped = []
         self._brand_title = None
+        self._logo = None
+        self._short = False
+        self._short_hidden = []      # (widget, pack options): the tagline and version line
         self.root = ogl_frame(parent, bg=C['sidebar'])
         self.root.pack(fill='both', expand=True)
         # A plain Tk frame holds the width: some Linux ttk themes collapse a
@@ -152,14 +170,28 @@ class Shell:
         self.set_rail_width(self.narrow_width if event.width < NARROW_WIDTH else self.rail_width)
 
     def _fit_height(self, event):
-        """In a short window the one-line page description gives its height to the content."""
-        if event.widget is not self.main or self._subtitle is None:
+        """In a short window the page description and the rail's spacing give their height to the content."""
+        if event.widget is not self.main or event.height <= 1:
             return
-        show = event.height >= SHORT_HEIGHT
-        if show == self._subtitle_shown:
+        short = event.height < SHORT_HEIGHT
+        if short != self._short:
+            self._short = short
+            for widget in _descendants(self.rail):
+                if getattr(widget, '_shell_nav', False):
+                    widget.configure(pady=NAV_PADY_SHORT if short else NAV_PADY)
+            # The tagline and version line are the first to go, the same on every tab.
+            for widget, options in self._short_hidden:
+                try:
+                    if short:
+                        widget.pack_forget()
+                    else:
+                        widget.pack(**options)
+                except tk.TclError:
+                    pass
+        if self._subtitle is None or (not short) == self._subtitle_shown:
             return
-        self._subtitle_shown = show
-        if show:
+        self._subtitle_shown = not short
+        if self._subtitle_shown:
             self._subtitle.pack(fill='x', pady=(2, 0))
         else:
             self._subtitle.pack_forget()
@@ -169,9 +201,14 @@ class Shell:
             return
         self.rail_shell.configure(width=width)
         narrow = width < self.rail_width
+        if self._logo is not None:
+            canvas, draw = self._logo
+            canvas.configure(width=width - 2 * RAIL_PADX)
+            canvas.delete('all')
+            draw(canvas)
         if self._brand_title is not None:
             size, weight = TYPE['brand']
-            self._brand_title.configure(font=(FAMILY, size - 3 if narrow else size, weight))
+            self._brand_title.configure(font=(FAMILY, size - 4 if narrow else size, weight))
         for lab in self._wrapped:
             try:
                 lab.configure(wraplength=width - 2 * RAIL_PADX)
@@ -196,6 +233,7 @@ class Shell:
                                bg=C['sidebar'], highlightthickness=0, bd=0)
             canvas.pack(anchor='w')
             logo(canvas)
+            self._logo = (canvas, logo)
             title = None
         else:
             title = label(top, name, 'brand', 'text_bright')
@@ -204,6 +242,7 @@ class Shell:
         sub = label(top, tagline, 'group', 'text_3') if tagline else None
         if sub is not None:
             sub.pack(anchor='w', pady=(4, 0))
+            self._short_hidden.append((sub, dict(anchor='w', pady=(4, 0))))
         return title, sub
 
     def group(self, text, parent=None, top=18):
@@ -232,6 +271,7 @@ class Shell:
         if version_text:
             version = label(bottom, version_text, 'small', 'text_3')
             version.pack(anchor='w', pady=(8, 0))
+            self._short_hidden.append((version, dict(anchor='w', pady=(8, 0))))
         return btn, version
 
     # ---- main -----------------------------------------------------------

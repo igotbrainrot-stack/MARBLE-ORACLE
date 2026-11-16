@@ -66,20 +66,28 @@ class OggcultistPanel(tk.Frame):
         app = self.ogg_app
         sidebar = getattr(app, '_sidebar', None)
         anchor = getattr(app, 'version_label', None)
+        first = getattr(app, 'brand_label', None)
         if sidebar is None or anchor is None:
             return
         self.home_button = shell.button(sidebar, HOME_LABEL, on_home)
+        if first is not None:
+            # Packed ahead of the rail's top items, so in a short window the
+            # version line and HOME keep their place and the items above give
+            # way (Tk's packer serves widgets in packing order).
+            anchor.pack_configure(before=first)
         self.home_button.pack(side='bottom', fill='x', padx=shell.RAIL_PADX, pady=(8, 0), after=anchor)
 
         def fit(_event=None):
             # Below 1100 px Oggcultist shrinks its rail to 64 px icons; HOME
-            # becomes a house symbol there rather than being cut off.
+            # keeps its word in the small label type there rather than being
+            # cut off. (The suite font has no house symbol to use instead.)
             try:
                 compact = bool(getattr(app, 'compact', False))
-                wanted = '⌂' if compact else HOME_LABEL
-                if self.home_button.cget('text') != wanted:
-                    self.home_button.configure(text=wanted, padx=4 if compact else shell.BUTTON_PAD[0])
-                    self.home_button.pack_configure(padx=8 if compact else shell.RAIL_PADX)
+                if getattr(self.home_button, '_compact', None) != compact:
+                    self.home_button._compact = compact
+                    self.home_button.configure(font=shell.font('group' if compact else 'button'),
+                                               padx=2 if compact else shell.BUTTON_PAD[0])
+                    self.home_button.pack_configure(padx=6 if compact else shell.RAIL_PADX)
             except tk.TclError:
                 pass
         sidebar.bind('<Configure>', fit, add='+')
