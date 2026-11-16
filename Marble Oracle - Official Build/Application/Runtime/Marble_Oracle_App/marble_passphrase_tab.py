@@ -30,6 +30,7 @@ INSET = OGG["sunken"]
 
 
 CLIPBOARD_CLEAR_MS = 60_000
+CARDS_COMPACT = 640      # card-row width (px) below which cards use tighter padding and gaps
 CARDS_ONE_ROW = 540       # card-row width (px) below which the five parts wrap onto two rows
 
 
@@ -125,7 +126,7 @@ class PassphrasePanel(tk.Frame):
             shell.button(card, f"REROLL {i + 1}", lambda p=part: self.reroll(p),
                          padx=6).pack(side="bottom", fill="x")
         self._arrange_cards(5)
-        cards.bind("<Configure>", lambda e: self._arrange_cards(5 if e.width >= CARDS_ONE_ROW else 3), add="+")
+        cards.bind("<Configure>", self._cards_resized, add="+")
 
         strip = ogl_frame(body, bg=BG)
         strip.pack(fill="x", pady=(18, 0))
@@ -164,11 +165,23 @@ class PassphrasePanel(tk.Frame):
             self.dice_labels[part].configure(text=code if code else " ")
         self.full_phrase.set(self.phrase)
 
+    def _cards_resized(self, event):
+        # The widest list word ("mammogram") needs about 98 px at the 10 pt
+        # minimum; tighter padding keeps it whole in the 640x460 window.
+        compact = event.width < CARDS_COMPACT
+        if compact != getattr(self, "_cards_compact", None):
+            self._cards_compact = compact
+            for card in self._cards:
+                card.configure(padding=(5 if compact else 10, 12))
+            self._card_columns = None
+        self._arrange_cards(5 if event.width >= CARDS_ONE_ROW else 3)
+
     def _arrange_cards(self, columns):
         """Five cards in a row, or (in a narrow workspace) the three words above the number and symbol."""
         if columns == self._card_columns:
             return
         self._card_columns = columns
+        gap = 5 if getattr(self, "_cards_compact", False) else 8
         for column in range(5):
             self._cards_frame.grid_columnconfigure(column, weight=1 if column < columns else 0,
                                                    uniform="parts" if column < columns else "")
@@ -176,7 +189,7 @@ class PassphrasePanel(tk.Frame):
             row, column = divmod(i, columns)
             last = column == columns - 1 or i == len(self._cards) - 1
             card.grid(row=row, column=column, sticky="nsew",
-                      padx=(0, 0 if last else 8), pady=(0 if row == 0 else 8, 0))
+                      padx=(0, 0 if last else gap), pady=(0 if row == 0 else gap, 0))
 
     def _part_font(self, label, value):
         """The largest of 18-10 pt (10 pt is the suite minimum) at which `value` fits its card."""
@@ -186,7 +199,7 @@ class PassphrasePanel(tk.Frame):
         for size in (18, 16, 14, 13, 12, 11, 10):
             spec = (FAMILY, size, "bold")
             # `font measure` keeps no Tk font object alive (see FontMeasure in AUGURSPEX).
-            if int(self.tk.call("font", "measure", spec, value)) <= width - 4:
+            if int(self.tk.call("font", "measure", spec, value)) <= width - 1:
                 return spec
         return (FAMILY, 10, "bold")
 

@@ -163,6 +163,13 @@ for width, height in ((1216, 848), (900, 580), (640, 460)):
             if need > lab.winfo_width():
                 cut.append((lab.cget('text'), need, lab.winfo_width()))
     check(f'PASSPHRASE {width}x{height}: no word cut off', not cut, cut[:3])
+    # Not left to chance: the widest word in the list must fit every card.
+    for word in ('mammogram', 'womanhood'):
+        for part in PARTS:
+            lab = dk.part_labels[part]
+            need = int(root.tk.call('font', 'measure', dk._part_font(lab, word), word))
+            check(f'PASSPHRASE {width}x{height}: "{word}" fits {part}', need <= lab.winfo_width(),
+                  (need, lab.winfo_width()))
     copy = dk.copy_button
     inside = copy.winfo_rooty() + copy.winfo_height() <= dk.winfo_rooty() + dk.winfo_height()
     check(f'PASSPHRASE {width}x{height}: actions on screen', copy.winfo_ismapped() and inside)

@@ -1,6 +1,6 @@
 {
  "release": "Marble Oracle 0.4.9.5",
- "generated_utc": "2026-11-16T01:35:43+00:00",
+ "generated_utc": "2026-11-16T01:52:16+00:00",
  "schema": "sha256-inventory-v2",
  "excluded_from_hashes": [
   "Application/Documentation/BUILD_MANIFEST.json",
@@ -8,7 +8,7 @@
  ],
  "optional_note": "Entries marked optional are in the portable ZIP but not in Git; verify_release.py checks them when present.",
  "inventory_file_count": 472,
- "inventory_total_bytes": 115494255,
+ "inventory_total_bytes": 115495637,
  "files": [
   {
    "path": "Application/.gitignore",
@@ -22,8 +22,8 @@
   },
   {
    "path": "Application/Documentation/CHANGELOG.md",
-   "bytes": 13903,
-   "sha256": "1d0dc48adb89e38fbaa6dd129206ee0f7e6c8c0fb05aa246d9ec8aeb73b36e13"
+   "bytes": 14205,
+   "sha256": "c0aad900e3ba2751c9409f673648f7f138e7b7b94339a3afaa438d74c32c95fb"
   },
   {
    "path": "Application/Documentation/DEVELOPMENT.md",
@@ -1677,8 +1677,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/marble_passphrase_tab.py",
-   "bytes": 11282,
-   "sha256": "1a1c1bd3deef532a420cd555b1ed6d373ae7f77fe2007d60e1d1c0e3108d4cc4"
+   "bytes": 11945,
+   "sha256": "e7e0721edd4cdb2a33d5626e96011dac939ec54f8ce979b4f8d1fa866319804f"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/marble_uberata.py",
@@ -2297,8 +2297,8 @@
   },
   {
    "path": "Application/Tests/test_unified_shell_0495.py",
-   "bytes": 9090,
-   "sha256": "bebabe1af3486acc6592bc0510d0d6b8405c6425644e00a729beff67fc063e46"
+   "bytes": 9507,
+   "sha256": "7cea76afe1599f140ecf4558ba4cd94b734d22bd3fc5174e4885cd201043ed80"
   },
   {
    "path": "Application/Tools/Rune-24-New-Stones.png",

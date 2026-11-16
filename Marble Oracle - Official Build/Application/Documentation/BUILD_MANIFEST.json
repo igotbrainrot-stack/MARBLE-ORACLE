@@ -3,7 +3,7 @@
   "version": "0.4.9.5",
   "title": "One layout for every workspace",
   "release_date": "2026-11-16",
-  "generated_utc": "2026-11-16T01:35:43+00:00",
+  "generated_utc": "2026-11-16T01:52:16+00:00",
   "platform_targets": [
     "Windows 11",
     "Linux Mint"
@@ -27,7 +27,7 @@
   "inventory_file_count": 472,
   "python_source_count": 227,
   "test_script_count": 102,
-  "total_bytes": 115494255,
+  "total_bytes": 115495637,
   "previous_release": {
     "version": "0.4.9.4",
     "branch": "claude/marble-oracle-0494-data-sources"
