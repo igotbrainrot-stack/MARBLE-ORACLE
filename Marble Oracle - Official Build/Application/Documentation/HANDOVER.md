@@ -1,4 +1,11 @@
-# Handover: Marble Oracle 0.4.9.4
+# Handover: Marble Oracle 0.4.9.5
+
+## What 0.4.9.5 changed (16 November 2026)
+
+Every workspace is built in one page shell, `Runtime/Marble_Oracle_App/oracle_shell.py`. **New workspace UI should use it** (`Shell`, `button`, `nav_button`, `label` with a type role) rather than spelling fonts and paddings inline; `test_unified_shell_0495.py` checks the tabs still agree. See the changelog for what moved on each tab. Checked on Linux only; Windows fonts are taller, so the GitHub Windows job is the first real check there.
+
+---
+
 
 ## What 0.4.9.4 changed (16 November 2026)
 

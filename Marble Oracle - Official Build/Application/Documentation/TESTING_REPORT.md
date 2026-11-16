@@ -1,4 +1,11 @@
-# Testing report: Marble Oracle 0.4.9.4
+# Testing report: Marble Oracle 0.4.9.5
+
+## 0.4.9.5 addendum (16 November 2026)
+
+Linux container (Python 3.12, Tk under Xvfb). `Tools/run_tests.py`: **63 passed, 0 failed, 0 skipped** (62 from 0.4.9.4 plus `test_unified_shell_0495.py`). Every tab was also inspected in screenshots at 1216x848 and 960x640, and PASSPHRASE at 640x460. Not run on a physical PC or on Windows.
+
+---
+
 
 ## 0.4.9.4 addendum (16 November 2026)
 

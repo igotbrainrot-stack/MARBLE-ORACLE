@@ -31,6 +31,7 @@ from Augurspex.augurspex.providers import (MarketRouter, shared_market_router,
 from marble_uberata import FAMILY
 from oracle_design import HOME_LABEL, MARKET_COLORS, MARKET_LABELS, flow_layout
 from oracle_widgets import tooltip
+import oracle_shell as shell
 # Re-exported on purpose: tests and oracle_augurspex_insights import these names from this module.
 from oracle_augurspex_logic import (  # noqa: F401
     CARD_CHROME_H, CARD_CHROME_W, CARD_GAP, CHART_PAD_B, CHART_PAD_L, CHART_PAD_R, CHART_PAD_T,
@@ -47,24 +48,25 @@ def _parent_bg(widget, fallback):
     return getattr(widget,'_oracle_bg',fallback)
 
 
+C_TEXT_BRIGHT='#FFF4E6'        # titles, as oracle_shell draws them in every workspace
+
+
 def palette(theme=None):
-    """Darker Oggcultist-inspired base with current suite's accent colours."""
-    if theme is None:
-        from oggcultist_design_system import COLOR as C
-        return dict(bg=_darken(C['canvas'],0.18), panel=_darken(C['raised'],0.13),
-                    inset=C['sunken'], rail=_darken(C['sidebar'],0.1),
-                    border=C['line'], control=C['control'], active=C['accent_soft'],
-                    accent=C['accent'], ink=C['text'], muted=C['text_2'],
-                    weak=C['text_3'], green=C['done'], red=C['failed'])
-    return dict(bg=_darken(theme.get('bg','#1D1714'),0.18),
-                panel=_darken(theme.get('panel','#261F1B'),0.12),
-                inset='#16110F', rail=_darken(theme.get('panel','#130F0D'),0.24),
-                border=theme.get('edge','#3A2E27'),
-                control=_darken(theme.get('edge2','#2F2620'),0.10),
-                active=theme.get('edge2','#4A2C18'), accent=theme.get('cyan','#FB8E22'),
-                ink=theme.get('txt','#F2E8DE'), muted=theme.get('marble','#B9A99B'),
-                weak=theme.get('dim','#928174'), green=theme.get('lime','#93CC7F'),
-                red=theme.get('red','#FF6A55'))
+    """The suite's Ember surfaces and text (as every workspace uses); a GRADE theme sets the accents.
+
+    Until 0.4.9.4 AUGURSPEX darkened every surface by 10-24 %, so it looked
+    like a different application from the tab next to it, and its labels sat
+    on a slightly different colour from the textured panels behind them.
+    """
+    from oggcultist_design_system import COLOR as C
+    colours = dict(bg=C['canvas'], panel=C['raised'], inset=C['sunken'], rail=C['sidebar'],
+                   border=C['line'], control=C['control'], active=C['accent_soft'],
+                   accent=C['accent'], ink=C['text'], muted=C['text_2'],
+                   weak=C['text_3'], green=C['done'], red=C['failed'])
+    if theme is not None:
+        colours.update(accent=theme.get('cyan',colours['accent']),
+                       green=theme.get('lime',colours['green']), red=theme.get('red',colours['red']))
+    return colours
 
 
 class FontMeasure:
@@ -427,16 +429,16 @@ class AugurspexPanel(tk.Frame):
         self._refresh_watch();self._refresh_charts()
 
     def _label(self,parent,text,fg='ink',size=10,bold=False,**kw):
-        return tk.Label(parent,text=text,bg=_parent_bg(parent,self.p['bg']),fg=self.p[fg],
-                        font=(FAMILY,size,'bold' if bold else 'normal'),**kw)
+        kw.setdefault('font',(FAMILY,size,'bold' if bold else 'normal'))
+        return tk.Label(parent,text=text,bg=_parent_bg(parent,self.p['bg']),fg=self.p[fg],**kw)
 
     def _button(self,parent,text,callback,active=False):
-        return tk.Button(parent,text=text,command=callback,relief='flat',bd=0,cursor='hand2',
-                         bg=self.p['active'] if active else self.p['control'],
-                         activebackground=self.p['active'],activeforeground=self.p['ink'],
-                         fg=self.p['accent'] if active else self.p['ink'],
-                         highlightthickness=1,highlightbackground=self.p['border'],
-                         font=(FAMILY,11,'bold'),padx=9,pady=6)
+        # The suite button (oracle_shell), a little narrower: AUGURSPEX fits
+        # rows of filters and tools. `active` marks the current filter.
+        btn=shell.button(parent,text,callback,padx=10,pady=6)
+        if active:
+            btn.configure(bg=self.p['active'],fg=self.p['accent'],highlightbackground=self.p['accent'])
+        return btn
 
     def _watch_tip(self,event):
         """The full symbol and name of the watchlist row under the pointer, if it was shortened."""
@@ -481,7 +483,7 @@ class AugurspexPanel(tk.Frame):
         # Native layout matches the palette and proportions of EIDOLITH/Oggcultist.
         # A *Tk* shell holds the rail width. The textured ttk child alone
         # may collapse to a tiny image-element width on some Linux Tk themes.
-        self.rail_shell=tk.Frame(self,bg=self.p['rail'],width=312)
+        self.rail_shell=tk.Frame(self,bg=self.p['rail'],width=shell.LIST_RAIL_WIDTH)
         self.rail_shell.pack(side='left',fill='y')
         self.rail_shell.pack_propagate(False)
         self.rail=ogg_frame(self.rail_shell,bg='#130F0D')
@@ -489,10 +491,15 @@ class AugurspexPanel(tk.Frame):
         self.rail.pack(fill='both',expand=True)
         tk.Frame(self,bg=self.p['border'],width=1).pack(side='left',fill='y')
         self.work=ogg_frame(self,bg='#1D1714');self.work._oracle_bg=self.p['bg'];self.work.pack(side='left',fill='both',expand=True)
-        self._label(self.rail,'AUGURSPEX','accent',19,True,anchor='w').pack(fill='x',padx=12,pady=(10,6))
-        self._label(self.rail,'FIND MARKET','muted',11,True,anchor='w').pack(fill='x',padx=12)
-        self._entry(self.rail,self.search).pack(fill='x',padx=12,pady=(2,5))
-        filt=ogg_frame(self.rail,bg='#130F0D');filt._oracle_bg=self.p['rail'];filt.pack(fill='x',padx=10,pady=(0,6))
+        # Brand and group labels in the suite's rail style (oracle_shell).
+        pad=shell.RAIL_PADX
+        brand=tk.Label(self.rail,text='AUGURSPEX',bg=self.p['rail'],fg=C_TEXT_BRIGHT,font=shell.font('brand'),anchor='w')
+        brand.pack(fill='x',padx=pad,pady=(shell.RAIL_TOP,0))
+        self._label(self.rail,'MARKETS · HISTORY','weak',bold=True,anchor='w',
+                    font=shell.font('group')).pack(fill='x',padx=pad,pady=(4,0))
+        self._label(self.rail,'FIND MARKET','weak',anchor='w',font=shell.font('group')).pack(fill='x',padx=pad,pady=(14,6))
+        self._entry(self.rail,self.search).pack(fill='x',padx=pad,pady=(0,6))
+        filt=ogg_frame(self.rail,bg='#130F0D');filt._oracle_bg=self.p['rail'];filt.pack(fill='x',padx=pad-2,pady=(0,6))
         self.filters={}
         # Each category filter is lettered in the colour its rows use in the
         # list below, so the filters double as the legend (the label carries
@@ -507,19 +514,23 @@ class AugurspexPanel(tk.Frame):
         for column in range(3):
             filt.columnconfigure(column,weight=1,uniform='filter')
         sourcing=ogg_frame(self.rail,bg='#130F0D');sourcing._oracle_bg=self.p['rail']
-        sourcing.pack(fill='x',padx=10,pady=(0,5))
+        sourcing.pack(fill='x',padx=pad,pady=(0,5))
         self.sourced_button=self._button(sourcing,'SHOW ALL MARKETS',self._toggle_sourced)
         self.sourced_button.pack(side='left',fill='x',expand=True)
-        self.source_count=self._label(self.rail,'VERIFYING DATA SOURCES','muted',11,True,anchor='w')
-        self.source_count.pack(fill='x',padx=11,pady=(0,5))
+        self.source_count=self._label(self.rail,'VERIFYING DATA SOURCES','weak',anchor='w',font=shell.font('group'))
+        self.source_count.pack(fill='x',padx=pad,pady=(4,6))
         # Keep the entire watchlist visible on the suite's compact CRT.
         # Rarely used editing controls now live in a separate MANAGE dialog.
+        # HOME and the version line at the foot of the rail, as in every
+        # workspace; MANAGE LIST is the list's own action, just above.
         bottom=ogg_frame(self.rail,bg='#130F0D');bottom._oracle_bg=self.p['rail']
-        bottom.pack(side='bottom',fill='x',padx=10,pady=(2,6))
-        self._button(bottom,'MANAGE LIST',self._manage_watchlist).pack(side='left',fill='x',expand=True,padx=(0,2))
-        self.home_button=self._button(bottom,HOME_LABEL,self.on_home)
-        self.home_button.pack(side='right',fill='x',expand=True,padx=(2,0))
-        lst=ogg_frame(self.rail,bg='#130F0D');lst._oracle_bg=self.p['rail'];lst.pack(fill='both',expand=True,padx=10)
+        bottom.pack(side='bottom',fill='x',padx=pad,pady=(8,14))
+        self._button(bottom,'MANAGE LIST',self._manage_watchlist).pack(fill='x',pady=(0,6))
+        self.home_button=shell.button(bottom,HOME_LABEL,self.on_home)
+        self.home_button.pack(fill='x')
+        self._label(bottom,'MARKET HISTORY · LOCAL','weak',anchor='w',
+                    font=shell.font('small')).pack(fill='x',pady=(8,0))
+        lst=ogg_frame(self.rail,bg='#130F0D');lst._oracle_bg=self.p['rail'];lst.pack(fill='both',expand=True,padx=pad)
         self.watch=tk.Listbox(lst,selectmode='browse',exportselection=False,
                               bg=self.p['inset'],fg=self.p['ink'],selectbackground=self.p['active'],
                               selectforeground=self.p['accent'],relief='flat',bd=0,
@@ -536,20 +547,24 @@ class AugurspexPanel(tk.Frame):
         # One header row: the market the selected chart shows, and the actions
         # that apply to it. The actions are packed first so they are never the
         # part that gets clipped in a narrow window; the name gives way instead.
-        header=ogg_frame(self.work,bg='#261F1B');header._oracle_bg=self.p['panel'];header.pack(fill='x',padx=8,pady=(8,4))
-        self._button(header,'REFRESH',self._force_refresh).pack(side='right',padx=(4,6),pady=4)
-        self._button(header,'SOURCE DETAILS',self._show_source_details).pack(side='right',padx=4,pady=4)
-        self._button(header,'CSV',self._export_chart_csv).pack(side='right',padx=4,pady=4)
+        # The page title row of the suite shell: the selected market as the
+        # title, its actions on the right.
+        mx=shell.MAIN_PADX
+        header=ogg_frame(self.work,bg='#1D1714');header._oracle_bg=self.p['bg']
+        header.pack(fill='x',padx=mx,pady=(shell.HEADER_PADY[0],8))
+        self._button(header,'REFRESH',self._force_refresh).pack(side='right',padx=(6,0))
+        self._button(header,'SOURCE DETAILS',self._show_source_details).pack(side='right',padx=(6,0))
+        self._button(header,'CSV',self._export_chart_csv).pack(side='right',padx=(6,0))
         self._selected_text='Choose a market'
-        self.selected_market=tk.Label(header,text=self._selected_text,bg=self.p['panel'],
-                                      fg=self.p['ink'],font=(FAMILY,15,'bold'),anchor='w')
-        self.selected_market.pack(side='left',fill='x',expand=True,padx=(8,4),pady=5)
+        self.selected_market=tk.Label(header,text=self._selected_text,bg=self.p['bg'],
+                                      fg=C_TEXT_BRIGHT,font=shell.font('page_title'),anchor='w')
+        self.selected_market.pack(side='left',fill='x',expand=True,padx=(0,8))
         self.selected_market.bind('<Configure>',lambda _e:self._fit(self.selected_market,self._selected_text),add='+')
         # Secondary tools: a whole-watchlist comparison and an accessible
         # provider-observation table. Equal columns; the captions shorten
         # (see _reflow_tools) rather than run off the edge.
         tools=tk.Frame(self.work,bg=self.p['bg'])
-        tools.pack(fill='x',padx=12,pady=(0,5))
+        tools.pack(fill='x',padx=mx,pady=(0,6))
         self.tool_buttons=[]
         for column,(caption,short,command) in enumerate((
                 ('◈ MARKET ATLAS','◈ ATLAS',self._show_market_atlas),
@@ -562,7 +577,7 @@ class AugurspexPanel(tk.Frame):
             self.tool_buttons.append((button,caption,short))
         self._tools_compact=None
         tools.bind('<Configure>',lambda e:self._reflow_tools(e.width),add='+')
-        opts=ogg_frame(self.work,bg='#1D1714');opts._oracle_bg=self.p['bg'];opts.pack(fill='x',padx=8,pady=(0,4))
+        opts=ogg_frame(self.work,bg='#1D1714');opts._oracle_bg=self.p['bg'];opts.pack(fill='x',padx=mx,pady=(0,4))
         self.workspace_var=tk.StringVar(value=self.settings['workspace'])
         self.layout_var=tk.StringVar(value=str(self.settings['layout']))
         self.interval_var=tk.StringVar(value=self.settings['interval'])
@@ -578,7 +593,7 @@ class AugurspexPanel(tk.Frame):
             ('VISIBLE',self.view_bars_var,('30 BARS','90 BARS','MAX BARS'),self._change_view_bars),
         ]:
             part=ogg_frame(opts,bg='#1D1714');part._oracle_bg=self.p['bg']
-            self._label(part,label,'muted',11,True).pack(side='left',padx=(0,3))
+            self._label(part,label,'weak',font=shell.font('group')).pack(side='left',padx=(0,4))
             self._option(part,var,items,fn).pack(side='left')
             self.option_parts.append(part)
             # A menu showing a longer value (LINE -> CANDLES) grows; re-flow so
@@ -590,16 +605,16 @@ class AugurspexPanel(tk.Frame):
         opts.bind('<Configure>',lambda e:self._reflow_options(e.width),add='+')
         self._reflow_options(1000)  # initial geometry; updates after layout
         # Requested chart spaces vs slots with real data, always stated.
-        self.count_badge=tk.Label(self.work,text='',anchor='w',bg=self.p['bg'],fg=self.p['muted'],
-                                  font=(FAMILY,10,'bold'))
-        self.count_badge.pack(fill='x',padx=12,pady=(0,2))
+        self.count_badge=tk.Label(self.work,text='',anchor='w',bg=self.p['bg'],fg=self.p['weak'],
+                                  font=shell.font('group'))
+        self.count_badge.pack(fill='x',padx=mx,pady=(0,2))
         self._badge_text=''
         self.count_badge.bind('<Configure>',lambda _e:self._fit(self.count_badge,self._badge_text),add='+')
         # A 9-chart layout cannot physically fit in some embedded CRT apertures.
         # Keep all saved chart slots, give each a real minimum plot area, and
         # scroll through rows rather than reducing Tk canvases to 1x1 pixels.
         self.chart_port=tk.Frame(self.work,bg=self.p['bg'])
-        self.chart_port.pack(fill='both',expand=True,padx=8,pady=4)
+        self.chart_port.pack(fill='both',expand=True,padx=mx-4,pady=4)
         self.chart_canvas=tk.Canvas(self.chart_port,bg=self.p['bg'],bd=0,
                                     highlightthickness=0,width=120,height=140)
         self.chart_scroll=tk.Scrollbar(self.chart_port,orient='vertical',command=self.chart_canvas.yview)
@@ -623,18 +638,19 @@ class AugurspexPanel(tk.Frame):
             widget.bind('<Button-4>',self._scroll_charts,add='+')
             widget.bind('<Button-5>',self._scroll_charts,add='+')
         # One footer row: what kind of data this is, then the latest status.
-        footer=ogg_frame(self.work,bg='#261F1B');footer._oracle_bg=self.p['panel'];footer.pack(fill='x',side='bottom',padx=8,pady=(0,7))
-        footer_tag=self._label(footer,'LOCAL · NO LOGIN', 'accent',11,True)
-        footer_tag.pack(side='left',padx=8,pady=5)
-        self.status_label=tk.Label(footer,text='',anchor='w',bg=self.p['panel'],fg=self.p['muted'],font=(FAMILY,10))
-        self.status_label.pack(side='left',padx=4,fill='x',expand=True)
+        # The status line at the foot of the page, as in every workspace.
+        footer=ogg_frame(self.work,bg='#1D1714');footer._oracle_bg=self.p['bg'];footer.pack(fill='x',side='bottom',padx=mx,pady=(4,10))
+        footer_tag=self._label(footer,'LOCAL · NO LOGIN','accent',font=shell.font('group'))
+        footer_tag.pack(side='left',padx=(0,10))
+        self.status_label=tk.Label(footer,text='',anchor='w',bg=self.p['bg'],fg=self.p['muted'],font=shell.font('status'))
+        self.status_label.pack(side='left',fill='x',expand=True)
         # Fitted to measured pixels: a long status was cropped on both sides.
         self.status.trace_add('write',lambda *_:self._fit(self.status_label,self.status.get()))
         self.status_label.bind('<Configure>',lambda _e:self._fit(self.status_label,self.status.get()),add='+')
         # Reserve footer/status before allocating the expandable chart grid;
         # otherwise smaller application windows can clip these controls.
         self.chart_port.pack_forget()
-        self.chart_port.pack(fill='both',expand=True,padx=8,pady=4)
+        self.chart_port.pack(fill='both',expand=True,padx=mx-4,pady=4)
         self._render_grid()
 
     def _reflow_options(self,width):

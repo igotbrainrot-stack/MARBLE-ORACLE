@@ -2,6 +2,29 @@
 
 Newest first. Releases before 0.4.9.3 have their original notes in `History/ReleaseNotes/`.
 
+## 0.4.9.5 · 16 November 2026 · One layout for every workspace
+
+Built on 0.4.9.4. No feature was removed and no saved setting changes format.
+
+The workspaces had grown their own layouts: side rails of 208, 225, 240 and 312 px (and none at all on PASSPHRASE), page titles from 15 to 23 pt in three colours, buttons at 10 or 11 pt with four paddings, and HOME in the rail, beside MANAGE LIST, in the top-right corner or in an extra title bar depending on the tab. They now share one page shell, `oracle_shell.py`, based on Oggcultist's type scale:
+
+- **The same frame everywhere.** Left rail with the workspace name in the same type, grey group labels, navigation items that are outlined in orange when current, and **HOME at the foot of the rail with the version line under it**. The main area opens with the page title (20 pt) and a one-line description, and ends with the status line.
+- **One button.** Every push button is the same 11 pt bold with the same padding; one orange primary per area.
+- **EIDOLITH:** rail, title, field labels, video-player buttons and status line moved to the shared styles.
+- **TOUCH TYPE:** the games list uses the same rail navigation as EIDOLITH; title and READY badge in the shared header.
+- **PASSPHRASE:** now has the rail (options, keys, privacy note, HOME). The parts are compact cards instead of tall empty ones, each word is sized to fit its card, and in a narrow window the rail steps aside so the five parts stay on one row.
+- **AUGURSPEX:** uses the suite's surface colours (it was 10-24 % darker than every other tab), the shared brand, title and status line, and a full-width HOME at the foot of the rail. Its rail stays wider (312 px) because it is the market list.
+- **OGGCULTIST:** the extra title bar above it is gone (its rail already shows the name and version); HOME is at the foot of its rail. Oggcultist's own pages are unchanged.
+- **All rails narrow together** below an 850 px workspace, and the page description is hidden in a very short window, so small windows behave the same in every tab.
+
+### Tests
+
+- `test_unified_shell_0495.py` (53 checks): rail widths, brand and title type, HOME position and size on all five tabs, button type, AUGURSPEX colours, and no PASSPHRASE word cut off from 640x460 up.
+
+### Not changed
+
+- The HOME dashboard (the oracle, runes and panels) is drawn on its own canvas and was left as it is.
+
 ## 0.4.9.4 · 16 November 2026 · Backup data sources
 
 Built on 0.4.9.3. Nothing was removed and no saved setting changes format.

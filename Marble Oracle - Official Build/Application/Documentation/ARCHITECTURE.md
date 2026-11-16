@@ -21,7 +21,7 @@ Reading order for a new developer. Each layer only imports from the ones above i
 | Layer | Modules | Responsibility |
 |---|---|---|
 | **Release identity** | `oracle_version.py` | The one suite version; window title, `--version`, build manifest. |
-| **Design system** | `oggcultist_design_system.py` (colours, type scale, spacing), `oracle_design.py` (market category colours, the HOME wording, `flow_layout`), `oracle_ogg_texture.py` (grain textures), `marble_uberata.py` (the bundled font) | Every colour, size and label a workspace uses. No Tk in the first two. |
+| **Design system** | `oggcultist_design_system.py` (colours, type scale, spacing), `oracle_shell.py` (the page shell every workspace is built in: rail, brand, page title, HOME, status line, button and type scale; 0.4.9.5), `oracle_design.py` (market category colours, the HOME wording, `flow_layout`), `oracle_ogg_texture.py` (grain textures), `marble_uberata.py` (the bundled font) | Every colour, size and label a workspace uses. No Tk in the first two. |
 | **Shared widgets** | `oracle_widgets.py` | `flow` (toolbars that wrap) and `wrap_to_parent` (text that wraps). |
 | **Platform and state** | `oracle_assets.py` (asset lookup, `state_dir()`, atomic `save_json`/`load_json`), `oracle_asset_recovery.py`, `oracle_native_files.py` (native file dialogs), `oracle_window_shape.py`, `oracle_bootstrap.py` | Everything that differs between Windows and Linux. |
 | **Workspace logic (no Tk)** | `oracle_augurspex_logic.py`, `oracle_augurspex_signals.py`, `Augurspex/augurspex/providers.py` and `core.py`, `oracle_eidolith_core.py`, `oracle_eidolith_jobs.py`, `oracle_dicekey.py` | Rules, calculations, provider adapters, the conversion queue, the passphrase generator. Testable without a display. |

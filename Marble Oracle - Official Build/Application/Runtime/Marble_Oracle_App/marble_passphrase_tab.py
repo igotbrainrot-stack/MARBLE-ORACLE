@@ -11,13 +11,13 @@ import tkinter as tk
 
 from oracle_dicekey import Dicekey, PARTS, PART_NAMES
 from marble_uberata import FAMILY, apply_tk_fonts
-from oracle_ogg_texture import frame as ogl_frame, label as ogl_label
+from oracle_ogg_texture import frame as ogl_frame
 
 
 ROOT = Path(__file__).resolve().parent
 # Oggcultist Ember palette: one warm dark visual language across all three apps.
 from oggcultist_design_system import COLOR as OGG
-from oracle_design import HOME_LABEL
+import oracle_shell as shell
 BG = OGG["canvas"]
 PANEL = OGG["raised"]
 CARD = OGG["sunken_alt"]
@@ -30,30 +30,22 @@ INSET = OGG["sunken"]
 
 
 CLIPBOARD_CLEAR_MS = 60_000
+CARDS_ONE_ROW = 540       # card-row width (px) below which the five parts wrap onto two rows
 
 
-def action_button(parent, label, command, *, color=TEXT, fill="#2F2620", pady=8, primary=False):
-    """Oggcultist Ember: boxed, restrained secondary actions and one orange primary."""
-    if primary:
-        color, fill = "#2B1405", "#FB8E22"
-    btn = tk.Button(
-        parent, text=label, command=command, font=(FAMILY, 11, "bold"),
-        fg=color, bg=fill, activeforeground="#FFF4E6" if not primary else "#2B1405",
-        activebackground="#372A23" if not primary else "#FDA629",
-        relief="flat", borderwidth=0, highlightthickness=1,
-        highlightbackground="#59473B" if not primary else "#FB8E22",
-        highlightcolor="#FB8E22", cursor="hand2", padx=16, pady=pady,
-        takefocus=True,
-    )
-    return btn
+def action_button(parent, label, command, *, primary=False, **_legacy):
+    """The suite button (oracle_shell). Extra legacy styling arguments are ignored."""
+    return shell.button(parent, label, command, primary=primary)
 
 
 class PassphrasePanel(tk.Frame):
-    """Original Marble Passphrase five-card layout in the Oracle Ember palette.
+    """Marble Passphrase in the suite page shell (oracle_shell).
 
-    The whole passphrase workspace stays embedded inside Oracle's existing
-    overlay; the Back button is supplied by Oracle rather than spawning a
-    second app window.
+    Rail: name, options, keyboard shortcuts, privacy notes and HOME at the
+    foot, like every other workspace. Main: the page title with the strength
+    badge, the five parts, the full phrase, the actions and the status line.
+    The whole workspace stays embedded inside Oracle's overlay; it never
+    spawns a second app window.
     """
     def __init__(self, master, engine: Dicekey, on_home=None):
         super().__init__(master, bg=BG)
@@ -70,81 +62,87 @@ class PassphrasePanel(tk.Frame):
         self.roll()
 
     def _draw(self):
-        # Same hierarchy as original marble_passphrase.py: header, five
-        # horizontal parts, complete phrase, bottom actions and status.
-        outer = ogl_frame(self, bg=BG, padx=20, pady=13)
-        outer.pack(fill="both", expand=True)
-        top = ogl_frame(outer, bg=BG)
-        top.pack(fill="x")
-        heading = ogl_frame(top, bg=BG)
-        heading.pack(side="left", fill="x", expand=True)
-        ogl_label(heading, text="MARBLE  /  PASSPHRASE", fg=TEXT, bg=BG,
-                 font=(FAMILY, 23, "bold")).pack(anchor="w")
-        ogl_label(heading, text="OFFLINE PASSWORD GENERATOR     •     EFF LONG WORDLIST     •     NO HISTORY",
-                 fg=CYAN, bg=BG, font=(FAMILY, 10)).pack(anchor="w", pady=(3, 0))
-        self.home_button = action_button(top, HOME_LABEL, self._home,
-                                         color=TEXT, fill=CARD, pady=8)
-        self.home_button.pack(side="right", anchor="n", padx=(12, 0))
+        # The rail holds extras only (options, keys, privacy), so in the
+        # smallest windows it steps aside and the parts keep one row.
+        self.shell = shell.Shell(self, collapsible=True)
+        rail, main = self.shell.rail, self.shell.main
 
-        main = ogl_frame(outer, bg=PANEL, highlightbackground=BORDER,
-                        highlightthickness=1, padx=15, pady=13)
-        main.pack(fill="both", expand=True, pady=(13, 10))
-        header = ogl_frame(main, bg=PANEL)
-        header.pack(fill="x", pady=(0, 10))
-        ogl_label(header, text="YOUR PASSPHRASE", fg=AMBER, bg=PANEL,
-                 font=(FAMILY, 12, "bold")).pack(side="left")
-        ogl_label(header, text=f"~{self.engine.bits:.1f} BITS / ORIGINAL PATTERN",
-                 fg=MUTED, bg=PANEL, font=(FAMILY, 9)).pack(side="right")
+        self.home_button, _version = self.shell.home(self._home, "EFF WORDLIST · LOCAL")
+        self.shell.brand("PASSPHRASE", "OFFLINE · NO HISTORY")
 
-        cards = ogl_frame(main, bg=PANEL)
-        cards.pack(fill="both", expand=True)
-        cards.grid_rowconfigure(0, weight=1)
+        self.shell.group("OPTIONS")
+        tk.Checkbutton(rail, text="SHOW DICE CODES", variable=self.show_dice,
+                       command=self._refresh, bg=OGG["sidebar"], fg=OGG["text"],
+                       activebackground=OGG["sidebar"], activeforeground=OGG["accent"],
+                       selectcolor=OGG["sunken"], font=shell.font("body"), anchor="w",
+                       borderwidth=0, highlightthickness=0).pack(fill="x", padx=shell.RAIL_PADX - 2)
+
+        self.shell.group("KEYS")
+        keys = ogl_frame(rail, bg=OGG["sidebar"])
+        keys.pack(fill="x", padx=shell.RAIL_PADX)
+        keys.grid_columnconfigure(0, minsize=64)
+        for row, (key, meaning) in enumerate((("R", "roll a new phrase"), ("S", "swap words 1, 2"),
+                                              ("1 – 5", "reroll one part"), ("CTRL+C", "copy"))):
+            shell.label(keys, key, "body_bold", "accent").grid(row=row, column=0, sticky="w", pady=1)
+            shell.label(keys, meaning, "small", "text_2").grid(row=row, column=1, sticky="w", pady=1)
+
+        self.shell.group("PRIVACY")
+        self.shell.rail_text("Nothing is saved or sent. Copy is explicit, and the clipboard is cleared after 60 seconds.")
+
+        self.bits_text = f"~{self.engine.bits:.1f} BITS"
+        _title, _sub, right = self.shell.header(
+            "YOUR PASSPHRASE",
+            "Three words, a number and a symbol. Reroll any part, or roll a whole new phrase.")
+        shell.chip(right, self.bits_text).pack(side="right")
+
+        self.status_label = self.shell.status(textvariable=self.status, wraplength=1000)
+
+        body = ogl_frame(main, bg=BG)
+        body.pack(fill="both", expand=True, padx=shell.MAIN_PADX, pady=(0, 8))
+
+        cards = ogl_frame(body, bg=BG)
+        cards.pack(fill="x")
         self.part_labels = {}
         self.dice_labels = {}
+        self._cards = []
+        self._card_columns = None
+        self._cards_frame = cards
         for i, part in enumerate(PARTS):
-            cards.grid_columnconfigure(i, weight=1, uniform="parts")
-            card = ogl_frame(cards, bg=CARD, highlightbackground=BORDER,
-                            highlightthickness=1, padx=8, pady=10)
-            card.grid(row=0, column=i, sticky="nsew", padx=(0, 6 if i < 4 else 0))
-            ogl_label(card, text=PART_NAMES[part], fg=MUTED, bg=CARD,
-                     font=(FAMILY, 9, "bold")).pack(anchor="w")
-            value = ogl_label(card, text="", fg=TEXT if i < 3 else AMBER,
-                             bg=CARD, font=(FAMILY, 17, "bold"),
-                             anchor="w", pady=12)
-            value.pack(fill="x")
+            card = ogl_frame(cards, bg=PANEL, highlightbackground=BORDER,
+                             highlightthickness=1, padx=10, pady=12)
+            self._cards.append(card)
+            shell.label(card, PART_NAMES[part], "group", "text_3").pack(anchor="w")
+            # width=1: the word never sets the card's width (the five columns
+            # share the row equally); _part_font fits the word to the card.
+            value = shell.label(card, "", "section", "text" if i < 3 else "accent", anchor="w", width=1)
+            value.pack(fill="x", pady=(10, 2))
+            value.bind("<Configure>", self._refit_parts, add="+")
             self.part_labels[part] = value
-            dice = ogl_label(card, text="", fg=CYAN, bg=CARD,
-                            font=(FAMILY, 9), anchor="w")
-            dice.pack(fill="x", pady=(0, 8))
+            dice = shell.label(card, " ", "small", "text_3", anchor="w", width=1)
+            dice.pack(fill="x", pady=(0, 10))
             self.dice_labels[part] = dice
-            action_button(card, f"REROLL {i + 1}", lambda p=part: self.reroll(p),
-                          color=TEXT, fill=OGG["control"], pady=6).pack(fill="x", side="bottom")
+            # Pinned to the card's foot so the five buttons line up whatever size each word is drawn at.
+            shell.button(card, f"REROLL {i + 1}", lambda p=part: self.reroll(p),
+                         padx=6).pack(side="bottom", fill="x")
+        self._arrange_cards(5)
+        cards.bind("<Configure>", lambda e: self._arrange_cards(5 if e.width >= CARDS_ONE_ROW else 3), add="+")
 
-        strip = ogl_frame(main, bg=PANEL)
-        strip.pack(fill="x", pady=(12, 0))
-        ogl_label(strip, text="FULL PHRASE", bg=PANEL, fg=MUTED,
-                 font=(FAMILY, 9, "bold")).pack(anchor="w")
+        strip = ogl_frame(body, bg=BG)
+        strip.pack(fill="x", pady=(18, 0))
+        shell.label(strip, "FULL PHRASE", "group", "text_3").pack(anchor="w")
         self.entry = tk.Entry(strip, textvariable=self.full_phrase, state="readonly",
-                              readonlybackground=INSET, fg=TEXT,
+                              readonlybackground=INSET, fg=OGG["text_bright"],
                               selectbackground=OGG["accent_soft"],
-                              font=(FAMILY, 15), relief="flat", borderwidth=0,
+                              font=(FAMILY, 18, "bold"), relief="flat", borderwidth=0,
                               highlightthickness=1, highlightbackground=BORDER)
-        self.entry.pack(fill="x", ipady=9, pady=(5, 0))
+        self.entry.pack(fill="x", ipady=10, pady=(6, 0))
 
-        controls = ogl_frame(outer, bg=BG)
-        controls.pack(fill="x")
+        controls = ogl_frame(body, bg=BG)
+        controls.pack(fill="x", pady=(14, 0))
         action_button(controls, "ROLL NEW   [R]", self.roll, primary=True).pack(side="left", padx=(0, 8))
-        action_button(controls, "SWAP 1 / 2   [S]", self.swap, color=TEXT).pack(side="left", padx=(0, 8))
+        action_button(controls, "SWAP 1 / 2   [S]", self.swap).pack(side="left", padx=(0, 8))
         self.copy_button = action_button(controls, "COPY   [CTRL+C]", self.copy)
         self.copy_button.pack(side="left")
-        tk.Checkbutton(controls, text="SHOW DICE CODES", variable=self.show_dice,
-                       command=self._refresh, bg=BG, fg=MUTED, activebackground=BG,
-                       activeforeground=CYAN, selectcolor=BG, font=(FAMILY, 9),
-                       borderwidth=0, highlightthickness=0).pack(side="right")
-        ogl_label(outer, textvariable=self.status, bg=BG, fg=CYAN,
-                 font=(FAMILY, 10), anchor="w", wraplength=1000).pack(fill="x", pady=(8, 3))
-        ogl_label(outer, text="1–5 reroll one part   •   Swap only changes word order   •   Copy is explicit   •   No network or saved phrases",
-                 bg=BG, fg=MUTED, font=(FAMILY, 9), anchor="w").pack(fill="x")
 
     def _home(self):
         if self.on_home is not None:
@@ -161,10 +159,46 @@ class PassphrasePanel(tk.Frame):
             return
         for part, value in zip(PARTS, parts):
             label = self.part_labels[part]
-            label.configure(text=value, font=(FAMILY, 14 if len(value) > 12 else 18, "bold"))
+            label.configure(text=value, font=self._part_font(label, value))
             code = self.engine.dice(value) if part.startswith("w") and self.show_dice.get() else ""
             self.dice_labels[part].configure(text=code if code else " ")
         self.full_phrase.set(self.phrase)
+
+    def _arrange_cards(self, columns):
+        """Five cards in a row, or (in a narrow workspace) the three words above the number and symbol."""
+        if columns == self._card_columns:
+            return
+        self._card_columns = columns
+        for column in range(5):
+            self._cards_frame.grid_columnconfigure(column, weight=1 if column < columns else 0,
+                                                   uniform="parts" if column < columns else "")
+        for i, card in enumerate(self._cards):
+            row, column = divmod(i, columns)
+            last = column == columns - 1 or i == len(self._cards) - 1
+            card.grid(row=row, column=column, sticky="nsew",
+                      padx=(0, 0 if last else 8), pady=(0 if row == 0 else 8, 0))
+
+    def _part_font(self, label, value):
+        """The largest of 18-10 pt (10 pt is the suite minimum) at which `value` fits its card."""
+        width = label.winfo_width()
+        if width <= 1:
+            width = 120                      # not laid out yet; refitted on <Configure>
+        for size in (18, 16, 14, 13, 12, 11, 10):
+            spec = (FAMILY, size, "bold")
+            # `font measure` keeps no Tk font object alive (see FontMeasure in AUGURSPEX).
+            if int(self.tk.call("font", "measure", spec, value)) <= width - 4:
+                return spec
+        return (FAMILY, 10, "bold")
+
+    def _refit_parts(self, _event=None):
+        parts = self.engine.split(self.phrase) if self.phrase else None
+        if parts is None:
+            return
+        for part, value in zip(PARTS, parts):
+            label = self.part_labels[part]
+            font = self._part_font(label, value)
+            if str(label.cget("font")) != str(font):
+                label.configure(font=font)
 
     def roll(self):
         self.phrase = self.engine.roll()

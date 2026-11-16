@@ -14,7 +14,7 @@ from tkinter import font as tkfont
 from marble_uberata import FAMILY
 from oracle_ogg_texture import frame as ogl_frame, label as ogl_label, install as ogl_install
 from oggcultist_design_system import COLOR as C
-from oracle_design import HOME_LABEL
+import oracle_shell as shell
 from oracle_widgets import tooltip
 from oracle_assets import load_json, save_json
 
@@ -247,15 +247,8 @@ class TouchTypePanel(tk.Frame):
             self.info_label.configure(text=text)
 
     def _button(self, parent, text, callback, primary=False):
-        btn = tk.Button(parent, text=text, command=lambda: self._invoke(callback), cursor='hand2',
-                        relief='flat', bd=0, padx=12, pady=8,
-                        font=(FAMILY, 11, 'bold'),
-                        bg=C['accent'] if primary else C['control'],
-                        fg=C['text_on_accent'] if primary else C['text'],
-                        activebackground=C['accent_deep'] if primary else C['hover'],
-                        activeforeground=C['text_on_accent'] if primary else C['text'],
-                        highlightthickness=1, highlightbackground=C['control_line'])
-        return btn
+        # The suite button (oracle_shell); the click also returns focus to the typing field.
+        return shell.button(parent, text, lambda: self._invoke(callback), primary=primary)
 
     def _invoke(self, callback):
         callback()
@@ -263,67 +256,53 @@ class TouchTypePanel(tk.Frame):
         self.after_idle(self.focus_input)
 
     def _make_ui(self):
-        root = ogl_frame(self, bg=C['sidebar'])
-        root.pack(fill='both', expand=True)
-        self.rail = ogl_frame(root, bg=C['sidebar'], width=225)
-        self.rail.pack(side='left', fill='y')
-        self.rail.pack_propagate(False)
-        tk.Frame(root, bg=C['line'], width=1).pack(side='left', fill='y')
-        main = ogl_frame(root, bg=C['canvas'])
-        main.pack(side='left', fill='both', expand=True)
+        # The suite page shell (oracle_shell): same rail, title and HOME
+        # positions as every other workspace.
+        self.shell = shell.Shell(self)
+        self.rail = self.shell.rail
+        main = self.shell.main
 
-        self.rail_title = self._label(self.rail, 'TOUCH TYPE', 19, 'text_bright', bold=True)
-        self.rail_title.pack(anchor='w', padx=18, pady=(12, 2))
-        self.rail_subtitle = self._label(self.rail, 'LEARN · PLAY · IMPROVE', 10, 'text_3')
-        self.rail_subtitle.pack(anchor='w', padx=18, pady=(0, 13))
-        self._label(self.rail, 'TRAINING GAMES', 10, 'text_3', bold=True).pack(anchor='w', padx=18, pady=(0, 6))
+        self.home_button, _version = self.shell.home(self.on_home, 'KEYBOARD · LOCAL')
+        self.best_label = shell.label(self.shell.rail_bottom(), 'BEST  —', 'small', 'text_2')
+        self.best_label.pack(anchor='w', pady=(0, 8), before=self.home_button)
+        self.rail_title, self.rail_subtitle = self.shell.brand('TOUCH TYPE', 'LEARN · PLAY · IMPROVE')
+        self.shell.group('TRAINING GAMES')
+        games = self.shell.nav_group()
         self.mode_buttons = {}
         for i, mode in enumerate(MODES):
-            btn = self._button(self.rail, '%02d   %s' % (i+1, MODE_NAMES[i]),
-                               lambda m=mode: self.set_mode(m))
-            btn.configure(anchor='w', padx=14)
-            btn.pack(fill='x', padx=12, pady=2)
-            self.mode_buttons[mode] = btn
+            self.mode_buttons[mode] = shell.nav_button(games, '%02d   %s' % (i+1, MODE_NAMES[i]),
+                                                       lambda m=mode: self._invoke(lambda: self.set_mode(m)))
 
-        self._label(self.rail, 'CURRENT LESSON', 10, 'text_3', bold=True).pack(anchor='w', padx=18, pady=(13, 5))
+        self.shell.group('CURRENT LESSON')
         self.lesson_value = tk.StringVar(value=LESSONS[0][0])
         self.lesson_menu = tk.OptionMenu(self.rail, self.lesson_value, *(l[0] for l in LESSONS), command=self.change_lesson)
         self.lesson_menu.configure(bg=C['control'], fg=C['text'], activebackground=C['hover'],
                                    activeforeground=C['text'], highlightthickness=0, bd=0,
-                                   font=(FAMILY, 12), anchor='w', relief='flat')
-        self.lesson_menu['menu'].configure(bg=C['raised'], fg=C['text'],
+                                   font=shell.font('body'), anchor='w', relief='flat')
+        self.lesson_menu['menu'].configure(bg=C['raised'], fg=C['text'], font=shell.font('body'),
                                            activebackground=C['accent_soft'],
                                            activeforeground=C['text'])
-        self.lesson_menu.pack(fill='x', padx=14)
-        self._label(self.rail, 'HOME ROW · QWERTY', 10, 'text_3').pack(anchor='w', padx=18, pady=(5, 0))
-        ogl_frame(self.rail, bg=C['sidebar']).pack(fill='both', expand=True)
-        self.best_label = self._label(self.rail, 'BEST  —', 11, 'text_2')
-        self.best_label.pack(anchor='w', padx=18, pady=(4, 6))
-        self._button(self.rail, HOME_LABEL, self.on_home).pack(fill='x', padx=12, pady=(0, 7))
+        self.lesson_menu.pack(fill='x', padx=shell.RAIL_PADX)
+        shell.label(self.rail, 'HOME ROW · QWERTY', 'small', 'text_3').pack(anchor='w', padx=shell.RAIL_PADX, pady=(5, 0))
 
-        head = ogl_frame(main, bg=C['canvas'])
-        head.pack(fill='x', padx=20, pady=(9, 1))
-        self.mode_title = self._label(head, 'HOME ROW', 18, 'text_bright', bold=True)
-        self.mode_title.pack(side='left')
-        self.phase_label = ogl_label(head, bg=C['accent_soft'], fg=C['accent'],
-                                    font=(FAMILY, 10, 'bold'), padx=12, pady=4, text='READY')
+        self.mode_title, self.description, head_right = self.shell.header('HOME ROW', MODE_DETAILS[0])
+        self.description.configure(wraplength=720)
+        self.phase_label = shell.chip(head_right, 'READY')
         self.phase_label.pack(side='right')
-        self.description = self._label(main, MODE_DETAILS[0], 11, 'text_2', wraplength=720, justify='left')
-        self.description.pack(fill='x', padx=20, pady=(0, 6))
 
         stats_row = ogl_frame(main, bg=C['raised'], pady=5)
-        stats_row.pack(fill='x', padx=18, pady=(0, 7))
+        stats_row.pack(fill='x', padx=shell.MAIN_PADX, pady=(0, 7))
         self.stat_labels = {}
         for key, title in [('wpm','SPEED / WPM'), ('accuracy','ACCURACY'), ('score','COMPLETED'), ('time','TIME')]:
             cell = ogl_frame(stats_row, bg=C['raised'])
             cell.pack(side='left', expand=True, fill='x')
-            self._label(cell, title, 9, 'text_3', bold=True).pack()
+            self._label(cell, title, 10, 'text_3', bold=True).pack()
             val = self._label(cell, '—', 15, 'text_bright', bold=True)
             val.pack(pady=(0,0))
             self.stat_labels[key] = val
 
         prompt_panel = ogl_frame(main, bg=C['sunken'], highlightthickness=1, highlightbackground=C['line_strong'])
-        prompt_panel.pack(fill='x', padx=18, pady=(0, 7))
+        prompt_panel.pack(fill='x', padx=shell.MAIN_PADX, pady=(0, 7))
         top = ogl_frame(prompt_panel, bg=C['sunken'])
         top.pack(fill='x', padx=12, pady=(4, 0))
         self._label(top, 'TYPE THE HIGHLIGHTED CHARACTER', 10, 'text_3', bold=True).pack(side='left')
@@ -343,7 +322,7 @@ class TouchTypePanel(tk.Frame):
         self.fall_area.bind('<Configure>', lambda e: self._draw_falling())
 
         capture = ogl_frame(main, bg=C['canvas'])
-        capture.pack(fill='x', padx=18, pady=(0, 5))
+        capture.pack(fill='x', padx=shell.MAIN_PADX, pady=(0, 5))
         self.input_var = tk.StringVar()
         self.typing_entry = tk.Entry(capture, textvariable=self.input_var, width=10,
                                      font=(FAMILY, 15), bg=C['sunken_alt'], fg=C['text_bright'],
@@ -359,10 +338,10 @@ class TouchTypePanel(tk.Frame):
         self.reset_button.pack(side='left', padx=(6,0))
 
         self.keyboard = tk.Canvas(main, bg=C['canvas'], highlightthickness=0, height=147)
-        self.keyboard.pack(fill='x', padx=18, pady=(2, 0))
+        self.keyboard.pack(fill='x', padx=shell.MAIN_PADX, pady=(2, 0))
         self.keyboard.bind('<Configure>', lambda e: self._draw_keyboard())
         info = ogl_frame(main, bg=C['canvas'])
-        info.pack(fill='x', padx=20, pady=(1, 2))
+        info.pack(fill='x', padx=shell.MAIN_PADX, pady=(1, 2))
         self.finger_label = self._label(info, 'INDEX FINGERS · F / J', 11, 'accent', bold=True)
         self.finger_label.pack(side='left')
         self.info_label = self._label(info, 'Focus: typing field', 10, 'text_2')
@@ -390,20 +369,17 @@ class TouchTypePanel(tk.Frame):
             return
         self._fit_state = (compact, narrow)
         self._compact = compact
-        self.rail.configure(width=175 if narrow else 225)
-        self.rail_title.configure(font=(FAMILY, 15 if narrow else 19, 'bold'))
+        self.shell.set_rail_width(shell.RAIL_NARROW if narrow else shell.RAIL_WIDTH)
         self.rail_subtitle.configure(text='LEARN · PLAY' if narrow else 'LEARN · PLAY · IMPROVE')
         short_names = ('HOME ROW', 'SPRINT', 'KEYFALL', 'SENTENCES')
         for i, mode in enumerate(MODES):
             self.mode_buttons[mode].configure(text='%02d  %s' % (i + 1, short_names[i])
                                               if narrow else '%02d   %s' % (i + 1, MODE_NAMES[i]))
+        # The page description is hidden by the shell itself in short windows.
         if compact:
             self.keyboard.pack_forget()
-            self.description.pack_forget()
         else:
-            self.description.pack(fill='x', padx=20, pady=(0, 6),
-                                  after=self._main.winfo_children()[0])
-            self.keyboard.pack(fill='x', padx=18, pady=(2, 0), before=self._info_row)
+            self.keyboard.pack(fill='x', padx=shell.MAIN_PADX, pady=(2, 0), before=self._info_row)
         if narrow:
             self.reset_button.pack_forget()
             self.info_label.pack_forget()
@@ -542,10 +518,7 @@ class TouchTypePanel(tk.Frame):
         self.phase_label.configure(text=e.phase.upper(),
                                    foreground=C['done'] if e.phase == 'complete' else C['accent'])
         for mode, b in self.mode_buttons.items():
-            chosen = mode == e.mode
-            b.configure(bg=C['accent_soft'] if chosen else C['control'],
-                        fg=C['accent'] if chosen else C['text'],
-                        highlightbackground=C['accent'] if chosen else C['control_line'])
+            shell.set_nav_current(b, mode == e.mode)
         self.lesson_menu.configure(state='normal' if e.mode == 'keys' else 'disabled')
         self.stat_labels['wpm'].configure(text='%.0f' % e.wpm)
         self.stat_labels['accuracy'].configure(text='%.0f%%' % e.accuracy)
