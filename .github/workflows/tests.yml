@@ -111,11 +111,11 @@ jobs:
 
   windows:
     # Real Windows Tk (not a physical PC, but the genuine Windows build of
-    # Python, Tk and FFmpeg). Informational until it has a clean record.
+    # Python, Tk and FFmpeg). Required since 0.4.9.7: it passed on every
+    # commit from 0.4.9.5's review fixes to 0.4.9.6.
     name: Windows · native Tk · FFmpeg
     runs-on: windows-latest
     timeout-minutes: 45
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

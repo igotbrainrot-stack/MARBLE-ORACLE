@@ -2,6 +2,23 @@
 
 Newest first. Releases before 0.4.9.3 have their original notes in `History/ReleaseNotes/`.
 
+## 0.4.9.7 · 16 November 2026 · Keyboard and fit
+
+Built on 0.4.9.6. Nothing removed; no saved setting changes format.
+
+- **HOME from the keyboard.** HOME's controls are drawn on its canvas, so Tab did nothing there and it could only be used with a mouse. Tab and Shift+Tab now step through the visible controls in reading order, Enter or Space presses the focused one, and Escape puts the focus away (with no focus, Enter, Space and Escape mean what they did before; Escape still never quits). The focused control gets the suite's cream focus ring. Close, minimise and the dials are left out of the Tab order. New module `oracle_home_focus.py`.
+- **HOME hover.** The control under the pointer gets a quiet 1 px outline in the tertiary text colour, distinct from the focus ring and from the amber "current" fill. Before, only the cursor changed.
+- **THREE CUTS at 900x580.** The line under each card ("REVERSED · ALREADY") is fitted to its card like the name; neighbouring lines ran into each other. The TAROT / RUNES switch sits in the panel's header row; below the header it covered the top of the third card.
+- **Page descriptions fit their line.** The shared shell shortens a description with "…" to the width it has and shows the whole text on hover. PASSPHRASE's and TOUCH TYPE's ran off the right edge mid-word at 900x580. New helper `oracle_widgets.ellipsize`.
+- **PLATE VAULT in screenshots.** The statues were missing from every automated screenshot because `capture_screens.py` never ran the frame loop that draws them; the panel itself was fine. The tool now ticks the scene as the running program does.
+- **Windows CI is required.** The Windows job passed on every commit from 0.4.9.5's review fixes to 0.4.9.6, so it no longer runs as informational.
+- **Handover rewritten** as one current document; the layered 0.4.9.3 to 0.4.9.5 notes are in `History/HANDOVER_0.4.9.3-0.4.9.5.md`.
+
+### Tests
+
+- New `test_home_keyboard_0497.py`: Tab order rule, focus ring, Enter and Space press, Escape, hover outline, ring after a resize, Tab left to Tk inside a workspace.
+- New `test_polish_0497.py`: `ellipsize` on its own; at 900x580 no tarot caption overlaps another or leaves the panel, the switch covers no card, and each page description fits its line.
+
 ## 0.4.9.6 · 16 November 2026 · Design prototype
 
 The first slice of the redesign in the design document (phase 7). Built on 0.4.9.5; nothing removed.

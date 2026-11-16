@@ -1,64 +1,62 @@
-# Handover: Marble Oracle 0.4.9.5
+# Handover: Marble Oracle 0.4.9.7
 
-## What 0.4.9.5 changed (16 November 2026)
-
-Every workspace is built in one page shell, `Runtime/Marble_Oracle_App/oracle_shell.py`. **New workspace UI should use it** (`Shell`, `button`, `nav_button`, `label` with a type role) rather than spelling fonts and paddings inline; `test_unified_shell_0495.py` checks the tabs still agree. See the changelog for what moved on each tab. Checked on Linux only; Windows fonts are taller, so the GitHub Windows job is the first real check there.
-
----
-
-
-## What 0.4.9.4 changed (16 November 2026)
-
-A small release on top of 0.4.9.3; everything below this section is the 0.4.9.3 handover and still applies.
-
-- Stooq key support and "key needed" detection; new sources Tiingo, EODHD, data.go.kr, Bitstamp, Bitfinex, Coinbase Advanced Trade and the Binance mirror (USDT, labelled). See `MARKET_DATA.md` and the changelog.
-- Rune stones keep a real height at 640x460 (next step 2 below). The script that failed on the Windows runner in 0.4.9.3 passes there now. Step 4 (make the Windows job required) can go ahead once this branch's Windows job is fully green.
-- **None of the new sources has been checked live.** First job for whoever has a normal connection: run `Tools/probe_providers.py`, with keys set for the keyed ones, and record the result in `PROVIDER_PROBE.md`. Least certain: the data.go.kr request format, EODHD's free-plan exchange coverage, and whether Stooq's reply with a key is unchanged CSV.
-- Still open from the research: Yahoo's opt-in endpoint is throttled and against its terms; there is no free official ASX source.
-
----
-
-## The 0.4.9.3 handover
-
-15 November 2026. For whoever picks this up next, human or AI.
+16 November 2026. For whoever picks this up next, human or AI. Earlier handovers (0.4.9.3 to 0.4.9.5) are in `History/HANDOVER_0.4.9.3-0.4.9.5.md`; this file replaces them.
 
 ## Where things are
 
-- **Repository:** `igotbrainrot-stack/MARBLE-ORACLE`
-- **This work:** branch `claude/marble-oracle-0493-refinement`, based on `handover/marble-oracle-0492-source-20261114` (PR #5). Nothing was merged; the five earlier pull requests are untouched.
-- **The branch is the whole application.** It contains every asset archive, font and texture. Only the two third-party research PDFs are left out of Git (they are in the release ZIP under `Documentation/Research/`).
-- **Read first:** `README.md`, then `ARCHITECTURE.md`, `DEVELOPMENT.md`, `TESTING_REPORT.md`, `CHANGELOG.md`.
+- **Repository:** `igotbrainrot-stack/MARBLE-ORACLE`. `main` is still the 10 November 2026 baseline; nothing has been merged since.
+- **Pull requests:** each version is a draft PR stacked on the one before, so each diff shows only its own work. **Merge nothing without the owner's say-so.**
+
+| PR | Branch | Version | In one line |
+|---|---|---|---|
+| #1 to #5 | various | 0.3 to 0.4.9.2 | EIDOLITH 0.4, AUGURSPEX chart repairs, the 0.4.9.2 handover |
+| #6 | `claude/marble-oracle-0493-refinement` | 0.4.9.3 | Honest market states, file safety, layouts at 900x580, test runner, CI, docs |
+| #7 | `claude/marble-oracle-0494-data-sources` | 0.4.9.4 | Stooq key, backup market sources, rune stones at 640x460 |
+| #8 | `claude/marble-oracle-0495-unified-design` | 0.4.9.5 | One page shell (`oracle_shell.py`) for every workspace |
+| #9 | `claude/marble-oracle-0496-design-prototype` | 0.4.9.6 | Contrast, focus vs current, Escape never quits, EIDOLITH Convert, AUGURSPEX grid and axis |
+| **#10** | **`claude/marble-oracle-0497-polish`** | **0.4.9.7** | **HOME keyboard and hover, fit fixes at 900x580, Windows CI required, this handover** |
+
+- **The branch is the whole application:** every asset archive, font and texture is in Git. Only the two third-party research PDFs are left out (`.gitignore`); they are in the release ZIP under `Documentation/Research/`.
+- **Read next:** `README.md`, `ARCHITECTURE.md`, `DEVELOPMENT.md`, `CHANGELOG.md`, `TESTING_REPORT.md`.
 
 ## State in one paragraph
 
-All six workspaces work as in 0.4.9.2. This release fixed real defects (market failure reporting, a broken adapter, FFmpeg left running on Windows, controls lost at 900x580), removed dead code that still shipped, gave the project a test runner, CI on Linux and Windows, lint, a build tool and current documentation. The Linux suite is fully green; Windows has one known failure at a window size below the supported minimum. Nothing has yet been run on a physical PC.
+All six workspaces work, share one page shell and one interaction look (hover, a cream keyboard-focus ring, an amber "current" fill), and HOME can now be used from the keyboard. The whole regression suite passes on GitHub's Linux runner (Tk under Xvfb) and on its Windows runner (native Tk), and since 0.4.9.7 the Windows job is required. **Nothing has been run on a physical PC, and none of the market sources added in 0.4.9.4 has been seen answering live.**
 
-## What was not done, honestly
+## What 0.4.9.7 changed
 
-The brief asked for a complete redesign and refactor of every workspace. What was done is the stabilising half of that, plus a start on the rest:
+- **HOME from the keyboard.** HOME's controls are drawn on a canvas, so Tab did nothing there. `oracle_home_focus.HomeFocusMixin` (mixed into `Scene`) gives them a Tab order (reading order), Enter/Space to press, Escape to leave, the suite's cream focus ring, and a quiet hover outline. Close, minimise and the dials are not in the Tab order.
+- **Fit fixes at 900x580.** THREE CUTS: card captions no longer run into each other, and the TAROT / RUNES switch moved into the header row (it covered the third card). Page descriptions in the shared shell are shortened with "…" (full text on hover) instead of running off the edge mid-word.
+- **PLATE VAULT was never broken.** It looked empty in every automated screenshot because the capture tool never ran the frame loop that draws the statues. The tool now does; the statues appear.
+- **Windows CI is required.**
 
-| Area | Done | Not done |
-|---|---|---|
-| AUGURSPEX | Provider layer, failure kinds, routing from live evidence, header and rail tidied, axis labels, signals | Splitting `providers.py` by asset class; per-source freshness thresholds |
-| EIDOLITH | Layout at all sizes, process handling, file-safety proof | No change to the conversion pipeline itself; viewer is still a 12 fps preview |
-| HOME | Dead feeds removed | No visual or layout redesign; `marble_oracle.py` is still one 3,700-line module |
-| OGGCULTIST | One crash fixed | Deliberately not edited: it is a complete vendored application |
-| PASSPHRASE | Security reviewed and tested (OS random source, nothing logged, clipboard cleared) | No interface change |
-| TOUCH TYPE | A focus fix in its test | No interface change |
-| Design system | Shared tokens; wrapping toolbars and text (two workspaces); one hover, keyboard-focus and disabled look for every control in the window; tooltips for shortened text | HOME is canvas-drawn and does not use the shared tokens or get hover feedback; PASSPHRASE and TOUCH TYPE still spell their colours inline; no context menus |
-| Refactor | Tk-free logic split out of AUGURSPEX; dead code removed; one version number | The large modules remain large (listed in `ARCHITECTURE.md`) |
-| Optimisation | Cache bounded; helper processes collected; two unused start-up objects removed | No start-up or redraw measurements were taken. The ZIP is the same size as before (113 MB): it is almost entirely artwork archives, which were deliberately left alone |
+## What is verified, and how
+
+| Claim | Evidence |
+|---|---|
+| The suite launches and every workspace opens | GUI tests on Linux and Windows runners |
+| HOME keyboard focus, Enter, Escape, hover, ring after a resize | `test_home_keyboard_0497.py`, both runners |
+| No overlap or cut-off text at the four supported sizes | Layout tests (EIDOLITH, AUGURSPEX, shell, polish) plus screenshots reviewed by eye |
+| Conversions never touch the original | `test_eidolith_file_safety_0493.py` with real FFmpeg, both runners |
+| No invented prices | Provider tests with controlled replies; live probe of the keyless sources on 15 Nov 2026 |
+
+## Not verified
+
+- Any physical Windows 11 or Linux Mint PC: the launchers by double-click, the first-run requirements window, real monitors and display scaling.
+- Sound (Oggcultist, the Latin voices, the EIDOLITH viewer), GPU encoders, long conversions, HDR sources.
+- Market sources from a home connection; every keyed source; all sources added in 0.4.9.4.
+- The hover outline and focus ring as seen with a real mouse on a real screen (tests drive them with synthetic events).
+- The embedded Oggcultist's own `Oggcultist/tests/` folder.
 
 ## Next steps, in order of value
 
-1. **Run it on a real Windows 11 PC and a real Linux Mint PC.** Launchers, first-run requirements window, sound, a GPU encode, a long conversion, AUGURSPEX from a home connection. Record the result in `TESTING_REPORT.md`. Nothing else on this list is worth more.
-2. **Windows, 640x460, rune stones.** `Scene.draw_runes` in `marble_oracle.py` computes the stone height from the panel height minus fixed bands; with Windows font metrics that reaches zero in the STATUE layout. Either raise the minimum window size on Windows or let the bands give way. `test_rune_click_and_art.py` reproduces it on the Windows CI job.
-3. **HOME's PLATE VAULT is empty in the automated screenshots** (`Tools/capture_screens.py`) while its test passes. Confirm on a real screen whether the statues draw; if they do, fix the capture tool's timing.
-4. **Make the Windows job required.** It is informational (`continue-on-error`) until item 2 is closed.
-5. **Carry the shared design into HOME, PASSPHRASE and TOUCH TYPE:** tokens from `oracle_design.py`, `flow` and `wrap_to_parent` from `oracle_widgets.py`, and give HOME's canvas-drawn buttons the same hover feedback the Tk buttons now have.
-6. **Split `marble_oracle.py`:** move each HOME panel (tarot, runes, Latin, statues, wire, market chart) into its own module behind the existing `Scene` methods. Keep the GUI tests green on both systems at every step.
-7. **Run the embedded Oggcultist's own tests** (`Oggcultist/tests/`) from the suite runner, or record why not.
-8. **Measure** start-up time and tab-switch time before optimising anything further.
+1. **Run it on a real Windows 11 PC and a real Linux Mint PC.** Launch, first run, sound, one conversion, AUGURSPEX from a home connection, HOME with Tab. Record what happens in `TESTING_REPORT.md`.
+2. **Probe the market sources from a normal connection:** `python3 Application/Tools/probe_providers.py --markdown probe.md`, with keys set for the keyed ones; replace `PROVIDER_PROBE.md`. Least certain: data.go.kr's request format, EODHD's free-plan coverage, Stooq's keyed reply.
+3. **Continue the redesign list from 0.4.9.6** (its design document is not in the repository; ask the owner for it): sentence case, tab subtitles, HOME at the smallest sizes, AUGURSPEX's single control row, PASSPHRASE and TOUCH TYPE changes, the CRT glass inset, the requirements window.
+4. **640x460.** It is the smallest size the window allows (below the supported 900x580). Some EIDOLITH buttons and AUGURSPEX tool captions are still clipped there.
+5. **Split `marble_oracle.py`** (about 3,700 lines): move each HOME panel into its own module behind the existing `Scene` methods, the way `oracle_home_focus.py` was added. Keep the GUI tests green on both runners at every step.
+6. **Run Oggcultist's own tests** from the suite runner, or record why not.
+7. **Measure** start-up and tab-switch time before optimising anything.
 
 ## Rules worth keeping
 
@@ -67,16 +65,13 @@ The brief asked for a complete redesign and refactor of every workspace. What wa
 - A test that cannot run is a SKIP, not a pass. Do not loosen a check to get green.
 - Do not commit keys, state folders, caches, imported CSVs or the research PDFs.
 - Do not remove an asset because a checkout lacks it; `verify_release.py` knows what is required.
-- Leave earlier pull requests alone; merge nothing without the owner's say-so.
+- New workspace UI uses `oracle_shell.py` (layout, type, buttons) and `oracle_widgets.py` (`flow`, `wrap_to_parent`, `ellipsize`, `tooltip`); colours come from `oggcultist_design_system.COLOR`.
+- Escape never quits. Focus is the cream ring; "current" is the amber fill. Do not reuse one for the other.
 
 ## Working without a local display
 
-This release was developed on a machine with no Tk. The loop that worked: push to a `claude/**` branch, let the `tests` workflow run, read the job log. A manual run of the workflow can filter tests by name, print the screenshots into the log as base64 JPEG, and run the live provider probe. The test runner prints every thread's position shortly before a test's time limit, which is how the Windows freeze was located.
+Every release since 0.4.9.3 was developed on machines with no Tk. The loop that works: push to a `claude/**` branch, let the `tests` workflow run, read the job logs. A manual run (`workflow_dispatch`) can filter tests by name, print the screenshots into the log as base64 JPEG (`screens_in_log`), and run the live provider probe. The test runner prints every thread's position shortly before a test's time limit.
 
 ## Release artefact
 
-Filled in when the ZIP is built; see the pull request description for the same values.
-
-- **ZIP:** `Marble-Oracle-0.4.9.3-Windows-Linux.zip`
-- **SHA-256:** recorded in the pull request (the checksum cannot be written inside the file it describes)
-- **Previous release:** `Marble-Oracle-0.4.9.2-PDF-RESEARCH-STOCK-FEEDS-Windows-Linux.zip`, SHA-256 `839970fe65eef4c77ec3e0edfbea6d4e4f7f501fe458158e1327719fac764945` (checked against the handover before work began)
+Built with `python3 Application/Tools/build_release.py --zip <path>` from this branch plus the two research PDFs; checked with `verify_release.py` on the tree and on a fresh extraction. The ZIP's name and SHA-256 are in the pull request (a checksum cannot be written inside the file it describes).

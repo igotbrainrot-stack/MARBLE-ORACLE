@@ -290,6 +290,10 @@ class Shell:
         title_label.pack(side='left', fill='x', expand=True)
         sub = label(head, subtitle, 'subtitle', 'text_2', anchor='w', justify='left') if subtitle is not None else None
         if sub is not None:
+            # One line that fits the page: shortened with "…" (full text on
+            # hover) instead of running off the right edge (0.4.9.7).
+            from oracle_widgets import ellipsize
+            ellipsize(sub)
             sub.pack(fill='x', pady=(2, 0))
             if parent is None:
                 self._subtitle = sub

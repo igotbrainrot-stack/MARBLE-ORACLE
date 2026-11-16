@@ -40,6 +40,7 @@ from oracle_assets import rgba_png  # noqa: E402,F401
 from oracle_chrome import (DECK_TAB_OFF, DECK_TAB_ON, DK_TAB_OFF, DK_TAB_ON, LD_TAB_OFF, LD_TAB_ON, TAB_INK, TAB_EDGE, TAB_SLOPE, tab_ink, TAB_GAP, TAB_MIN_PX,  # noqa: E402,F401
                            THEMES, THEME_NAMES, noise_tile_png, scan_tile_png, hexrgb, mix, ChromeMixin, bezel_geometry, bezel_step)
 from oracle_skin import SkinMixin, hexmix  # noqa: E402
+from oracle_home_focus import HomeFocusMixin  # noqa: E402
 from oracle_augurspex_home import MarketCarousel
 from oracle_version import suite_title  # noqa: E402
 from oracle_audio import respell, synth_wav, VoiceBank, Sfx  # noqa: E402,F401
@@ -778,12 +779,12 @@ class EmbeddedPassphrase:
         return None
 
 
-class Scene(ChromeMixin, SkinMixin):
+class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
     # Preserve the archived marble plate's contrast: the CRT/sepia and glass
     # passes sit over ordinary content, but the ASCII statue is a protected
     # foreground ink layer.  Popup, chrome and bezel still render above it.
     # Both fringing glyphs and marble ramp ink share the "statue" canvas tag.
-    LAYERS = ("content", "fx", "crt", "pixel-crt", "glare", "statue", "rune-art", "overlaywin", "dkwin", "oggwin", "touchwin", "augwin", "chrome", "popup", "bezel")
+    LAYERS = ("content", "fx", "kbring", "crt", "pixel-crt", "glare", "statue", "rune-art", "overlaywin", "dkwin", "oggwin", "touchwin", "augwin", "chrome", "popup", "bezel", "kbring-top")
 
     def __init__(self, root, canvas, opts, host=None):
         import tkinter as tkmod
@@ -996,8 +997,9 @@ class Scene(ChromeMixin, SkinMixin):
         self.k = max(0.55, min(self.sx, self.sy))
         self.fonts.clear()
         c = self.c
-        for t in ("content", "chrome", "fx", "crt", "glare", "pixel-crt", "bezel"):
+        for t in ("content", "chrome", "fx", "crt", "glare", "pixel-crt", "bezel", "kbring", "kbring-top"):
             c.delete(t)
+        self._ring_seen = None                      # the focus and hover rings are redrawn at the new size
         self.drops, self.star = [], None
         self.hot = []
         c.configure(bg=self.ground())
@@ -1794,7 +1796,13 @@ class Scene(ChromeMixin, SkinMixin):
             while npx > (9 if not mono else 8) and self.font(npx, True, mono).measure(name) > room:
                 npx -= 1
             self.T(cx0 + cw / 2, ty, fit(name, self.font(npx, True, mono), room), npx, "gold" if sel else "txt", "n", ("content", "cards"), True, mono)
-            self.T(cx0 + cw / 2, ty + int(16 * self.k), ("REVERSED \u00b7 " if rev else "") + POSITIONS[n], 10,
+            # 0.4.9.7: the position line is fitted to its card like the name;
+            # "REVERSED · ALREADY" ran into the next card's line at 900x580.
+            line = ("REVERSED \u00b7 " if rev else "") + POSITIONS[n]
+            lpx = 10
+            while lpx > 8 and self.font(lpx, False, mono).measure(line) > room:
+                lpx -= 1
+            self.T(cx0 + cw / 2, ty + int(16 * self.k), fit(line, self.font(lpx, False, mono), room), lpx,
                    "red" if rev else "dim", "n", ("content", "cards"), False, mono)
         self._draw_divination_toggle()
         self.draw_reading()
@@ -1803,11 +1811,22 @@ class Scene(ChromeMixin, SkinMixin):
         """Compact, shared header toggle; Tarot and Runes use the same panel."""
         x0, y0, x1, y1 = self.rect["cards"]
         hh = self.hdr_h()
-        # Place tabs just under the header, never over the retained title.
         w = max(45, int(65 * self.k))
-        bh = max(17, int(22 * self.k))
-        cy = y0 + hh + bh / 2 + 2
-        cx = x1 - w * 2 - 8
+        # 0.4.9.7: the switch sits in the header row, between the title and the
+        # TODAY / DEALT / RUNES chip. Below the header it covered the top of
+        # the third card in smaller windows (900x580). It drops below the
+        # header only when the header has no room for it.
+        chip_font = self.font(11, False, False)
+        chip_room = max(chip_font.measure(t) for t in ("TODAY", "DEALT", "RUNES")) + int(30 * self.k)
+        title_room = self.font(12, True, False).measure("THREE CUTS") + int(22 * self.k)
+        if x1 - chip_room - 2 * w >= x0 + title_room and hh >= 16:
+            bh = min(max(15, int(20 * self.k)), hh - 4)
+            cy = y0 + hh / 2
+            cx = x1 - chip_room - 2 * w
+        else:
+            bh = max(17, int(22 * self.k))
+            cy = y0 + hh + bh / 2 + 2
+            cx = x1 - w * 2 - 8
         self.hot = [h for h in self.hot if h[4] not in ("mode_tarot", "mode_runes")]
         for n, (title, mode) in enumerate((("TAROT", "tarot"), ("RUNES", "runes"))):
             xa = cx + n * w
@@ -2192,6 +2211,7 @@ class Scene(ChromeMixin, SkinMixin):
         self._crt_tick(now, dt)
         if self.host is not None and getattr(self.host, "pixel_crt", None) is not None:
             self.host.pixel_crt.tick()
+        self.paint_rings()                    # focus and hover rings follow their controls
         self._restack()                       # ALWAYS last: rain/stars/popups were created above
 
 
@@ -2725,6 +2745,8 @@ class Scene(ChromeMixin, SkinMixin):
             show_suite_guide(self)
             return 'break'
         ov = self._which_overlay()
+        if not ov and self.kb_key(ks):                # 0.4.9.7: Tab, Enter/Space and Escape for HOME's controls
+            return 'break'
         if ov:                                        # the open overlay owns the keyboard
             sess = getattr(self, ov)
             try:
@@ -2801,7 +2823,9 @@ class Scene(ChromeMixin, SkinMixin):
     def on_motion(self, e):
         try:
             x, y = self._xy(e)
-            cur = "hand2" if self.hit(x, y) else ""
+            h = self.hit(x, y)
+            self.hover_set(h)                         # 0.4.9.7: a quiet outline under the pointer
+            cur = "hand2" if h else ""
             if not cur and getattr(self.host, "borderless", False) and not getattr(self.host, "full", False):
                 l, t, r, b = self.mg
                 if x >= self.W + r - 40 and y >= self.H + b - 40:
@@ -2984,6 +3008,7 @@ class WindowApp:
         root.bind("<Key>", self.scene.on_key)
         self.canvas.bind("<Button-1>", self.scene.on_click)
         self.canvas.bind("<Motion>", self.scene.on_motion)
+        self.canvas.bind("<Leave>", lambda _e: self.scene.hover_set(None))
         self.canvas.bind("<B1-Motion>", self.scene.on_drag)
         self.canvas.bind("<ButtonRelease-1>", self.scene.on_release)
         self.canvas.bind("<Configure>", self._cfg)

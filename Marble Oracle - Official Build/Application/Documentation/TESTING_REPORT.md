@@ -1,4 +1,21 @@
-# Testing report: Marble Oracle 0.4.9.5
+# Testing report: Marble Oracle 0.4.9.7
+
+## 0.4.9.7 addendum (16 November 2026)
+
+GitHub Actions, workflow run 43822976791, no physical PC:
+
+| Check | Linux (Ubuntu 24.04, Tk under Xvfb) | Windows (Server runner, native Tk) |
+|---|---|---|
+| Regression scripts (`Tools/run_tests.py`) | **66 passed, 0 failed, 0 skipped** | **66 passed, 0 failed, 0 skipped** |
+| AUGURSPEX with the clock 60 days ahead | 31 passed | not run |
+| Lint, byte-compile | pass | not run |
+| Screenshots (five sizes plus the CRT housing) | 71 captured; HOME, PASSPHRASE and TOUCH TYPE at 900x580, HOME at 1216x848 and the CRT housing reviewed by eye | not captured |
+
+The two new scripts are `test_home_keyboard_0497.py` and `test_polish_0497.py`. The Windows job is required from this release. HOME's PLATE VAULT now shows its statues in the screenshots (the capture tool had never run the frame loop), which closes the open question from 0.4.9.3. Hover and focus rings were checked with synthetic events, not with a real mouse.
+
+---
+
+## Earlier addenda
 
 ## 0.4.9.5 addendum (16 November 2026)
 

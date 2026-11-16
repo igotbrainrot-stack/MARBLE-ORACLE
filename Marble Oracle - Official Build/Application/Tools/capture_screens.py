@@ -47,10 +47,23 @@ def grab(root, target):
     ImageGrab.grab(bbox=(x, y, x + root.winfo_width(), y + root.winfo_height())).save(str(target))
 
 
-def pump(root, seconds):
+def pump(root, seconds, scene=None, app=None):
+    """Let Tk draw for `seconds`. With `scene`, also run its animation frames.
+
+    The suite's frame loop starts only in WindowApp.run(), which a capture
+    never calls. Without these ticks HOME's animated panels (PLATE VAULT's
+    statues above all) were never drawn, so every capture showed them empty
+    although the running program draws them.
+    """
     end = time.monotonic() + seconds
     while time.monotonic() < end:
         root.update()
+        if scene is not None:
+            # As WindowApp.loop does: build the scene first if it has not been
+            # built yet (the photographic housing builds it late).
+            if app is not None and (scene.W == 0 or getattr(scene, 'need_build', False)):
+                scene.resized(*app.canvas_size())
+            scene.tick()
         time.sleep(0.02)
 
 
@@ -93,20 +106,23 @@ def capture_suite(size, out, extra=(), prefix=''):
         root.geometry(f'{width}x{height}+0+0')
         root.update()
         scene.resized(width, height)
-    pump(root, 1.0)
+    def pump_scene(seconds):
+        pump(root, seconds, scene, app)
+
+    pump_scene(1.0)
     for tab in TABS:
         scene.act(tab)
-        pump(root, 1.6)
+        pump_scene(1.6)
         grab(root, out / f'{prefix}{size}_{TABS.index(tab) + 1}_{tab[4:]}.png')
         if tab == 'tab_eidolith' and not extra:      # its other pages hold most of its controls
             frame = scene.eido.frame
             for page in ('CONVERT', 'QUEUE', 'ABOUT'):
                 frame._set_nav(page)
-                pump(root, 0.5)
+                pump_scene(0.5)
                 grab(root, out / f'{prefix}{size}_3_eidolith_{page.lower()}.png')
             frame._set_nav('PLAYER')
     scene.act('tab_home')
-    pump(root, 0.3)
+    pump_scene(0.3)
     app.quit()
 
 

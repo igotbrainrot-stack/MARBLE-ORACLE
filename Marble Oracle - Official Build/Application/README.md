@@ -1,6 +1,6 @@
 # Marble Oracle
 
-**Version 0.4.9.6 · 16 November 2026 · Windows 11 and Linux Mint**
+**Version 0.4.9.7 · 16 November 2026 · Windows 11 and Linux Mint**
 
 A dark, local-first desktop suite: an oracle dashboard, a music player, a video converter, a market observatory, a passphrase generator and a typing trainer in one window. Python and Tk; nothing is sent anywhere except the market-history requests AUGURSPEX makes when you open it.
 
@@ -25,7 +25,7 @@ You need Python 3 with Tkinter already installed. On first run a requirements wi
 | **PASSPHRASE** | Three words, a number and a symbol drawn from the operating system's secure random source. Nothing is saved; a copied phrase is cleared from the clipboard after 60 seconds. |
 | **TOUCH TYPE** | Four typing games with finger guidance and saved best scores. |
 
-Press **F1** anywhere for the field guide. Every workspace has a **HOME** button, and the tab strip is always visible.
+Press **F1** anywhere for the field guide. Every workspace has a **HOME** button, and the tab strip is always visible. On HOME, **Tab** and **Shift+Tab** step through the controls, **Enter** or **Space** presses the one with the cream ring, and **Escape** puts the ring away. Escape never closes the suite; use the window's close button.
 
 ## Market data in one paragraph
 

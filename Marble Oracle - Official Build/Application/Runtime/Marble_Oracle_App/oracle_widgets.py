@@ -186,3 +186,53 @@ def tooltip(widget, text, delay_ms=450):
     for sequence in ('<Leave>', '<ButtonPress>', '<KeyPress>', '<Destroy>'):
         widget.bind(sequence, hide, add='+')
     return widget
+
+
+def ellipsize(label, margin=0):
+    """Keep `label` on one line: its text is shortened with "…" to the width it has.
+
+    The full text is kept, shown on hover when it had to be shortened, and the
+    label refits when its width or its text changes. Later calls to
+    `label.configure(text=…)` set the full text, so callers need not know.
+    """
+    from tkinter import font as tkfont
+    measure = tkfont.Font(font=label.cget('font')).measure
+    original_configure = label.configure
+    label._full_text = str(label.cget('text'))
+
+    def fitted(text, width):
+        if width <= 1 or measure(text) <= width:
+            return text
+        cut = text
+        while len(cut) > 1 and measure(cut.rstrip() + '…') > width:
+            cut = cut[:-1]
+        return cut.rstrip() + '…'
+
+    def refit(_event=None):
+        try:
+            width = label.winfo_width() - margin
+            text = fitted(label._full_text, width)
+            if str(label.cget('text')) != text:
+                original_configure(text=text)
+        except tk.TclError:                       # the workspace is closing
+            pass
+
+    def configure(cnf=None, **kw):
+        if cnf is None and not kw:
+            return original_configure()           # a query: all options, unchanged behaviour
+        if isinstance(cnf, str):
+            return original_configure(cnf)        # a query for one option
+        if isinstance(cnf, dict) and 'text' in cnf:
+            cnf = dict(cnf)
+            label._full_text = str(cnf.pop('text'))
+        if 'text' in kw:
+            label._full_text = str(kw.pop('text'))
+        result = original_configure(cnf, **kw) if (cnf or kw) else None
+        refit()
+        return result
+
+    label.configure = label.config = configure
+    label.bind('<Configure>', refit, add='+')
+    tooltip(label, lambda _e: label._full_text if str(label.cget('text')) != label._full_text else '')
+    refit()
+    return label
