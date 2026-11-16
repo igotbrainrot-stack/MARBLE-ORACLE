@@ -47,7 +47,7 @@ def grab(root, target):
     ImageGrab.grab(bbox=(x, y, x + root.winfo_width(), y + root.winfo_height())).save(str(target))
 
 
-def pump(root, seconds, scene=None):
+def pump(root, seconds, scene=None, app=None):
     """Let Tk draw for `seconds`. With `scene`, also run its animation frames.
 
     The suite's frame loop starts only in WindowApp.run(), which a capture
@@ -59,6 +59,10 @@ def pump(root, seconds, scene=None):
     while time.monotonic() < end:
         root.update()
         if scene is not None:
+            # As WindowApp.loop does: build the scene first if it has not been
+            # built yet (the photographic housing builds it late).
+            if app is not None and (scene.W == 0 or getattr(scene, 'need_build', False)):
+                scene.resized(*app.canvas_size())
             scene.tick()
         time.sleep(0.02)
 
@@ -103,7 +107,7 @@ def capture_suite(size, out, extra=(), prefix=''):
         root.update()
         scene.resized(width, height)
     def pump_scene(seconds):
-        pump(root, seconds, scene)
+        pump(root, seconds, scene, app)
 
     pump_scene(1.0)
     for tab in TABS:

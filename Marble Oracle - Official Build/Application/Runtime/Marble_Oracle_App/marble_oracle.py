@@ -1796,7 +1796,13 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
             while npx > (9 if not mono else 8) and self.font(npx, True, mono).measure(name) > room:
                 npx -= 1
             self.T(cx0 + cw / 2, ty, fit(name, self.font(npx, True, mono), room), npx, "gold" if sel else "txt", "n", ("content", "cards"), True, mono)
-            self.T(cx0 + cw / 2, ty + int(16 * self.k), ("REVERSED \u00b7 " if rev else "") + POSITIONS[n], 10,
+            # 0.4.9.7: the position line is fitted to its card like the name;
+            # "REVERSED · ALREADY" ran into the next card's line at 900x580.
+            line = ("REVERSED \u00b7 " if rev else "") + POSITIONS[n]
+            lpx = 10
+            while lpx > 8 and self.font(lpx, False, mono).measure(line) > room:
+                lpx -= 1
+            self.T(cx0 + cw / 2, ty + int(16 * self.k), fit(line, self.font(lpx, False, mono), room), lpx,
                    "red" if rev else "dim", "n", ("content", "cards"), False, mono)
         self._draw_divination_toggle()
         self.draw_reading()
@@ -1805,11 +1811,22 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
         """Compact, shared header toggle; Tarot and Runes use the same panel."""
         x0, y0, x1, y1 = self.rect["cards"]
         hh = self.hdr_h()
-        # Place tabs just under the header, never over the retained title.
         w = max(45, int(65 * self.k))
-        bh = max(17, int(22 * self.k))
-        cy = y0 + hh + bh / 2 + 2
-        cx = x1 - w * 2 - 8
+        # 0.4.9.7: the switch sits in the header row, between the title and the
+        # TODAY / DEALT / RUNES chip. Below the header it covered the top of
+        # the third card in smaller windows (900x580). It drops below the
+        # header only when the header has no room for it.
+        chip_font = self.font(11, False, False)
+        chip_room = max(chip_font.measure(t) for t in ("TODAY", "DEALT", "RUNES")) + int(30 * self.k)
+        title_room = self.font(12, True, False).measure("THREE CUTS") + int(22 * self.k)
+        if x1 - chip_room - 2 * w >= x0 + title_room and hh >= 16:
+            bh = min(max(15, int(20 * self.k)), hh - 4)
+            cy = y0 + hh / 2
+            cx = x1 - chip_room - 2 * w
+        else:
+            bh = max(17, int(22 * self.k))
+            cy = y0 + hh + bh / 2 + 2
+            cx = x1 - w * 2 - 8
         self.hot = [h for h in self.hot if h[4] not in ("mode_tarot", "mode_runes")]
         for n, (title, mode) in enumerate((("TAROT", "tarot"), ("RUNES", "runes"))):
             xa = cx + n * w

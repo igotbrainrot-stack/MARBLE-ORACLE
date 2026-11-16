@@ -288,7 +288,6 @@ class TouchTypePanel(tk.Frame):
         shell.label(self.rail, 'HOME ROW · QWERTY', 'small', 'text_3').pack(anchor='w', padx=shell.RAIL_PADX, pady=(5, 0))
 
         self.mode_title, self.description, head_right = self.shell.header('HOME ROW', MODE_DETAILS[0])
-        self.description.configure(wraplength=720)
         self.phase_label = shell.chip(head_right, 'READY')
         self.phase_label.pack(side='right')
 
