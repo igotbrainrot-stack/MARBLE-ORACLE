@@ -36,7 +36,7 @@ import oracle_shell as shell
 from oracle_augurspex_logic import (  # noqa: F401
     CARD_CHROME_H, CARD_CHROME_W, CARD_GAP, CHART_PAD_B, CHART_PAD_L, CHART_PAD_R, CHART_PAD_T,
     MIN_CARD_H, MIN_CARD_W, SHORT_STATUS, _blend, _darken, _plotted_candles, _rgb,
-    chart_date_ticks, chart_display_bars, chart_geometry, chart_grid_plan, csv_safe, fit_date_ticks,
+    axis_date_labels, chart_date_ticks, chart_display_bars, chart_geometry, chart_grid_plan, csv_safe, fit_date_ticks,
     fit_text_pixels, format_price, format_quote, history_health, observed_at, plot_points,
     provider_diagnostics, status_for_error,
 )
@@ -338,7 +338,7 @@ class PriceChart(tk.Frame):
                           fill=self.p['ink'],font=(FAMILY,price_size,'bold'),anchor='w',
                           tags=('axis-label','price-label'))
         date_font=FontMeasure(c,(FAMILY,axis_size,'bold'))
-        dates=fit_date_ticks(chart_date_ticks(visible,width),date_font.measure)
+        dates=axis_date_labels(visible,width,date_font.measure)
         for x,label,anchor in dates:
             if anchor=='n':
                 c.create_line(x,CHART_PAD_T,x,plot_bottom,

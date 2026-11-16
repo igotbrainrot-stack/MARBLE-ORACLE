@@ -1,6 +1,6 @@
 {
  "release": "Marble Oracle 0.4.9.6",
- "generated_utc": "2026-11-16T05:47:42+00:00",
+ "generated_utc": "2026-11-16T05:55:54+00:00",
  "schema": "sha256-inventory-v2",
  "excluded_from_hashes": [
   "Application/Documentation/BUILD_MANIFEST.json",
@@ -8,7 +8,7 @@
  ],
  "optional_note": "Entries marked optional are in the portable ZIP but not in Git; verify_release.py checks them when present.",
  "inventory_file_count": 473,
- "inventory_total_bytes": 115507324,
+ "inventory_total_bytes": 115508386,
  "files": [
   {
    "path": "Application/.gitignore",
@@ -22,8 +22,8 @@
   },
   {
    "path": "Application/Documentation/CHANGELOG.md",
-   "bytes": 16254,
-   "sha256": "da58a4c74b41a24f6675d0008e1d72dbe02ad2bb6b067d243c928d3af281f02e"
+   "bytes": 16380,
+   "sha256": "945872e03c54e9819c165c9add8a23bf8201fc1e83c347aba39aefd11138cce1"
   },
   {
    "path": "Application/Documentation/DEVELOPMENT.md",
@@ -1737,8 +1737,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_augurspex_logic.py",
-   "bytes": 16486,
-   "sha256": "2fbe5eee891723f5a6b841da6a74291b7d78a00e125bff1d10299aed64f7bf4b"
+   "bytes": 17079,
+   "sha256": "ac9821a9a1d733edb47ab98666af1c0d0feb7f06c90b9218ddbd10240047ba94"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_augurspex_signals.py",
@@ -1747,8 +1747,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_augurspex_tab.py",
-   "bytes": 94528,
-   "sha256": "094dca6d87132c49b7c5062d41136bd620f30ec5d458abe25c73ace1a36a3280"
+   "bytes": 94530,
+   "sha256": "5830d6997b656337f44c5f88bf1df267091907107854341f99533d2569f5d69f"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_bootstrap.py",
@@ -2167,8 +2167,8 @@
   },
   {
    "path": "Application/Tests/test_design_tokens_0496.py",
-   "bytes": 5420,
-   "sha256": "144b3b839d2fb5ced04dbfe8485affdd611c4d64fd1dcdbb9da51d67f178b72e"
+   "bytes": 5761,
+   "sha256": "eb5a7e9e961d7b41877c4e7fcc0876d8919c5721cadc41a05b0771152d07addc"
   },
   {
    "path": "Application/Tests/test_eidolith_file_safety_0493.py",

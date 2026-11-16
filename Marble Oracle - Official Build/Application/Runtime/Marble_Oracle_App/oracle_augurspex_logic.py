@@ -291,6 +291,21 @@ def fit_date_ticks(ticks, measure, gap=10):
     return kept
 
 
+
+def axis_date_labels(candles, width, measure, gap=10):
+    """Date labels that fit without dropping any: [(x, label, anchor), ...].
+
+    fit_date_ticks() drops a label that would touch its newer neighbour,
+    which leaves an uneven step (AUG, SEP, NOV). Ask for fewer labels
+    instead, so the calendar step widens evenly, until every one fits.
+    """
+    placed=[]
+    for max_ticks in (5,4,3,2):
+        ticks=chart_date_ticks(candles, width, max_ticks=max_ticks)
+        placed=fit_date_ticks(ticks, measure, gap=gap)
+        if len(placed)==len(ticks):return placed
+    return placed
+
 def chart_display_bars(candles, width, style='1', view_bars='MAX'):
     """Show recent *real* OHLC bars at a readable density on small cards.
 

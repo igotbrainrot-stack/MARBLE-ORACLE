@@ -74,14 +74,17 @@ def daily(start, n, step=1):
 for start, n in ((datetime(2026, 5, 20, tzinfo=timezone.utc), 180), (datetime(2025, 6, 1, tzinfo=timezone.utc), 160),
                  (datetime(2025, 11, 3, tzinfo=timezone.utc), 365)):
     bars = daily(start, n)
-    for width in (220, 300, 380, 470, 560, 700, 1046):
-        ticks = logic.chart_date_ticks(bars, width)
-        labels = [label for _x, label in ticks]
+    for width, glyph in ((220, 9), (300, 9), (380, 9), (470, 11), (560, 9), (560, 13), (700, 11), (1046, 11)):
+        # What the card draws: labels that fit the axis font, none dropped mid-run.
+        placed = logic.axis_date_labels(bars, width, lambda text, g=glyph: len(text) * g)
+        labels = [label for _x, label, _anchor in placed]
         index = [MONTHS[label[:3]] + 12 * int(label[-2:]) for label in labels]
         gaps = {b - a for a, b in zip(index, index[1:])}
         newest = bars[-1]['time'][:7]
-        check(f'month axis {start:%b %Y}+{n}d at {width}px: steady step', len(gaps) <= 1 and len(labels) >= 2, labels)
-        check(f'month axis {start:%b %Y}+{n}d at {width}px: newest month kept',
+        # Below the 380 px minimum card two month labels may not fit; then only the newest shows.
+        check(f'month axis {start:%b %Y}+{n}d at {width}px/{glyph}: steady step',
+              len(gaps) <= 1 and len(labels) >= (2 if width >= 380 else 1), labels)
+        check(f'month axis {start:%b %Y}+{n}d at {width}px/{glyph}: newest month kept',
               index[-1] == int(newest[5:7]) - 1 + 12 * int(newest[2:4]), labels)
 years = [label for _x, label in logic.chart_date_ticks(daily(datetime(2018, 3, 1, tzinfo=timezone.utc), 300, 10), 700)]
 check('year axis: steady step', len({int(b) - int(a) for a, b in zip(years, years[1:])}) == 1, years)
