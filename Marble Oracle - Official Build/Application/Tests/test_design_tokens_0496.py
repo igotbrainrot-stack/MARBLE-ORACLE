@@ -7,7 +7,8 @@
 * the focus colour is not the accent, so focus never looks like 'current';
 * Escape on HOME does not quit the suite;
 * a workspace covers the GRADE footer (GRADE acts only on HOME);
-* four charts form a 2x2 grid in the default window's chart area.
+* four charts form a 2x2 grid in the default window's chart area;
+* month and year axis labels sit on calendar boundaries at a steady step.
 """
 from pathlib import Path
 import sys
@@ -56,6 +57,34 @@ check('focus is not the accent colour', C['focus'].upper() != C['accent'].upper(
 
 plan = logic.chart_grid_plan(4, 840, 560)
 check('four charts: 2x2 without scrolling in an 840x560 chart area', (plan['cols'], plan['rows'], plan['scroll']) == (2, 2, False), plan)
+
+# Month axes: labels on the first bar of a month, the same number of months apart,
+# newest month kept. 0.4.9.5 picked evenly spaced bars, so a narrow card read
+# JUN '26  AUG '26  SEP '26  NOV '26.
+from datetime import datetime, timedelta, timezone  # noqa: E402
+
+MONTHS = {m: i for i, m in enumerate('JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC'.split())}
+
+
+def daily(start, n, step=1):
+    return [{'time': (start + timedelta(days=i * step)).isoformat(), 'open': 1, 'high': 2, 'low': 0.5, 'close': 1.5}
+            for i in range(n)]
+
+
+for start, n in ((datetime(2026, 5, 20, tzinfo=timezone.utc), 180), (datetime(2025, 6, 1, tzinfo=timezone.utc), 160),
+                 (datetime(2025, 11, 3, tzinfo=timezone.utc), 365)):
+    bars = daily(start, n)
+    for width in (220, 300, 380, 470, 560, 700, 1046):
+        ticks = logic.chart_date_ticks(bars, width)
+        labels = [label for _x, label in ticks]
+        index = [MONTHS[label[:3]] + 12 * int(label[-2:]) for label in labels]
+        gaps = {b - a for a, b in zip(index, index[1:])}
+        newest = bars[-1]['time'][:7]
+        check(f'month axis {start:%b %Y}+{n}d at {width}px: steady step', len(gaps) <= 1 and len(labels) >= 2, labels)
+        check(f'month axis {start:%b %Y}+{n}d at {width}px: newest month kept',
+              index[-1] == int(newest[5:7]) - 1 + 12 * int(newest[2:4]), labels)
+years = [label for _x, label in logic.chart_date_ticks(daily(datetime(2018, 3, 1, tzinfo=timezone.utc), 300, 10), 700)]
+check('year axis: steady step', len({int(b) - int(a) for a, b in zip(years, years[1:])}) == 1, years)
 
 from marble_oracle import WindowApp, launch_plan  # noqa: E402
 

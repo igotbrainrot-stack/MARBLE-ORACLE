@@ -220,7 +220,11 @@ def chart_date_ticks(candles, width, max_ticks=5):
         fmt='%Y'
     # Do not crowd the labels on 2x3 or 3x3 cards.
     count=min(max_ticks,len(dated),max(2,int(max(0,width-CHART_PAD_R)/82)))
-    picks=sorted(set(round(k*(len(dated)-1)/(count-1)) for k in range(count))) if count>1 else [0]
+    picks=None
+    if fmt in ("%b '%y",'%Y'):
+        picks=_calendar_picks(dated,count,monthly=(fmt!='%Y'))
+    if not picks:
+        picks=sorted(set(round(k*(len(dated)-1)/(count-1)) for k in range(count))) if count>1 else [0]
     w=max(1,width-CHART_PAD_L-CHART_PAD_R)
     ticks=[]
     for j in picks:
@@ -230,6 +234,31 @@ def chart_date_ticks(candles, width, max_ticks=5):
         if ticks and ticks[-1][1]==label:continue
         ticks.append((x,label))
     return ticks
+
+
+def _calendar_picks(dated, count, monthly=True):
+    """Ticks on the first plotted bar of a month (or year), at a steady step.
+
+    Evenly spaced bar indices give uneven calendars (JUN AUG SEP NOV); this
+    picks every 1st, 2nd, 3rd, 6th or 12th month (1, 2, 5, 10... years)
+    counting back from the newest, so the gaps read the same across a card.
+    The oldest period counts only if the data starts in its first week, so a
+    label never sits half a period away from its neighbour. Returns indices
+    into `dated`, or None when fewer than two boundaries are on screen.
+    """
+    def period(moment):return (moment.year, moment.month) if monthly else moment.year
+    starts=[]
+    for j,(_i,moment) in enumerate(dated):
+        if j==0:
+            early=moment.day<=7 if monthly else (moment.month==1 and moment.day<=7)
+            if early:starts.append(j)
+        elif period(moment)!=period(dated[j-1][1]):
+            starts.append(j)
+    if len(starts)<2 or count<2:return None
+    steps=(1,2,3,6,12,24) if monthly else (1,2,5,10,20,50,100)
+    step=next((k for k in steps if -(-len(starts)//k)<=count),steps[-1])
+    chosen=starts[::-1][::step]
+    return sorted(chosen) if len(chosen)>=2 else None
 
 
 def fit_date_ticks(ticks, measure, gap=10):

@@ -13,10 +13,11 @@ The first slice of the redesign in the design document (phase 7). Built on 0.4.9
 - **No GRADE footer on workspaces.** GRADE changes only HOME; workspaces gain its 30 px.
 - **EIDOLITH Convert.** QUEUE SELECTED and START QUEUE sit in the page title row at every size; they were the last controls of a scrolling form. The output folder comes first. ADD FILES is secondary, so the page has one main button. Cancelling stays on QUEUE. The rail shows the suite version, not 0.4.7.
 - **AUGURSPEX.** The minimum chart card is 380x260 px (was 420x320), so four charts form a 2x2 grid at the default window instead of one scrolling column.
+- **AUGURSPEX month axis.** Month and year labels now sit on the first bar of each month (or year) and step evenly, counting back from the newest: JUL, SEP, NOV rather than JUN, AUG, SEP, NOV. The smaller cards made the uneven spacing more visible. Labels still name only dates the provider returned.
 
 ### Tests
 
-- New `test_design_tokens_0496.py` (79 checks): contrast for every allowed pair, focus colour, Escape, footer, the 2x2 grid.
+- New `test_design_tokens_0496.py` (122 checks): contrast for every allowed pair, focus colour, Escape, footer, the 2x2 grid, and an even step on month and year axes (the 0.4.9.5 axis fails it).
 - Updated, on purpose: `test_eidolith_layout_0493.py` now requires the Convert actions on screen without scrolling (it checked they could be reached by scrolling). `test_augurspex_charts_layout_0485.py` tests its small-view rule with a view shorter than the new minimum card.
 
 ## 0.4.9.5 · 16 November 2026 · One layout for every workspace

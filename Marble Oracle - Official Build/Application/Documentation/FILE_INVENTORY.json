@@ -1,6 +1,6 @@
 {
  "release": "Marble Oracle 0.4.9.6",
- "generated_utc": "2026-11-16T04:01:41+00:00",
+ "generated_utc": "2026-11-16T05:47:42+00:00",
  "schema": "sha256-inventory-v2",
  "excluded_from_hashes": [
   "Application/Documentation/BUILD_MANIFEST.json",
@@ -8,7 +8,7 @@
  ],
  "optional_note": "Entries marked optional are in the portable ZIP but not in Git; verify_release.py checks them when present.",
  "inventory_file_count": 473,
- "inventory_total_bytes": 115418135,
+ "inventory_total_bytes": 115507324,
  "files": [
   {
    "path": "Application/.gitignore",
@@ -22,8 +22,8 @@
   },
   {
    "path": "Application/Documentation/CHANGELOG.md",
-   "bytes": 15883,
-   "sha256": "f2737b2527937142091dae10b49496d475630dc3252060f8be4c08a711774313"
+   "bytes": 16254,
+   "sha256": "da58a4c74b41a24f6675d0008e1d72dbe02ad2bb6b067d243c928d3af281f02e"
   },
   {
    "path": "Application/Documentation/DEVELOPMENT.md",
@@ -1737,8 +1737,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_augurspex_logic.py",
-   "bytes": 15139,
-   "sha256": "b8ad4e08211cd496754028455d08d9d689c41858981a5e6ddf19088634c697a7"
+   "bytes": 16486,
+   "sha256": "2fbe5eee891723f5a6b841da6a74291b7d78a00e125bff1d10299aed64f7bf4b"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_augurspex_signals.py",
@@ -1962,13 +1962,13 @@
   },
   {
    "path": "Application/Tests/TAB_LAYOUT_BEZEL.png",
-   "bytes": 1346374,
-   "sha256": "c5ea4155cef55ba334dfa75f532297a78ed867cc8a1d8d611d402132732e39a6"
+   "bytes": 1355017,
+   "sha256": "726c11506872ab15fca67680ccbe90e1a4814dc115ec8bf269661445e4a2ef96"
   },
   {
    "path": "Application/Tests/TAB_LAYOUT_DEFAULT.png",
-   "bytes": 489421,
-   "sha256": "861a0fdc8de470ddbce426241a4de782f6244d2ad9064ad0f1c05889677cb777"
+   "bytes": 524942,
+   "sha256": "f7fba99ce3dbb34f9c9ade5b767340d7246fd313a172a121512b18f3f0b12ab4"
   },
   {
    "path": "Application/Tests/TAB_LAYOUT_PREVIEW.png",
@@ -1977,13 +1977,13 @@
   },
   {
    "path": "Application/Tests/TAB_OGGCULTIST_BEZEL.png",
-   "bytes": 834790,
-   "sha256": "2c6dd0b03940dd91bfb1d5ccfdfba98207ad7ed86eeb84b3e3ed6af76a11d221"
+   "bytes": 860135,
+   "sha256": "f85b2eea65f7b6aeb8c05b8c6b94bc5442fb4a237abde7cf4daef1b39517b63f"
   },
   {
    "path": "Application/Tests/TAB_OGGCULTIST_DEFAULT.png",
-   "bytes": 359108,
-   "sha256": "0be649a9aa8991473aa316c714923497bf88b8a3126fedae834b3ea9ce007c97"
+   "bytes": 375407,
+   "sha256": "29e69fc42c1c823eed37948973d4a8b49fc2bf39354d4749995b22990e7c20f9"
   },
   {
    "path": "Application/Tests/TOUCH_TYPE_PREVIEW.png",
@@ -2167,8 +2167,8 @@
   },
   {
    "path": "Application/Tests/test_design_tokens_0496.py",
-   "bytes": 3757,
-   "sha256": "4c063ac657872286e248f34042b461b2466a0a6fd2d9e8dcf994c03f345cd3be"
+   "bytes": 5420,
+   "sha256": "144b3b839d2fb5ced04dbfe8485affdd611c4d64fd1dcdbb9da51d67f178b72e"
   },
   {
    "path": "Application/Tests/test_eidolith_file_safety_0493.py",
