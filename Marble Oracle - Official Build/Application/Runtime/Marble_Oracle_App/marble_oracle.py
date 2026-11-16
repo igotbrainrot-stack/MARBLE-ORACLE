@@ -40,6 +40,7 @@ from oracle_assets import rgba_png  # noqa: E402,F401
 from oracle_chrome import (DECK_TAB_OFF, DECK_TAB_ON, DK_TAB_OFF, DK_TAB_ON, LD_TAB_OFF, LD_TAB_ON, TAB_INK, TAB_EDGE, TAB_SLOPE, tab_ink, TAB_GAP, TAB_MIN_PX,  # noqa: E402,F401
                            THEMES, THEME_NAMES, noise_tile_png, scan_tile_png, hexrgb, mix, ChromeMixin, bezel_geometry, bezel_step)
 from oracle_skin import SkinMixin, hexmix  # noqa: E402
+from oracle_home_focus import HomeFocusMixin  # noqa: E402
 from oracle_augurspex_home import MarketCarousel
 from oracle_version import suite_title  # noqa: E402
 from oracle_audio import respell, synth_wav, VoiceBank, Sfx  # noqa: E402,F401
@@ -778,12 +779,12 @@ class EmbeddedPassphrase:
         return None
 
 
-class Scene(ChromeMixin, SkinMixin):
+class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
     # Preserve the archived marble plate's contrast: the CRT/sepia and glass
     # passes sit over ordinary content, but the ASCII statue is a protected
     # foreground ink layer.  Popup, chrome and bezel still render above it.
     # Both fringing glyphs and marble ramp ink share the "statue" canvas tag.
-    LAYERS = ("content", "fx", "crt", "pixel-crt", "glare", "statue", "rune-art", "overlaywin", "dkwin", "oggwin", "touchwin", "augwin", "chrome", "popup", "bezel")
+    LAYERS = ("content", "fx", "kbring", "crt", "pixel-crt", "glare", "statue", "rune-art", "overlaywin", "dkwin", "oggwin", "touchwin", "augwin", "chrome", "popup", "bezel", "kbring-top")
 
     def __init__(self, root, canvas, opts, host=None):
         import tkinter as tkmod
@@ -996,8 +997,9 @@ class Scene(ChromeMixin, SkinMixin):
         self.k = max(0.55, min(self.sx, self.sy))
         self.fonts.clear()
         c = self.c
-        for t in ("content", "chrome", "fx", "crt", "glare", "pixel-crt", "bezel"):
+        for t in ("content", "chrome", "fx", "crt", "glare", "pixel-crt", "bezel", "kbring", "kbring-top"):
             c.delete(t)
+        self._ring_seen = None                      # the focus and hover rings are redrawn at the new size
         self.drops, self.star = [], None
         self.hot = []
         c.configure(bg=self.ground())
@@ -2192,6 +2194,7 @@ class Scene(ChromeMixin, SkinMixin):
         self._crt_tick(now, dt)
         if self.host is not None and getattr(self.host, "pixel_crt", None) is not None:
             self.host.pixel_crt.tick()
+        self.paint_rings()                    # focus and hover rings follow their controls
         self._restack()                       # ALWAYS last: rain/stars/popups were created above
 
 
@@ -2725,6 +2728,8 @@ class Scene(ChromeMixin, SkinMixin):
             show_suite_guide(self)
             return 'break'
         ov = self._which_overlay()
+        if not ov and self.kb_key(ks):                # 0.4.9.7: Tab, Enter/Space and Escape for HOME's controls
+            return 'break'
         if ov:                                        # the open overlay owns the keyboard
             sess = getattr(self, ov)
             try:
@@ -2801,7 +2806,9 @@ class Scene(ChromeMixin, SkinMixin):
     def on_motion(self, e):
         try:
             x, y = self._xy(e)
-            cur = "hand2" if self.hit(x, y) else ""
+            h = self.hit(x, y)
+            self.hover_set(h)                         # 0.4.9.7: a quiet outline under the pointer
+            cur = "hand2" if h else ""
             if not cur and getattr(self.host, "borderless", False) and not getattr(self.host, "full", False):
                 l, t, r, b = self.mg
                 if x >= self.W + r - 40 and y >= self.H + b - 40:
@@ -2984,6 +2991,7 @@ class WindowApp:
         root.bind("<Key>", self.scene.on_key)
         self.canvas.bind("<Button-1>", self.scene.on_click)
         self.canvas.bind("<Motion>", self.scene.on_motion)
+        self.canvas.bind("<Leave>", lambda _e: self.scene.hover_set(None))
         self.canvas.bind("<B1-Motion>", self.scene.on_drag)
         self.canvas.bind("<ButtonRelease-1>", self.scene.on_release)
         self.canvas.bind("<Configure>", self._cfg)
