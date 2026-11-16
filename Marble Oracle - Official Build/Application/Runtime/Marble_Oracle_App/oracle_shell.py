@@ -94,9 +94,9 @@ def button(parent, text, command, *, primary=False, width=None, padx=None, pady=
                      fg=C['text_on_accent'] if primary else C['text'],
                      activebackground=C['accent_deep'] if primary else C['hover'],
                      activeforeground=C['text_on_accent'] if primary else C['text'],
-                     highlightthickness=1,
+                     highlightthickness=2,
                      highlightbackground=C['accent'] if primary else C['control_line'],
-                     highlightcolor=C['focus'])
+                     highlightcolor=C['focus'])   # 2 px cream ring on keyboard focus
 
 
 def nav_button(parent, text, command):
@@ -104,7 +104,7 @@ def nav_button(parent, text, command):
     btn = tk.Button(parent, text=text, command=command, cursor='hand2', relief='flat', bd=0,
                     padx=12, pady=NAV_PADY, anchor='w', justify='left', font=font('nav'),
                     bg=C['sidebar'], fg=C['text'], activebackground=C['hover'],
-                    activeforeground=C['text_bright'], highlightthickness=1,
+                    activeforeground=C['text_bright'], highlightthickness=2,
                     highlightbackground=C['sidebar'], highlightcolor=C['focus'])
     btn._shell_nav = True
     btn.pack(fill='x', pady=2)
@@ -112,9 +112,12 @@ def nav_button(parent, text, command):
 
 
 def set_nav_current(btn, current):
-    btn.configure(bg=C['nav_current'] if current else C['sidebar'],
-                  fg=C['accent'] if current else C['text'],
-                  highlightbackground=C['accent'] if current else C['sidebar'])
+    """Current page: amber-tinted fill and amber text, no outline. The outline is
+    kept for keyboard focus (cream), so the two can never be confused."""
+    btn.configure(bg=C['accent_soft'] if current else C['sidebar'],
+                  fg=C['text_bright'] if current else C['text'],
+                  activebackground=C['accent_soft'] if current else C['hover'],
+                  highlightbackground=C['accent_soft'] if current else C['sidebar'])
 
 
 class Shell:

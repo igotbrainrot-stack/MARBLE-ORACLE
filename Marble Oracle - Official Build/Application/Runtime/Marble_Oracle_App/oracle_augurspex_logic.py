@@ -57,7 +57,9 @@ def chart_geometry(n):
 # share it; vertical scrolling is used only when the legible minimum card size
 # cannot fit. Kept free of Tk so it can be tested directly.
 CARD_GAP = 12
-MIN_CARD_W, MIN_CARD_H = 420, 320
+# 0.4.9.6 design: 380x260 (was 420x320) so four charts form a 2x2 grid at the
+# default 1216x848 window instead of one scrolling column.
+MIN_CARD_W, MIN_CARD_H = 380, 260
 CARD_CHROME_W, CARD_CHROME_H = 100, 160   # header, info strip and axes inside a card
 
 

@@ -145,13 +145,21 @@ def gui():
                             check(f'{label} CONVERT: "{str(widget.cget("text"))[:34]}" is not cut short',
                                   widget.winfo_reqwidth() <= widget.master.winfo_width() + 2,
                                   (widget.winfo_reqwidth(), widget.master.winfo_width()))
-                    scroller.yview_moveto(1.0)
-                    pump(root, 0.3)
-                    for wanted in ('QUEUE SELECTED', 'START QUEUE', 'CANCEL JOB'):
-                        button = next((w for w in descendants(scroller) if isinstance(w, tk.Button) and w.cget('text') == wanted), None)
-                        check(f'{label} CONVERT: {wanted} reachable by scrolling', button is not None and inside(button, scroller),
-                              button is not None and (box(button), box(scroller)))
-                    scroller.yview_moveto(0.0)
+                    # 0.4.9.6 design: the actions that start the work are in the
+                    # page's title row, on screen without scrolling (they used to
+                    # be the last controls of the scrolling form). Stricter than
+                    # the old 'reachable by scrolling' check it replaces.
+                    for wanted in ('QUEUE SELECTED', 'START QUEUE'):
+                        button = next((w for w in descendants(frame.header_right) if isinstance(w, tk.Button)
+                                       and w.cget('text') == wanted), None)
+                        check(f'{label} CONVERT: {wanted} on screen without scrolling',
+                              button is not None and button.winfo_ismapped() and inside(button, frame),
+                              button is not None and (box(button), box(frame)))
+                    output = next((w for w in descendants(scroller) if isinstance(w, tk.Button) and w.cget('text') == 'CHOOSE'), None)
+                    check(f'{label} CONVERT: output folder CHOOSE visible without scrolling',
+                          output is not None and inside(output, scroller), output is not None and (box(output), box(scroller)))
+                if page_name != 'CONVERT':
+                    check(f'{label} {page_name}: CONVERT actions hidden on other pages', not frame.convert_actions.winfo_ismapped())
                 if page_name == 'QUEUE':
                     for wanted in ('START QUEUE', 'STOP QUEUE', 'CANCEL CURRENT', 'RETRY FAILED', 'CLEAR FINISHED', 'CLEAR ALL',
                                    'REMOVE SELECTED', 'OPEN LOG', 'COPY DIAGNOSTICS', 'LOG FOLDER', 'RETRY SELECTED'):

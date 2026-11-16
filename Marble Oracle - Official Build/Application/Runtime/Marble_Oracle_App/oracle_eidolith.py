@@ -24,6 +24,7 @@ from marble_uberata import FAMILY
 from oracle_ogg_texture import frame as ogl_frame, label as ogl_label, install as ogl_install
 from oggcultist_design_system import COLOR as C
 import oracle_shell as shell
+from oracle_version import SUITE_VERSION
 from oracle_widgets import flow, wrap_to_parent
 from oracle_assets import load_json, save_json, state_dir
 from oracle_eidolith_core import (PROFILES, PROFILE_ORDER, DEFAULT_PROFILE, LEGACY_PROFILE_NAMES, NAME_MODES, RESOLUTIONS, RESOLUTION_ORDER, output_name,
@@ -174,7 +175,7 @@ class EidolithPanel(tk.Frame):
     def _build_rail(self):
         # HOME and the version are fixed to the foot of the rail first, so a
         # short window can never push them out.
-        self.shell.home(self.on_home, f'{APP_VERSION} · LOCAL')
+        self.shell.home(self.on_home, f'Marble Oracle {SUITE_VERSION} · local')
         self.shell.brand(APP_NAME, 'VIDEO · ARCHIVE', logo=self._draw_logo)
 
         self.shell.group('WORKSPACE')
@@ -211,7 +212,7 @@ class EidolithPanel(tk.Frame):
                            font=shell.brand_font(int(canvas.cget('width'))))
 
     def _build_main(self):
-        self.page_title, self.page_subtitle, _right = self.shell.header(
+        self.page_title, self.page_subtitle, self.header_right = self.shell.header(
             'PLAYER', 'Play video in the EIDOLITH viewer.')
 
         # The status line claims its row first, from the bottom: a tall page
@@ -333,7 +334,8 @@ class EidolithPanel(tk.Frame):
         outer.pack(fill='both', expand=True)
         tools = ogl_frame(box, bg=C['raised'])
         tools.pack(fill='x', padx=10, pady=10)
-        self._button(tools, 'ADD FILES', self.open_files, primary=True).pack(side='left')
+        # One primary per page: on CONVERT that is QUEUE SELECTED, in the title row.
+        self._button(tools, 'ADD FILES', self.open_files).pack(side='left')
         self._button(tools, 'SELECT ALL', self.select_all).pack(side='left', padx=(6, 0))
         clear_controls = ogl_frame(box, bg=C['raised'])
         clear_controls.pack(fill='x', padx=10, pady=(0, 8))
@@ -426,8 +428,11 @@ class EidolithPanel(tk.Frame):
                            activebackground=C['raised'], activeforeground=C['text'],
                            highlightthickness=0, bd=0), margin=28).pack(anchor='w', fill='x')
 
+        # 0.4.9.6: the output folder is required, so it comes first, above
+        # the profile, instead of below a page of options.
         row3 = ogl_frame(box, bg=C['raised'])
-        row3.pack(fill='x', padx=pad, pady=(0, 8))
+        row3.pack(fill='x', padx=pad, pady=(12, 8), before=row1)
+        row1.pack_configure(pady=(0, 8))
         self._label(row3, 'OUTPUT FOLDER', 10, 'text_3', bold=True).pack(anchor='w')
         line = ogl_frame(row3, bg=C['raised'])
         line.pack(fill='x', pady=(4, 0))
@@ -465,11 +470,12 @@ class EidolithPanel(tk.Frame):
         self.name_preview.pack(anchor='w', fill='x', pady=(0, 2))
         self._update_name_preview()
 
-        row4 = ogl_frame(box, bg=C['raised'])
-        row4.pack(fill='x', padx=pad, pady=(0, 12))
-        flow(row4, [self._button(row4, 'QUEUE SELECTED', self.queue_selected, primary=True),
-                    self._button(row4, 'START QUEUE', self.start_queue),
-                    self._button(row4, 'CANCEL JOB', self.cancel_current)], gap_x=8)
+        # 0.4.9.6: the actions that start the work sit in the page's title
+        # row, visible at every window size, instead of after the last
+        # option of a scrolling form. Cancelling lives on QUEUE.
+        self.convert_actions = ogl_frame(self.header_right, bg=C['canvas'])
+        self._button(self.convert_actions, 'START QUEUE', self.start_queue).pack(side='right', padx=(8, 0))
+        self._button(self.convert_actions, 'QUEUE SELECTED', self.queue_selected, primary=True).pack(side='right')
         self._update_profile_desc()
 
     def _section_queue(self, parent):
@@ -706,12 +712,17 @@ class EidolithPanel(tk.Frame):
     def _refresh_nav(self):
         subtitles = {
             'PLAYER': 'Inspect, play, queue and convert local video files.',
-            'CONVERT': 'Choose archival profiles and build safe queued conversions.',
+            'CONVERT': 'Pick files, an output folder and a profile. Your originals are never changed.',
             'QUEUE': 'Review jobs, logs and output status.',
             'ABOUT': 'Read the design intent, tool availability and scope.'
         }
         for name, btn in self.nav_buttons.items():
             shell.set_nav_current(btn, name == self.active_nav.get())
+        if hasattr(self, 'convert_actions'):
+            if self.active_nav.get() == 'CONVERT':
+                self.convert_actions.pack(side='right')
+            else:
+                self.convert_actions.pack_forget()
         self.page_title.configure(text=self.active_nav.get())
         self.page_subtitle.configure(text=subtitles.get(self.active_nav.get(), ''))
 
