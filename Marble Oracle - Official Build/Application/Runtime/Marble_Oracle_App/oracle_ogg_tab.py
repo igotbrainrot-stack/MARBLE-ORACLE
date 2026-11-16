@@ -15,6 +15,7 @@ import tkinter as tk
 from marble_uberata import FAMILY
 from oggcultist_design_system import COLOR
 from oracle_design import HOME_LABEL
+import oracle_shell as shell
 
 HERE = Path(__file__).resolve().parent
 OGG_MAIN = HERE / 'Oggcultist' / 'launch.py'
@@ -29,15 +30,10 @@ class OggcultistPanel(tk.Frame):
         self.ogg_app = None
         self.status = tk.StringVar(master=self, value='')
 
-        bar = tk.Frame(self, bg=COLOR['sidebar'], padx=10, pady=7)
-        bar.pack(side='top', fill='x')
-        tk.Label(bar, text='OGGCULTIST 2.0.6', bg=COLOR['sidebar'], fg=COLOR['text'],
-                 font=(FAMILY, 12, 'bold')).pack(side='left', padx=(6, 0))
-        tk.Button(bar, text=HOME_LABEL, command=on_home,
-                  font=(FAMILY, 11, 'bold'), padx=14, pady=5,
-                  bg=COLOR['control'], fg=COLOR['text'],
-                  activebackground=COLOR['raised'], activeforeground=COLOR['text'],
-                  relief='flat', bd=0, cursor='hand2').pack(side='right')
+        # 0.4.9.5: no separate title bar. Oggcultist's own rail already shows
+        # its name and version; HOME goes to the foot of that rail (see
+        # _add_home), where it sits in every other workspace.
+        self.home_button = None
 
         # The inner UI owns no separate Tk root, no separate OS window and no
         # duplicate media library. All pages remain the original 2.0.6 pages.
@@ -49,6 +45,7 @@ class OggcultistPanel(tk.Frame):
             from oggcultist.gui.app import OggcultistEmbeddedApp
             self.ogg_app = OggcultistEmbeddedApp(self)
             self.ogg_app.pack(fill='both', expand=True)
+            self._add_home(on_home)
             self.status.set('Oggcultist is running inside Marble Oracle.')
         except Exception as exc:
             self.status.set('Embedded Oggcultist could not start: ' + str(exc))
@@ -59,11 +56,42 @@ class OggcultistPanel(tk.Frame):
                      font=(FAMILY, 16, 'bold')).pack(anchor='w')
             tk.Label(holder, textvariable=self.status,
                      wraplength=690, justify='left', bg=COLOR['raised'],
-                     fg=COLOR['text_2'], font=(FAMILY, 11)).pack(anchor='w', pady=(12, 20))
-            tk.Button(holder, text='OPEN STANDALONE OGGCULTIST',
-                      command=self.launch, font=(FAMILY, 11),
-                      bg=COLOR['accent'], fg=COLOR['canvas'],
-                      relief='flat').pack(anchor='w')
+                     fg=COLOR['text_2'], font=shell.font('body')).pack(anchor='w', pady=(12, 20))
+            shell.button(holder, 'OPEN STANDALONE OGGCULTIST', self.launch, primary=True).pack(anchor='w')
+            self.home_button = shell.button(holder, HOME_LABEL, on_home)
+            self.home_button.pack(anchor='w', pady=(10, 0))
+
+    def _add_home(self, on_home):
+        """The suite HOME button at the foot of Oggcultist's rail, just above its version line."""
+        app = self.ogg_app
+        sidebar = getattr(app, '_sidebar', None)
+        anchor = getattr(app, 'version_label', None)
+        first = getattr(app, 'brand_label', None)
+        if sidebar is None or anchor is None:
+            return
+        self.home_button = shell.button(sidebar, HOME_LABEL, on_home)
+        if first is not None:
+            # Packed ahead of the rail's top items, so in a short window the
+            # version line and HOME keep their place and the items above give
+            # way (Tk's packer serves widgets in packing order).
+            anchor.pack_configure(before=first)
+        self.home_button.pack(side='bottom', fill='x', padx=shell.RAIL_PADX, pady=(8, 0), after=anchor)
+
+        def fit(_event=None):
+            # Below 1100 px Oggcultist shrinks its rail to 64 px icons; HOME
+            # keeps its word in the small label type there rather than being
+            # cut off. (The suite font has no house symbol to use instead.)
+            try:
+                compact = bool(getattr(app, 'compact', False))
+                if getattr(self.home_button, '_compact', None) != compact:
+                    self.home_button._compact = compact
+                    self.home_button.configure(font=shell.font('group' if compact else 'button'),
+                                               padx=2 if compact else shell.BUTTON_PAD[0])
+                    self.home_button.pack_configure(padx=6 if compact else shell.RAIL_PADX)
+            except tk.TclError:
+                pass
+        sidebar.bind('<Configure>', fit, add='+')
+        fit()
 
     def launch(self):
         """Only the failure recovery path uses an external application."""

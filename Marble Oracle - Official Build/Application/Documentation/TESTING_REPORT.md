@@ -1,4 +1,11 @@
-# Testing report: Marble Oracle 0.4.9.4
+# Testing report: Marble Oracle 0.4.9.5
+
+## 0.4.9.5 addendum (16 November 2026)
+
+Linux container (Python 3.12, Tk under Xvfb). `Tools/run_tests.py`: **63 passed, 0 failed, 0 skipped** (62 from 0.4.9.4 plus `test_unified_shell_0495.py`). Every tab was also inspected in screenshots at 1216x848, 960x640, 820x560 and 640x460, and compared with 0.4.9.4 at 640x460. The first push failed one check on GitHub's Windows runner (EIDOLITH MEDIA PROBE at 900x580, 28 px of 30); fixed in the review commit, whose Windows result is in the pull request. Not run on a physical PC.
+
+---
+
 
 ## 0.4.9.4 addendum (16 November 2026)
 

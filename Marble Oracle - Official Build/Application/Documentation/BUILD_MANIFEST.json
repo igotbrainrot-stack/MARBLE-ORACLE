@@ -1,9 +1,9 @@
 {
-  "release": "Marble Oracle 0.4.9.4",
-  "version": "0.4.9.4",
-  "title": "Backup data sources: Stooq key, more stock and crypto feeds, rune stones at small sizes",
+  "release": "Marble Oracle 0.4.9.5",
+  "version": "0.4.9.5",
+  "title": "One layout for every workspace",
   "release_date": "2026-11-16",
-  "generated_utc": "2026-11-15T20:35:33+00:00",
+  "generated_utc": "2026-11-16T01:52:26+00:00",
   "platform_targets": [
     "Windows 11",
     "Linux Mint"
@@ -23,14 +23,14 @@
     "PASSPHRASE",
     "TOUCH TYPE"
   ],
-  "file_count": 472,
-  "inventory_file_count": 470,
-  "python_source_count": 225,
-  "test_script_count": 101,
-  "total_bytes": 115464583,
+  "file_count": 474,
+  "inventory_file_count": 472,
+  "python_source_count": 227,
+  "test_script_count": 102,
+  "total_bytes": 115495637,
   "previous_release": {
-    "version": "0.4.9.3",
-    "branch": "claude/marble-oracle-0493-refinement"
+    "version": "0.4.9.4",
+    "branch": "claude/marble-oracle-0494-data-sources"
   },
   "verification": {
     "see": "Application/Documentation/TESTING_REPORT.md",

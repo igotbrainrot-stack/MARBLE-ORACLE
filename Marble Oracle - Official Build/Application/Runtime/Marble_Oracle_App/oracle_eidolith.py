@@ -23,7 +23,7 @@ from oracle_native_files import choose_directory, choose_video_files
 from marble_uberata import FAMILY
 from oracle_ogg_texture import frame as ogl_frame, label as ogl_label, install as ogl_install
 from oggcultist_design_system import COLOR as C
-from oracle_design import HOME_LABEL
+import oracle_shell as shell
 from oracle_widgets import flow, wrap_to_parent
 from oracle_assets import load_json, save_json, state_dir
 from oracle_eidolith_core import (PROFILES, PROFILE_ORDER, DEFAULT_PROFILE, LEGACY_PROFILE_NAMES, NAME_MODES, RESOLUTIONS, RESOLUTION_ORDER, output_name,
@@ -144,18 +144,12 @@ class EidolithPanel(tk.Frame):
                          font=(FAMILY, size, 'bold' if bold else 'normal'), **kwargs)
 
     def _button(self, parent, text, cmd, *, primary=False, width=None):
-        return tk.Button(parent, text=text, command=cmd, cursor='hand2', relief='flat', bd=0,
-                         padx=12, pady=7, width=width,
-                         font=(FAMILY, 10, 'bold'),
-                         bg=C['accent'] if primary else C['control'],
-                         fg=C['text_on_accent'] if primary else C['text'],
-                         activebackground=C['accent_deep'] if primary else C['hover'],
-                         activeforeground=C['text_on_accent'] if primary else C['text'],
-                         highlightthickness=1, highlightbackground=C['control_line'])
+        # The suite button (oracle_shell): same size and padding in every workspace.
+        return shell.button(parent, text, cmd, primary=primary, width=width)
 
     def _entry(self, parent, textvariable=None):
         return tk.Entry(parent, textvariable=textvariable, relief='flat', bd=0,
-                        font=(FAMILY, 10), insertbackground=C['text'],
+                        font=shell.font('body'), insertbackground=C['text'],
                         bg=C['canvas'], fg=C['text'],
                         highlightthickness=1, highlightbackground=C['control_line'])
 
@@ -163,90 +157,68 @@ class EidolithPanel(tk.Frame):
         t = tk.Text(parent, relief='flat', bd=0, height=height, width=38, wrap='word',
                     bg=C['canvas'], fg=C['text'], insertbackground=C['text'],
                     highlightthickness=1, highlightbackground=C['control_line'],
-                    font=(FAMILY, 10))
+                    font=shell.font('body'))
         return t
 
     # ---------- layout ----------
     def _build_ui(self):
-        root = ogl_frame(self, bg=C['sidebar'])
-        root.pack(fill='both', expand=True)
-        self.rail = ogl_frame(root, bg=C['sidebar'], width=240)
-        self.rail.pack(side='left', fill='y')
-        self.rail.pack_propagate(False)
-        tk.Frame(root, bg=C['line'], width=1).pack(side='left', fill='y')
-        self.main = ogl_frame(root, bg=C['canvas'])
-        self.main.pack(side='left', fill='both', expand=True)
+        # The suite page shell (oracle_shell): same rail, title and status
+        # positions as every other workspace.
+        self.shell = shell.Shell(self)
+        self.rail = self.shell.rail
+        self.main = self.shell.main
         self._build_rail()
         self._build_main()
         self._refresh_nav()
 
     def _build_rail(self):
-        top = ogl_frame(self.rail, bg=C['sidebar'])
-        top.pack(fill='x', padx=16, pady=(10, 6))
-        # The wordmark is the title; the name is not repeated in text above it.
-        logo = tk.Canvas(top, width=208, height=54, bg=C['sidebar'], highlightthickness=0, bd=0)
-        logo.pack(anchor='w', pady=(2, 2))
-        self._draw_logo(logo)
-        self._label(top, f'VIDEO · ARCHIVE · {APP_VERSION}', 10, 'text_3').pack(anchor='w', pady=(4, 2))
+        # HOME and the version are fixed to the foot of the rail first, so a
+        # short window can never push them out.
+        self.shell.home(self.on_home, f'{APP_VERSION} · LOCAL')
+        self.shell.brand(APP_NAME, 'VIDEO · ARCHIVE', logo=self._draw_logo)
 
-        group = ogl_frame(self.rail, bg=C['sidebar'])
-        group.pack(fill='x', padx=12, pady=(10, 0))
-        self._label(group, 'WORKSPACE', 10, 'text_3').pack(anchor='w', padx=6, pady=(0, 8))
+        self.shell.group('WORKSPACE')
+        group = self.shell.nav_group()
         self.nav_buttons = {}
         for name in NAV_ITEMS:
-            btn = tk.Button(group, text=name, command=lambda n=name: self._set_nav(n), cursor='hand2',
-                            relief='flat', bd=0, padx=10, pady=9,
-                            font=(FAMILY, 13, 'bold'), anchor='w', justify='left',
-                            bg=C['sidebar'], fg=C['text'], activebackground=C['hover'],
-                            activeforeground=C['text'], highlightthickness=1, highlightbackground=C['sidebar'])
-            btn.pack(fill='x', pady=3)
-            self.nav_buttons[name] = btn
+            self.nav_buttons[name] = shell.nav_button(group, name, lambda n=name: self._set_nav(n))
 
+        self.shell.group('TOOLS')
         env = ogl_frame(self.rail, bg=C['sidebar'])
-        env.pack(fill='x', padx=18, pady=(14, 0))
-        self._label(env, 'TOOLS', 10, 'text_3').pack(anchor='w', pady=(0, 8))
+        env.pack(fill='x', padx=shell.RAIL_PADX)
         self.env_labels = {}
         for label, path in (('FFMPEG', self.ffmpeg), ('FFPROBE', self.ffprobe), ('FFPLAY', self.ffplay)):
             row = ogl_frame(env, bg=C['sidebar'])
             row.pack(fill='x', pady=1)
-            self._label(row, label, 11, 'text_3', bold=True).pack(side='left')
+            shell.label(row, label, 'body_bold', 'text_2').pack(side='left')
             ok = 'FOUND' if path else 'MISSING'
             colour = 'done' if path else 'failed'
-            self.env_labels[label] = self._label(row, ok, 10, colour)
+            self.env_labels[label] = shell.label(row, ok, 'small', colour)
             self.env_labels[label].pack(side='right')
 
-        bottom = ogl_frame(self.rail, bg=C['sidebar'])
-        bottom.pack(side='bottom', fill='x', padx=18, pady=18)
-        self._button(bottom, HOME_LABEL, self.on_home, primary=False).pack(fill='x')
-        self._label(bottom, f'{APP_VERSION} · LOCAL', 10, 'text_3').pack(anchor='w', pady=(10, 0))
-
     def _draw_logo(self, canvas):
-        fg = '#E8DDD0'
+        # The mark at the rail's 40 px brand height; the name in the suite's brand type.
+        fg = C['text_bright']
         accent = C['accent']
         line = C['line_strong']
-        canvas.create_polygon(8, 8, 44, 8, 52, 16, 52, 38, 44, 46, 8, 46, 0, 38, 0, 16,
+        canvas.create_polygon(6, 2, 32, 2, 38, 8, 38, 32, 32, 38, 6, 38, 0, 32, 0, 8,
                               outline=fg, fill='', width=2)
-        canvas.create_rectangle(14, 14, 38, 40, outline=accent, width=2)
-        canvas.create_line(22, 14, 22, 40, fill=fg, width=2)
-        canvas.create_line(22, 27, 38, 27, fill=fg, width=2)
-        canvas.create_line(14, 40, 38, 14, fill=line, width=2)
-        canvas.create_text(59, 27, text='EIDOLITH', anchor='w', fill=fg,
-                           font=(FAMILY, 17, 'bold'))
+        canvas.create_rectangle(10, 9, 28, 31, outline=accent, width=2)
+        canvas.create_line(16, 9, 16, 31, fill=fg, width=2)
+        canvas.create_line(16, 20, 28, 20, fill=fg, width=2)
+        canvas.create_line(10, 31, 28, 9, fill=line, width=2)
+        canvas.create_text(48, 20, text=APP_NAME, anchor='w', fill=fg,
+                           font=shell.brand_font(int(canvas.cget('width'))))
 
     def _build_main(self):
-        title = ogl_frame(self.main, bg=C['canvas'])
-        title.pack(fill='x', padx=16, pady=(12, 8))
-        self.page_title = self._label(title, 'PLAYER', 20, 'text_bright', bold=True)
-        self.page_title.pack(anchor='w')
-        self.page_subtitle = self._label(title, 'Play video in the EIDOLITH viewer.', 10, 'text_3')
-        self.page_subtitle.pack(anchor='w', pady=(2, 0))
+        self.page_title, self.page_subtitle, _right = self.shell.header(
+            'PLAYER', 'Play video in the EIDOLITH viewer.')
 
         # The status line claims its row first, from the bottom: a tall page
         # (CONVERT at 580 px) used to push it half out of the window.
-        footer = ogl_frame(self.main, bg=C['canvas'])
-        footer.pack(side='bottom', fill='x', padx=16, pady=(0, 8))
+        self.status_label = self.shell.status()
         body = ogl_frame(self.main, bg=C['canvas'])
-        body.pack(fill='both', expand=True, padx=12, pady=(0, 8))
+        body.pack(fill='both', expand=True, padx=shell.MAIN_PADX, pady=(0, 8))
         self.pages = {}
         for name in NAV_ITEMS:
             self.pages[name] = ogl_frame(body, bg=C['canvas'])
@@ -298,8 +270,6 @@ class EidolithPanel(tk.Frame):
         self._section_queue(self.pages['QUEUE'])
         self._section_about(self.pages['ABOUT'])
 
-        self.status_label = self._label(footer, '', 10, 'text_3')
-        self.status_label.pack(anchor='w')
         self._sync_status()
         self._show_page('PLAYER')
 
@@ -317,10 +287,10 @@ class EidolithPanel(tk.Frame):
         outer.pack(fill='both', expand=False, pady=(0, 10))
         head = ogl_frame(outer, bg=C['canvas'])
         head.pack(fill='x', pady=(0, 6))
-        self._label(head, title, 15, 'text_bright', bold=True).pack(anchor='w')
+        shell.label(head, title, 'section', 'text_bright').pack(anchor='w')
         outer.subtitle = None
         if subtitle:
-            outer.subtitle = wrap_to_parent(self._label(head, subtitle, 10, 'text_3'))
+            outer.subtitle = wrap_to_parent(shell.label(head, subtitle, 'small', 'text_2'))
             outer.subtitle.pack(anchor='w')
         box = ogl_frame(outer, bg=C['raised'])
         box.pack(fill='both', expand=True)
@@ -345,7 +315,7 @@ class EidolithPanel(tk.Frame):
                                     activestyle='none', bg=C['canvas'], fg=C['text'], bd=0,
                                     highlightthickness=1, highlightbackground=C['control_line'],
                                     selectbackground=C['hover'], selectforeground=C['text_bright'],
-                                    font=(FAMILY, 10), height=3)
+                                    font=shell.font('body'), height=2)   # grows with the window; asks little so MEDIA PROBE keeps room
         ys = tk.Scrollbar(list_frame, orient='vertical', command=self.file_list.yview)
         self.file_list.config(yscrollcommand=ys.set)
         self.file_list.pack(side='left', fill='both', expand=True)
@@ -376,7 +346,7 @@ class EidolithPanel(tk.Frame):
                                        activestyle='none', bg=C['canvas'], fg=C['text'], bd=0,
                                        highlightthickness=1, highlightbackground=C['control_line'],
                                        selectbackground=C['hover'], selectforeground=C['text_bright'],
-                                       font=(FAMILY, 10))
+                                       font=shell.font('body'))
         ys = tk.Scrollbar(f, orient='vertical', command=self.convert_list.yview)
         self.convert_list.config(yscrollcommand=ys.set)
         self.convert_list.pack(side='left', fill='both', expand=True)
@@ -416,27 +386,27 @@ class EidolithPanel(tk.Frame):
         row1.pack(fill='x', padx=pad, pady=(12, 8))
         profile_heading = ogl_frame(row1, bg=C['raised'])
         profile_heading.pack(fill='x')
-        self._label(profile_heading, 'PROFILE', 11, 'text_3', bold=True).pack(side='left')
+        self._label(profile_heading, 'PROFILE', 10, 'text_3', bold=True).pack(side='left')
         self._button(profile_heading, 'USE FAST PROFILE', self.select_fast_profile).pack(side='right')
         self.profile_menu = tk.OptionMenu(row1, self.profile, *PROFILE_ORDER, command=lambda *_: self._save_state())
-        self.profile_menu.config(relief='flat', bd=0, font=(FAMILY, 10), bg=C['control'], fg=C['text'], activebackground=C['hover'], activeforeground=C['text'])
-        self.profile_menu['menu'].config(font=(FAMILY, 10), bg=C['control'], fg=C['text'])
+        self.profile_menu.config(relief='flat', bd=0, font=shell.font('body'), bg=C['control'], fg=C['text'], activebackground=C['hover'], activeforeground=C['text'])
+        self.profile_menu['menu'].config(font=shell.font('body'), bg=C['control'], fg=C['text'])
         self.profile_menu.pack(fill='x', pady=(4, 0))
         self.profile_desc = wrap_to_parent(self._label(row1, '', 10, 'text_3'))
         self.profile_desc.pack(anchor='w', pady=(6, 0))
 
         row2 = ogl_frame(box, bg=C['raised'])
         row2.pack(fill='x', padx=pad, pady=(0, 8))
-        self._label(row2, 'AUDIO', 11, 'text_3', bold=True).pack(anchor='w')
+        self._label(row2, 'AUDIO', 10, 'text_3', bold=True).pack(anchor='w')
         audio_menu = tk.OptionMenu(row2, self.audio_mode, 'copy', 'opus', command=lambda *_: self._save_state())
-        audio_menu.config(relief='flat', bd=0, font=(FAMILY, 10), bg=C['control'], fg=C['text'], activebackground=C['hover'], activeforeground=C['text'])
-        audio_menu['menu'].config(font=(FAMILY, 10), bg=C['control'], fg=C['text'])
+        audio_menu.config(relief='flat', bd=0, font=shell.font('body'), bg=C['control'], fg=C['text'], activebackground=C['hover'], activeforeground=C['text'])
+        audio_menu['menu'].config(font=shell.font('body'), bg=C['control'], fg=C['text'])
         audio_menu.pack(fill='x', pady=(4, 0))
         wrap_to_parent(self._label(row2, 'Copy audio by default; optional Opus transcode.', 10, 'text_3')).pack(anchor='w', pady=(4, 0))
-        self._label(row2, 'RESOLUTION', 11, 'text_3', bold=True).pack(anchor='w', pady=(8, 0))
+        self._label(row2, 'RESOLUTION', 10, 'text_3', bold=True).pack(anchor='w', pady=(8, 0))
         res_menu = tk.OptionMenu(row2, self.resolution, *RESOLUTION_ORDER, command=lambda *_: self._save_state())
-        res_menu.config(relief='flat', bd=0, font=(FAMILY, 10), bg=C['control'], fg=C['text'], activebackground=C['hover'], activeforeground=C['text'])
-        res_menu['menu'].config(font=(FAMILY, 10), bg=C['control'], fg=C['text'])
+        res_menu.config(relief='flat', bd=0, font=shell.font('body'), bg=C['control'], fg=C['text'], activebackground=C['hover'], activeforeground=C['text'])
+        res_menu['menu'].config(font=shell.font('body'), bg=C['control'], fg=C['text'])
         res_menu.pack(fill='x', pady=(4, 0))
         wrap_to_parent(self._label(row2, 'Scale down only, keeping aspect ratio. From 1080p, 720p encodes about 2–3× faster (more for grainy video).',
                                    10, 'text_3', wraplength=430, justify='left')).pack(anchor='w', pady=(4, 0))
@@ -452,13 +422,13 @@ class EidolithPanel(tk.Frame):
                                ('Skip files already converted to this folder', self.skip_converted),
                                ("Don't re-encode video that is already compact AV1/HEVC", self.smart_copy)):
             wrap_to_parent(tk.Checkbutton(row2, text=text, variable=variable, command=self._save_state, anchor='w',
-                           font=(FAMILY, 10), bg=C['raised'], fg=C['text_2'], selectcolor=C['control'],
+                           font=shell.font('body'), bg=C['raised'], fg=C['text_2'], selectcolor=C['control'],
                            activebackground=C['raised'], activeforeground=C['text'],
                            highlightthickness=0, bd=0), margin=28).pack(anchor='w', fill='x')
 
         row3 = ogl_frame(box, bg=C['raised'])
         row3.pack(fill='x', padx=pad, pady=(0, 8))
-        self._label(row3, 'OUTPUT FOLDER', 11, 'text_3', bold=True).pack(anchor='w')
+        self._label(row3, 'OUTPUT FOLDER', 10, 'text_3', bold=True).pack(anchor='w')
         line = ogl_frame(row3, bg=C['raised'])
         line.pack(fill='x', pady=(4, 0))
         self.output_var = tk.StringVar(value=self.output_dir)
@@ -468,11 +438,11 @@ class EidolithPanel(tk.Frame):
 
         naming = ogl_frame(box, bg=C['raised'])
         naming.pack(fill='x', padx=pad, pady=(0, 8))
-        self._label(naming, 'ORGANISE OUTPUT FILENAME', 11, 'text_3', bold=True).pack(anchor='w')
+        self._label(naming, 'ORGANISE OUTPUT FILENAME', 10, 'text_3', bold=True).pack(anchor='w')
         mode_menu = tk.OptionMenu(naming, self.rename_mode, *NAME_MODES, command=lambda *_: self._save_state())
-        mode_menu.config(relief='flat', bd=0, font=(FAMILY, 10), bg=C['control'], fg=C['text'],
+        mode_menu.config(relief='flat', bd=0, font=shell.font('body'), bg=C['control'], fg=C['text'],
                          activebackground=C['hover'], activeforeground=C['text'])
-        mode_menu['menu'].config(font=(FAMILY, 10), bg=C['control'], fg=C['text'])
+        mode_menu['menu'].config(font=shell.font('body'), bg=C['control'], fg=C['text'])
         mode_menu.pack(fill='x', pady=(3, 3))
         self._label(naming, 'TITLE OVERRIDE (OPTIONAL)', 10, 'text_3').pack(anchor='w')
         title_input = self._entry(naming, self.title_override)
@@ -488,7 +458,7 @@ class EidolithPanel(tk.Frame):
         for text, variable in (('Add episode title', self.name_episode_title),
                                ('Add format tag, e.g. [AV1 720p]', self.name_format_tag)):
             wrap_to_parent(tk.Checkbutton(naming, text=text, variable=variable, command=self._save_state, anchor='w',
-                           font=(FAMILY, 10), bg=C['raised'], fg=C['text_2'], selectcolor=C['control'],
+                           font=shell.font('body'), bg=C['raised'], fg=C['text_2'], selectcolor=C['control'],
                            activebackground=C['raised'], activeforeground=C['text'],
                            highlightthickness=0, bd=0), margin=28).pack(anchor='w', fill='x')
         self.name_preview = wrap_to_parent(self._label(naming, 'OUTPUT: Select a source file to preview its name.', 10, 'text_3'))
@@ -741,9 +711,7 @@ class EidolithPanel(tk.Frame):
             'ABOUT': 'Read the design intent, tool availability and scope.'
         }
         for name, btn in self.nav_buttons.items():
-            on = name == self.active_nav.get()
-            btn.configure(bg=C['hover'] if on else C['sidebar'], fg=C['text_bright'] if on else C['text'],
-                          highlightbackground=C['accent'] if on else C['sidebar'])
+            shell.set_nav_current(btn, name == self.active_nav.get())
         self.page_title.configure(text=self.active_nav.get())
         self.page_subtitle.configure(text=subtitles.get(self.active_nav.get(), ''))
 

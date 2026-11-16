@@ -91,8 +91,8 @@ def write_manifests() -> dict:
         'test_script_count': sum(1 for e in entries if Path(e['path']).name.startswith('test_') and e['path'].endswith('.py')),
         'total_bytes': inventory['inventory_total_bytes'],
         'previous_release': {
-            'version': '0.4.9.3',
-            'branch': 'claude/marble-oracle-0493-refinement',
+            'version': '0.4.9.4',
+            'branch': 'claude/marble-oracle-0494-data-sources',
         },
         'verification': {
             'see': 'Application/Documentation/TESTING_REPORT.md',

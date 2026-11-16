@@ -15,6 +15,8 @@ import subprocess
 import threading
 import tkinter as tk
 
+import oracle_shell as shell
+
 from oracle_eidolith_core import end_process
 
 
@@ -141,17 +143,14 @@ class InTabVideoPlayer:
             controls.pack(fill='x', padx=10, pady=(8 if idx == 0 else 3, 1))
             for label, callback in items:
                 primary = label == 'PLAY / RESUME'
-                tk.Button(controls, text=label, command=callback, relief='flat', bd=0,
-                          bg=c['accent'] if primary else c['control'],
-                          fg=c['text_on_accent'] if primary else c['text'],
-                          activebackground=c['accent_deep'] if primary else c['hover'],
-                          activeforeground=c['text_on_accent'] if primary else c['text'],
-                          padx=8, pady=5, font=(self.font, 9, 'bold'), cursor='hand2').pack(side='left', padx=(0, 6))
+                # The suite button (oracle_shell), a little narrower so a row of three fits.
+                shell.button(controls, label, callback, primary=primary,
+                             padx=10, pady=5).pack(side='left', padx=(0, 6))
         self.volume_var = tk.IntVar(value=85)
         volume = tk.Frame(self.root, bg=c['raised'])
         volume.pack(fill='x', padx=10, pady=(7, 5))
         tk.Label(volume, text='AUDIO', bg=c['raised'], fg=c['text_3'],
-                 font=(self.font, 9)).pack(side='left')
+                 font=shell.font('group')).pack(side='left')
         self.volume_slider = tk.Scale(volume, from_=0, to=100, variable=self.volume_var,
                                       orient='horizontal', showvalue=True, length=125,
                                       bd=0, highlightthickness=0, troughcolor=c['sunken'],

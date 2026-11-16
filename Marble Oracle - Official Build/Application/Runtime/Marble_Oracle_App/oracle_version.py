@@ -5,9 +5,9 @@ Oggcultist); this is the version of the Marble Oracle release as a whole, shown
 in the window title, printed by --version and stamped into the build manifest.
 """
 SUITE_NAME = 'Marble Oracle'
-SUITE_VERSION = '0.4.9.4'
+SUITE_VERSION = '0.4.9.5'
 RELEASE_DATE = '2026-11-16'
-RELEASE_TITLE = 'Backup data sources: Stooq key, more stock and crypto feeds, rune stones at small sizes'
+RELEASE_TITLE = 'One layout for every workspace'
 
 
 def suite_title() -> str:
