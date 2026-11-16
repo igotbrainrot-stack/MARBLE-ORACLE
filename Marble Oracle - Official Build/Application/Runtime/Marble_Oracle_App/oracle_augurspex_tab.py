@@ -441,6 +441,17 @@ class AugurspexPanel(tk.Frame):
             btn.configure(bg=self.p['active'],fg=self.p['accent'],highlightbackground=self.p['accent'])
         return btn
 
+    def _fit_rail_height(self,event):
+        short=event.height<shell.SHORT_HEIGHT
+        if short==self._rail_short:
+            return
+        self._rail_short=short
+        if short:
+            self.rail_tagline.pack_forget();self.rail_version.pack_forget()
+        else:
+            self.rail_tagline.pack(fill='x',padx=shell.RAIL_PADX,pady=(4,0),after=self._rail_brand)
+            self.rail_version.pack(fill='x',pady=(8,0))
+
     def _watch_tip(self,event):
         """The full symbol and name of the watchlist row under the pointer, if it was shortened."""
         try:
@@ -496,8 +507,9 @@ class AugurspexPanel(tk.Frame):
         pad=shell.RAIL_PADX
         brand=tk.Label(self.rail,text='AUGURSPEX',bg=self.p['rail'],fg=C_TEXT_BRIGHT,font=shell.font('brand'),anchor='w')
         brand.pack(fill='x',padx=pad,pady=(shell.RAIL_TOP,0))
-        self._label(self.rail,'MARKETS · HISTORY','weak',bold=True,anchor='w',
-                    font=shell.font('group')).pack(fill='x',padx=pad,pady=(4,0))
+        self._rail_brand=brand
+        self.rail_tagline=self._label(self.rail,'MARKETS · HISTORY','weak',anchor='w',font=shell.font('group'))
+        self.rail_tagline.pack(fill='x',padx=pad,pady=(4,0))
         self._label(self.rail,'FIND MARKET','weak',anchor='w',font=shell.font('group')).pack(fill='x',padx=pad,pady=(14,6))
         self._entry(self.rail,self.search).pack(fill='x',padx=pad,pady=(0,6))
         filt=ogg_frame(self.rail,bg='#130F0D');filt._oracle_bg=self.p['rail'];filt.pack(fill='x',padx=pad-2,pady=(0,6))
@@ -525,12 +537,17 @@ class AugurspexPanel(tk.Frame):
         # HOME and the version line at the foot of the rail, as in every
         # workspace; MANAGE LIST is the list's own action, just above.
         bottom=ogg_frame(self.rail,bg='#130F0D');bottom._oracle_bg=self.p['rail']
-        bottom.pack(side='bottom',fill='x',padx=pad,pady=(8,14))
+        # Packed ahead of everything else in the rail, so a short window (or
+        # Windows' taller text) shrinks the list rather than pushing HOME out.
+        bottom.pack(side='bottom',fill='x',padx=pad,pady=(8,14),before=brand)
         self._button(bottom,'MANAGE LIST',self._manage_watchlist).pack(fill='x',pady=(0,6))
         self.home_button=shell.button(bottom,HOME_LABEL,self.on_home)
         self.home_button.pack(fill='x')
-        self._label(bottom,'MARKET HISTORY · LOCAL','weak',anchor='w',
-                    font=shell.font('small')).pack(fill='x',pady=(8,0))
+        self.rail_version=self._label(bottom,'MARKET HISTORY · LOCAL','weak',anchor='w',font=shell.font('small'))
+        self.rail_version.pack(fill='x',pady=(8,0))
+        # In a short window the tagline and version line go first, as on every tab (oracle_shell).
+        self._rail_short=None
+        self.rail_shell.bind('<Configure>',self._fit_rail_height,add='+')
         lst=ogg_frame(self.rail,bg='#130F0D');lst._oracle_bg=self.p['rail'];lst.pack(fill='both',expand=True,padx=pad)
         self.watch=tk.Listbox(lst,selectmode='browse',exportselection=False,
                               bg=self.p['inset'],fg=self.p['ink'],selectbackground=self.p['active'],

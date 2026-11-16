@@ -21,6 +21,7 @@ The workspaces had grown their own layouts: side rails of 208, 225, 240 and 312 
 
 - Windows: at 900x580 the larger buttons squeezed EIDOLITH's MEDIA PROBE box to 28 px (the Windows CI job failed). The file list now asks for two rows instead of three; it still grows with the window.
 - At the 640x460 minimum: HOME had dropped off OGGCULTIST's short rail (it now claims its place first), EIDOLITH's wordmark was clipped in the narrowed rail (it is redrawn smaller), and AUGURSPEX's CSV button was pushed off its row (SOURCE DETAILS shortens to SOURCES). EIDOLITH and TOUCH TYPE now show HOME at that size too, which they did not before.
+- AUGURSPEX reserves the foot of its rail first too: with Windows' taller text, HOME had been pushed off the rail at 640x460 (caught by the new test on GitHub's Windows runner).
 - OGGCULTIST's narrow-rail HOME no longer uses a house symbol the suite font does not have.
 - AUGURSPEX's search box uses the suite field size, and its title colour comes from the shared palette.
 
