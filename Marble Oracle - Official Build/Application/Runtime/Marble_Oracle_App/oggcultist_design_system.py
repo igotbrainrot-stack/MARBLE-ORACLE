@@ -22,11 +22,11 @@ COLOR = {
     'line': '#3A2E27',            # borders, separators
     'line_strong': '#493B32',
     'control': '#2F2620',
-    'control_line': '#59473B',
-    # text (contrast on canvas): text 14.7:1, text_2 7.8:1, text_3 4.7:1
+    'control_line': '#85705F',    # 0.4.9.6 design: 3.2-4.1:1 against every surface (was #59473B, about 2:1)
+    # text (contrast on canvas): text 14.7:1, text_2 7.8:1, text_3 6.2:1 (5.2:1 on controls)
     'text': '#F2E8DE',
     'text_2': '#B9A99B',
-    'text_3': '#928174',          # disabled and tertiary text (was #6F5E52 at 2.6:1)
+    'text_3': '#A79686',          # tertiary text: 5.2:1 on controls (was #928174 at 3.96:1, below WCAG AA)
     'text_on_accent': '#2B1405',
     'text_bright': '#FFF4E6',
     'sidebar_text': '#D9C9BB',
@@ -35,7 +35,7 @@ COLOR = {
     'accent': '#FB8E22',
     'accent_deep': '#E0601A',
     'accent_soft': '#4A2C18',     # selected rows, current filter
-    'focus': '#FB8E22',
+    'focus': '#FFF4E6',           # keyboard focus ring: cream, so it never looks like 'current' (amber)
     # status
     'ready': '#F2E8DE',
     'done': '#93CC7F',
@@ -43,6 +43,9 @@ COLOR = {
     'skipped': '#A49B93',
     'failed': '#FF6A55',
     'danger_text': '#FF9A85',
+    'danger_line': '#FF8A75',     # destructive button outline
+    'rise': '#A8D99B',            # charts: hollow candle, up arrow
+    'fall': '#FF8A75',            # charts: filled candle, down arrow
 }
 ACCENT_GRADIENT = ('#FED154', '#FDA629', '#EC4406')
 ACCENT_GRADIENT_HOVER = ('#FFDB6E', '#FFB441', '#F45616')

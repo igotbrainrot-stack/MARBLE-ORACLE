@@ -175,7 +175,9 @@ def plan_tests():
     nine = plan(9, 1078, 600)
     check('plan: nine charts keep a legible minimum and scroll', nine['scroll']
           and nine['card_h'] >= tab_module.MIN_CARD_H and nine['card_w'] >= tab_module.MIN_CARD_W, nine)
-    small = plan(1, 560, 300)
+    # 0.4.9.6: a view shorter than one minimum card, whatever the minimum is
+    # (it was 320 px, so 300 px qualified; it is now 260 px).
+    small = plan(1, 560, tab_module.MIN_CARD_H - 40)
     # 0.4.8.6 changed this on purpose: in a view shorter than one minimum
     # card, a single chart keeps a taller scrollable plot instead of being
     # squeezed below the size of a four-chart card.

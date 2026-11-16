@@ -1,6 +1,6 @@
 # Marble Oracle
 
-**Version 0.4.9.5 · 16 November 2026 · Windows 11 and Linux Mint**
+**Version 0.4.9.6 · 16 November 2026 · Windows 11 and Linux Mint**
 
 A dark, local-first desktop suite: an oracle dashboard, a music player, a video converter, a market observatory, a passphrase generator and a typing trainer in one window. Python and Tk; nothing is sent anywhere except the market-history requests AUGURSPEX makes when you open it.
 

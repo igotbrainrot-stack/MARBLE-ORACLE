@@ -2325,7 +2325,7 @@ class Scene(ChromeMixin, SkinMixin):
     def overlay_box(self):
         panels = [self.rect[n] for n in ("arch", "lex", "trans", "cards") if n in self.rect]
         return (min(r[0] for r in panels), min(self.rect["menu"][3] + 6, min(r[1] for r in panels)),          # 1055: never shorter than the panels,
-                max(r[2] for r in panels), max(self.rect["status"][1] - 6, max(r[3] for r in panels)))        # so no sliver of them shows above it
+                max(r[2] for r in panels), max(self.rect["status"][3], max(r[3] for r in panels)))   # 0.4.9.6: workspaces also cover the GRADE footer, which acts only on HOME
 
     # 1058: one overlay is left, PASSPHRASE (--retro and --flat); the dashboard is visible exactly when it is None
     OVERLAY_NAMES = {"dk": "PASSPHRASE", "ogg": "OGGCULTIST", "touch": "TOUCH TYPE", "eido": "EIDOLITH", "aug": "AUGURSPEX"}
@@ -2749,7 +2749,11 @@ class Scene(ChromeMixin, SkinMixin):
         elif k == "m": self.cycle_bezel()
         elif k == "e": self.act("ecc")
         elif k == "v": self.act("view")
-        elif k == "escape": self.act("quit")
+        elif k == "escape":
+            # 0.4.9.6: Escape never quits. From a workspace it already means
+            # 'go HOME'; quitting on a second press closed the suite, running
+            # conversions and all. The window's close button quits.
+            self.say("ESC DOES NOT QUIT · USE THE CLOSE BUTTON")
 
     def _xy(self, e):
         """Window pixel -> inner scene coordinate (real Tk events only; the bezel offsets the canvas)."""
