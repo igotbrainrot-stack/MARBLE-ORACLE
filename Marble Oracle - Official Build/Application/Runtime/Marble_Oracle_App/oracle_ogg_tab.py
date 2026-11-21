@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import os
+import re
 import subprocess
 import sys
 import tkinter as tk
@@ -76,6 +77,54 @@ class OggcultistPanel(tk.Frame):
             # way (Tk's packer serves widgets in packing order).
             anchor.pack_configure(before=first)
         self.home_button.pack(side='bottom', fill='x', padx=shell.RAIL_PADX, pady=(8, 0), after=anchor)
+        # 0.4.9.8: Settings sits at the foot of the rail too, so it is served
+        # with HOME and the version line, ahead of the items above. Before, it
+        # was packed last: at 1280x720 HOME covered half of it, and at 900x580
+        # it was not reachable at all.
+        settings = getattr(app, 'nav', {}).get('settings')
+        if settings is not None:
+            settings.pack_configure(after=self.home_button)
+        groups = getattr(app, '_group_labels', None) or []
+
+        def numbers(value):
+            return [int(float(n)) for n in re.findall(r'-?\d+(?:\.\d+)?', str(value))]
+
+        def rail_needs():
+            """Height every packed rail item asks for, padding included."""
+            total = 0
+            for child in sidebar.pack_slaves():
+                pady = numbers(child.pack_info().get('pady', 0)) or [0]
+                total += child.winfo_reqheight() + (sum(pady) if len(pady) > 1 else 2 * pady[0])
+            padding = numbers(sidebar.cget('padding'))
+            if len(padding) == 4:
+                total += padding[1] + padding[3]
+            return total
+
+        def fit_logo():
+            # 0.4.9.8: in the 64 px icon rail of a short window (900x580) the
+            # items did not fit and Converter and Album Art were cut off. The
+            # logo there repeats the OGGCULTIST tab directly above it, so it
+            # gives way first; it returns as soon as there is room again.
+            if first is None or not groups:
+                return
+            compact = bool(getattr(app, 'compact', False))
+            shown = bool(first.winfo_manager())
+            height = sidebar.winfo_height()
+            if height <= 1:
+                return
+            if shown:
+                # Oggcultist re-packs its logo when the rail changes width,
+                # which would put it at the end; keep it at the top.
+                slaves = sidebar.pack_slaves()
+                if groups[0] in slaves and slaves.index(first) + 1 != slaves.index(groups[0]):
+                    first.pack_configure(before=groups[0])
+                if compact and rail_needs() > height:
+                    first.pack_forget()
+            else:
+                first.pack(anchor='center' if compact else 'w', before=groups[0])
+                sidebar.update_idletasks()
+                if compact and rail_needs() > height:
+                    first.pack_forget()
 
         def fit(_event=None):
             # Below 1100 px Oggcultist shrinks its rail to 64 px icons; HOME
@@ -88,6 +137,7 @@ class OggcultistPanel(tk.Frame):
                     self.home_button.configure(font=shell.font('group' if compact else 'button'),
                                                padx=2 if compact else shell.BUTTON_PAD[0])
                     self.home_button.pack_configure(padx=6 if compact else shell.RAIL_PADX)
+                fit_logo()
             except tk.TclError:
                 pass
         sidebar.bind('<Configure>', fit, add='+')

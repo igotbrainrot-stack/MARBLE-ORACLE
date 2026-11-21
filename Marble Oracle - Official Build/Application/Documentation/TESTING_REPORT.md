@@ -1,4 +1,20 @@
-# Testing report: Marble Oracle 0.4.9.7
+# Testing report: Marble Oracle 0.4.9.8
+
+## 0.4.9.8 addendum (22 November 2026)
+
+**First run outside GitHub.** The suite ran on the development machine: Ubuntu 24.04, Python 3.12.3, Tk 8.6.14 under Xvfb at 1920x1080, Pillow 12.2.0, mutagen 1.48.1, numpy 2.2.6, FFmpeg present. Still a virtual display, not a physical PC.
+
+| Check | Development machine (Xvfb) | GitHub Linux (Xvfb) | GitHub Windows (native Tk) |
+|---|---|---|---|
+| `--selftest` | pass | | |
+| Regression scripts on 0.4.9.7 as released | 66 passed, 0 failed, 0 skipped | | |
+| Regression scripts on 0.4.9.8 | **67 passed, 0 failed, 0 skipped** | **67 passed, 0 failed** (run 44912891286) | **67 passed, 0 failed** (same run) |
+| Screenshots | 71 captured (five sizes plus the CRT housing); all six workspaces reviewed at 1280x720, OGGCULTIST at four sizes | 71 captured | not captured |
+| Live provider probe | **not possible**: the machine's network refused every market-data host (each source reported "network", nothing was drawn) | not run | |
+
+Found by this run: OGGCULTIST's Settings half covered at 1280x720 and unreachable at 900x580 (fixed; `test_ogg_rail_0498.py` fails on 0.4.9.7 and passes on 0.4.9.8).
+
+---
 
 ## 0.4.9.7 addendum (16 November 2026)
 
