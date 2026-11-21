@@ -2912,7 +2912,9 @@ class WindowApp:
         self.tk = tk
         self.o = opts
         set_app_identity()
-        self.root = root = tk.Tk()
+        # className sets the Linux WM_CLASS, which the menu entry's StartupWMClass
+        # matches, so the taskbar shows Marble Oracle's icon and name (0.4.9.9).
+        self.root = root = tk.Tk(className='MarbleOracle')
         root.title(suite_title())
         apply_window_icon(root)
         from oracle_widgets import install_interaction_defaults
