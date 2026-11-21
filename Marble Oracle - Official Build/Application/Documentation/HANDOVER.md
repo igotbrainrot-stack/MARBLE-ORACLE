@@ -82,7 +82,7 @@ xvfb-run -a -s "-screen 0 1920x1080x24" <venv>/bin/python Application/Tools/run_
 xvfb-run -a -s "-screen 0 1920x1080x24" <venv>/bin/python Application/Tools/capture_screens.py <out>
 ```
 
-The whole suite runs in a few minutes and a full set of screenshots in under three, against about ten minutes per CI round. The machine's network did not reach any market-data host, so the live provider probe still has to run on CI or a home connection.
+The whole suite runs in a few minutes and a full set of screenshots in under three, against about ten minutes per CI round. **A local test run rewrites `Tests/TAB_*.png`** (reference pictures the layout tests save); restore them with `git checkout -- 'Application/Tests/TAB_*.png'` before committing, or they ride along in the next commit. The machine's network did not reach any market-data host, so the live provider probe still has to run on CI or a home connection.
 
 ## Working without a local display
 
