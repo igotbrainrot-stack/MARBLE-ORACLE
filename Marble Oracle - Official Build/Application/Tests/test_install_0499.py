@@ -100,25 +100,30 @@ expected = {'fedora': 'Fedora|dnf install -y|python3 python3-tkinter',
             'arch': 'Arch Linux|pacman -S --needed --noconfirm|python tk',
             'suse': 'openSUSE|zypper --non-interactive install|python3 python3-tk',
             None: 'your Linux distribution||'}
-for family, path in files.items():
-    env = dict(os.environ, MARBLE_ORACLE_PRINT_DISTRO='1', MARBLE_ORACLE_OS_RELEASE=str(path))
-    out = subprocess.run(['bash', str(START)], env=env, capture_output=True, text=True, timeout=30).stdout.strip()
-    check(f'START (Linux) recognises {family}', out == expected[family], out)
+# The Linux shell scripts are checked where they run. On Windows, `bash` is usually the WSL stub
+# (or missing), which says nothing about the scripts, so these checks are skipped there.
+if os.name == 'nt':
+    print('SKIP Linux shell-script checks on Windows')
+else:
+    for family, path in files.items():
+        env = dict(os.environ, MARBLE_ORACLE_PRINT_DISTRO='1', MARBLE_ORACLE_OS_RELEASE=str(path))
+        out = subprocess.run(['bash', str(START)], env=env, capture_output=True, text=True, timeout=30).stdout.strip()
+        check(f'START (Linux) recognises {family}', out == expected[family], out)
 
-# ---- the applications-menu entry -------------------------------------------
-data_home = Path(tempfile.mkdtemp(prefix='mo-xdg-'))
-env = dict(os.environ, XDG_DATA_HOME=str(data_home))
-done = subprocess.run(['bash', str(RUNTIME / 'install_linux_desktop.sh')], env=env, capture_output=True, text=True,
-                      timeout=60)
-entry = data_home / 'applications' / 'marble-oracle.desktop'
-check('the menu entry is written', done.returncode == 0 and entry.is_file(), done.stderr)
-text = entry.read_text() if entry.is_file() else ''
-for line in ('Terminal=false', 'StartupWMClass=MarbleOracle', 'Name=Marble Oracle', 'Icon='):
-    check(f'the menu entry has {line}', line in text, text)
-check('it starts the official launcher', 'START MARBLE ORACLE - LINUX.sh' in text)
-done = subprocess.run(['bash', str(RUNTIME / 'install_linux_desktop.sh'), '--remove'], env=env, capture_output=True,
-                      text=True, timeout=60)
-check('--remove takes it out again', done.returncode == 0 and not entry.exists(), done.stderr)
+    # ---- the applications-menu entry -------------------------------------------
+    data_home = Path(tempfile.mkdtemp(prefix='mo-xdg-'))
+    env = dict(os.environ, XDG_DATA_HOME=str(data_home))
+    done = subprocess.run(['bash', str(RUNTIME / 'install_linux_desktop.sh')], env=env, capture_output=True, text=True,
+                          timeout=60)
+    entry = data_home / 'applications' / 'marble-oracle.desktop'
+    check('the menu entry is written', done.returncode == 0 and entry.is_file(), done.stderr)
+    text = entry.read_text() if entry.is_file() else ''
+    for line in ('Terminal=false', 'StartupWMClass=MarbleOracle', 'Name=Marble Oracle', 'Icon='):
+        check(f'the menu entry has {line}', line in text, text)
+    check('it starts the official launcher', 'START MARBLE ORACLE - LINUX.sh' in text)
+    done = subprocess.run(['bash', str(RUNTIME / 'install_linux_desktop.sh'), '--remove'], env=env, capture_output=True,
+                          text=True, timeout=60)
+    check('--remove takes it out again', done.returncode == 0 and not entry.exists(), done.stderr)
 
 # ---- the setup window -------------------------------------------------------
 if os.environ.get('DISPLAY') or os.name == 'nt':
