@@ -388,7 +388,7 @@ class Setup(tk.Tk):
         super().__init__()
         self.title('Marble Oracle — Requirements and Startup')
         self.geometry('780x720')
-        self.minsize(640,600)
+        self.minsize(760,640)   # every button and status badge fits at this width
         self.configure(bg='#1D1714')
         apply_tk_fonts(self)
         self._queue=queue.Queue()
@@ -440,6 +440,11 @@ class Setup(tk.Tk):
         return tk.Label(parent,text=text,font=(FAMILY,size,'bold' if bold else 'normal'),
                         bg=bg or self.BG,fg=fg or self.TEXT,**kwargs)
 
+    @staticmethod
+    def _wrap_to_width(label):
+        """Keep a label's text wrapped to the width it is given, so it never runs off the edge."""
+        label.bind('<Configure>',lambda event:label.configure(wraplength=max(200,event.width-4)),add='+')
+
     def _button(self,parent,text,command,primary=False):
         return tk.Button(parent,text=text,command=command,cursor='hand2',relief='flat',bd=0,
                          font=(FAMILY,11,'bold'),padx=16,pady=8,
@@ -477,20 +482,24 @@ class Setup(tk.Tk):
         self.install_btn=self._button(buttons,'INSTALL REQUIREMENTS',self.install)
         self.install_btn.pack(side='right',padx=(0,10))
         self._button(buttons,'EXIT',self.destroy).pack(side='left')
-        if sys.platform.startswith('linux') and MENU_INSTALLER.is_file():
-            self.menu_btn=self._button(buttons,'ADD TO APP MENU',self.add_to_menu)
-            self.menu_btn.pack(side='left',padx=(10,0))
-            if MENU_ENTRY.is_file():
-                self.menu_btn.configure(text='IN APP MENU ✓')
 
         head=tk.Frame(pad,bg=self.BG)
         head.pack(fill='x')
         self._label(head,'MARBLE ORACLE',22,fg=self.ACCENT,bold=True).pack(side='left')
         self._label(head,'SETUP',11,fg=self.MUTED,bold=True).pack(side='left',padx=12,pady=(10,0))
-        self._label(pad,'Marble Oracle checks its parts each time it starts. Nothing is installed '
+        if sys.platform.startswith('linux') and MENU_INSTALLER.is_file():
+            # In the header, not the footer: the footer keeps room for its three buttons.
+            self.menu_btn=self._button(head,'ADD TO APP MENU',self.add_to_menu)
+            self.menu_btn.configure(font=(FAMILY,9,'bold'),padx=10,pady=4)
+            self.menu_btn.pack(side='right',pady=(6,0))
+            if MENU_ENTRY.is_file():
+                self.menu_btn.configure(text='IN APP MENU ✓')
+        intro=self._label(pad,'Marble Oracle checks its parts each time it starts. Nothing is installed '
                     'without your approval: Python libraries go into a private folder for this app '
                     'only, and system packages ask for your password first.',10,fg=OGG_EMBER['text_2'],
-                    justify='left',anchor='w',wraplength=700).pack(fill='x',pady=(6,10))
+                    justify='left',anchor='w',wraplength=700)
+        intro.pack(fill='x',pady=(6,10))
+        self._wrap_to_width(intro)
 
         # The checklist.
         card=tk.Frame(pad,bg=self.CARD,highlightthickness=1,highlightbackground=OGG_EMBER['line'],
@@ -502,12 +511,12 @@ class Setup(tk.Tk):
               ('mutagen','Mutagen','Reads music tags in OGGCULTIST',True)]
         if sys.platform.startswith('linux'):
             rows.append(('jeepney','Jeepney','Keyboard media keys on Linux',False))
-        rows+= [('ffmpeg','FFmpeg and FFprobe','Video and audio conversion',False),
+        rows+= [('ffmpeg','FFmpeg and FFprobe','Video and audio converting',False),
                 ('ffplay','FFplay','Video preview with sound',False)]
         for index,(key,name,role,essential) in enumerate(rows):
             line=tk.Frame(card,bg=self.CARD)
             line.pack(fill='x',pady=2)
-            pill=self._label(line,'…',10,bold=True,bg=self.CARD,fg=self.MUTED,width=15,anchor='e')
+            pill=self._label(line,'…',10,bold=True,bg=self.CARD,fg=self.MUTED,anchor='e')
             pill.pack(side='right')
             self._label(line,name,11,bold=True,bg=self.CARD,anchor='w').pack(side='left')
             self._label(line,('' if essential else 'optional · ')+role,9,fg=self.MUTED,bg=self.CARD,
@@ -529,8 +538,10 @@ class Setup(tk.Tk):
                   ' after your desktop asks for your password.') if info else \
                  ('System packages are installed through your desktop\'s software installer '
                   '(PackageKit) after it asks for your password.')
-            self._label(options,hint,9,fg=self.MUTED,bg=self.CARD,anchor='w',justify='left',
-                        wraplength=660).pack(fill='x',pady=(6,0))
+            hint_label=self._label(options,hint,9,fg=self.MUTED,bg=self.CARD,anchor='w',justify='left',
+                                   wraplength=660)
+            hint_label.pack(fill='x',pady=(6,0))
+            self._wrap_to_width(hint_label)
 
         self.progress=ttk.Progressbar(pad,mode='indeterminate',style='Oracle.Horizontal.TProgressbar')
         self._progress_slot=tk.Frame(pad,bg=self.BG,height=10)

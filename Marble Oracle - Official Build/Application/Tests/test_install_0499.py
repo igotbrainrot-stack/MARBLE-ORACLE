@@ -134,7 +134,25 @@ if os.environ.get('DISPLAY') or os.name == 'nt':
             window.update()
             return window
 
+    def fits_at_minimum(window, label):
+        # At the smallest size the window allows, no button may leave it or overlap another.
+        width, height = window.minsize()
+        window.geometry(f'{width}x{height}')
+        for _ in range(5):
+            window.update()
+        buttons = [w for w in (window.start_btn, window.install_btn, getattr(window, 'menu_btn', None)) if w]
+        boxes = [(b.winfo_rootx() - window.winfo_rootx(), b.winfo_rooty() - window.winfo_rooty(),
+                  b.winfo_width(), b.winfo_height()) for b in buttons]
+        inside = all(x >= 0 and y >= 0 and x + w <= window.winfo_width() and y + h <= window.winfo_height()
+                     for x, y, w, h in boxes)
+        apart = all(a[0] + a[2] <= b[0] or b[0] + b[2] <= a[0] or a[1] + a[3] <= b[1] or b[1] + b[3] <= a[1]
+                    for i, a in enumerate(boxes) for b in boxes[i + 1:])
+        whole = all(b.winfo_width() >= b.winfo_reqwidth() for b in buttons)   # Tk squeezes rather than overlaps
+        check(f'{label}: at {width}x{height} every button is whole, inside the window and apart from the others',
+              inside and apart and whole, [(b.cget('text'), b.winfo_width(), b.winfo_reqwidth()) for b in buttons])
+
     window = make(True)
+    fits_at_minimum(window, 'ready')
     check('ready: START is the bright button', str(window.start_btn.cget('bg')).lower() == accent)
     check('ready: INSTALL is quiet', str(window.install_btn.cget('bg')).lower() != accent)
     check('idle: no progress bar is shown', not window.progress.winfo_manager())
@@ -147,6 +165,7 @@ if os.environ.get('DISPLAY') or os.name == 'nt':
     window._setbusy(False)
     window.destroy()
     window = make(False)
+    fits_at_minimum(window, 'not ready')
     check('not ready: INSTALL is the bright button', str(window.install_btn.cget('bg')).lower() == accent)
     check('not ready: START is disabled', str(window.start_btn.cget('state')) == 'disabled')
     window.destroy()
