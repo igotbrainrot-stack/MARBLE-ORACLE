@@ -362,6 +362,10 @@ class SlimScrollbar(tk.Canvas):
 
 
 _CHEVRONS = {}
+# Images whose Tk has gone are kept here instead of being freed: Python may run
+# an image's destructor on a worker thread, which Tk refuses with
+# "main thread is not in main loop". They are a few bytes each.
+_RETIRED_IMAGES = []
 
 
 def _chevron(widget, colour):
@@ -375,6 +379,8 @@ def _chevron(widget, colour):
     except tk.TclError:
         alive = False
     if not alive:
+        if image is not None:
+            _RETIRED_IMAGES.append(image)
         image = tk.PhotoImage(master=widget, width=11, height=7)
         points = [(x, y) for y in range(5) for x in (y, y + 1, 9 - y, 10 - y)]
         for x, y in points:

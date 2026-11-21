@@ -718,7 +718,8 @@ class ChromeMixin(PhotoBezelMixin):
         h = min(max(22, round(28 * self.k)), max(20, y1 - y0 - 4))
         font = self.font(12, True, False)
         widths = [font.measure(label) + 2 * pad for label, _ in tabs]
-        available = max(165, x1 - x - max(85, round(116 * self.k)) - (h + gap))   # room for the ? guide button
+        guide_button = not self.case_on()      # the CRT housing's curved glass has no room for it; F1 still works
+        available = max(165, x1 - x - max(85, round(116 * self.k)) - ((h + gap) if guide_button else 0))
         scale = min(1.0, max(0.5, (available - (len(tabs)-1) * gap) / sum(widths)))
         widths = [max(52, int(w * scale)) for w in widths]
         y = int((y0 + y1 - h) / 2)
@@ -738,11 +739,13 @@ class ChromeMixin(PhotoBezelMixin):
             self.nav_tabs[action] = (panel, tid)
             x = x2 + gap
         # 0.4.9.9: a visible way to the welcome guide (F1 is not discoverable).
-        gx0 = int(x) + gap
-        c.create_rectangle(gx0, y, gx0 + h, y + h, fill=OGG_EMBER['canvas'], outline=OGG_EMBER['line_strong'],
-                           width=1, tags="chrome")
-        self.T(gx0 + h / 2, y + h / 2, "?", min(12, max(8, round(12 * scale))), "dim", "center", "chrome", True, False)
-        self.hot.append((gx0, y0, gx0 + h, y1, "guide"))
+        if guide_button:
+            gx0 = int(x) + gap
+            c.create_rectangle(gx0, y, gx0 + h, y + h, fill=OGG_EMBER['canvas'], outline=OGG_EMBER['line_strong'],
+                               width=1, tags="chrome")
+            self.T(gx0 + h / 2, y + h / 2, "?", min(12, max(8, round(12 * scale))), "dim", "center", "chrome",
+                   True, False)
+            self.hot.append((gx0, y0, gx0 + h, y1, "guide"))
         self._update_primary_tab_state()
 
     def _update_primary_tab_state(self):

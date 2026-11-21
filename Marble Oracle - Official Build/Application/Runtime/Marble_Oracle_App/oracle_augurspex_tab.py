@@ -1461,7 +1461,7 @@ class AugurspexPanel(tk.Frame):
             'MARKET ATLAS — inspect all watchlist data and compare percentage changes.\n'
             'OBSERVATION TABLE — keyboard-scrollable dated price records.\n'
             'CSV — export real provider observations for the selected chart.\n'
-            'F1 — suite-wide field guide with six workspaces.\n\n'
+            'F1 (or ? beside the tabs) — the welcome guide to all six workspaces.\n\n'
             'Prices are historical; provider and exchange delays may apply.', parent=self)
 
     def _source_details_text(self):

@@ -1,18 +1,19 @@
 # Marble Oracle
 
-**Version 0.4.9.9 · 22 November 2026 · Windows 11 and Linux Mint**
+**Version 0.4.9.9 · 22 November 2026 · Windows 10/11 and Linux (Mint, Ubuntu, Fedora, Arch, openSUSE)**
 
-A dark, local-first desktop suite: an oracle dashboard, a music player, a video converter, a market observatory, a passphrase generator and a typing trainer in one window. Python and Tk; nothing is sent anywhere except the market-history requests AUGURSPEX makes when you open it.
+A dark, local-first desktop suite: an oracle dashboard, a music player, a video converter, a market observatory, a passphrase generator and a typing trainer in one window. Python and Tk; no account or sign-in. It goes online only for public market history in AUGURSPEX, album lookups in OGGCULTIST when you ask for them, and (on Windows) to download FFmpeg if you choose to install it.
 
 ## Start it
 
-1. Extract the whole ZIP to a normal folder (do not run it from inside the ZIP).
-2. **Windows:** double-click `START MARBLE ORACLE - WINDOWS.vbs`.
+1. **Extract the whole ZIP** to a normal folder (not inside the ZIP viewer).
+2. **Windows:** double-click `START MARBLE ORACLE - WINDOWS.vbs`. You need Python 3 from [python.org](https://www.python.org/downloads/) with "tcl/tk and IDLE" ticked (the default).
    If Windows blocks VBScript, use `START MARBLE ORACLE - WINDOWS (if the VBS launcher is blocked).bat`.
-3. **Linux Mint:** run `START MARBLE ORACLE - LINUX.sh` (`chmod +x` it first if extraction dropped the executable flag).
-   For a menu entry with no terminal: `bash Application/Runtime/install_linux_desktop.sh`, once.
+3. **Linux:** double-click or run `START MARBLE ORACLE - LINUX.sh` (`chmod +x` it first if extraction dropped the executable flag). If Python's Tk package is missing, it offers to install it with your distribution's package manager (apt, dnf, pacman or zypper) after your desktop asks for your password.
+4. The **setup window** checks each part (Pillow, Mutagen, FFmpeg) and shows what is ready. Nothing installs until you press INSTALL; Python libraries go into a private folder for this app only. Press **START MARBLE ORACLE**. On Linux, **ADD TO APP MENU** puts it in your applications menu.
+5. On the first start a **welcome guide** introduces the six workspaces. Open it again any time with **F1** or the **?** beside the tabs.
 
-You need Python 3 with Tkinter already installed. On first run a requirements window checks for the rest (Pillow, Mutagen, FFmpeg) and asks before installing anything; Python libraries go into a private environment, never system-wide.
+After the first run, starting it checks quickly and goes straight to the suite.
 
 ## The six workspaces
 
@@ -25,7 +26,7 @@ You need Python 3 with Tkinter already installed. On first run a requirements wi
 | **PASSPHRASE** | Three words, a number and a symbol drawn from the operating system's secure random source. Nothing is saved; a copied phrase is cleared from the clipboard after 60 seconds. |
 | **TOUCH TYPE** | Four typing games with finger guidance and saved best scores. |
 
-Press **F1** anywhere for the field guide. Every workspace has a **HOME** button, and the tab strip is always visible. On HOME, **Tab** and **Shift+Tab** step through the controls, **Enter** or **Space** presses the one with the cream ring, and **Escape** puts the ring away. Escape never closes the suite; use the window's close button.
+Press **F1** (or **?** beside the tabs) for the welcome guide. Every workspace has a **HOME** button, and the tab strip is always visible. On HOME, **Tab** and **Shift+Tab** step through the controls, **Enter** or **Space** presses the one with the cream ring, and **Escape** puts the ring away. Escape never closes the suite; use the window's close button.
 
 ## Market data in one paragraph
 
@@ -46,7 +47,7 @@ See [`Documentation/TROUBLESHOOTING.md`](Documentation/TROUBLESHOOTING.md). The 
 
 ## Known limitations
 
-- Not yet run on a physical Windows 11 or Linux Mint machine by this project. Automated tests run on Ubuntu (Tk under a virtual display) and on Windows Server (native Tk); see [`Documentation/TESTING_REPORT.md`](Documentation/TESTING_REPORT.md) for exactly what passed where.
+- Not yet run on a physical Windows or Linux PC by this project. Automated tests run on Ubuntu (Tk under a virtual display, on the development machine and in CI) and on Windows Server (native Tk); see [`Documentation/TESTING_REPORT.md`](Documentation/TESTING_REPORT.md) for exactly what passed where.
 - GPU encoders (NVIDIA, Intel, AMD) are probed with a one-second test encode before use but have not been verified on real hardware.
 - EIDOLITH's in-app viewer is a 12 fps preview, not a frame-accurate player; HDR sources are refused for conversion rather than converted wrongly.
 - Free market sources are best-effort (above). The no-key stock source gives daily bars only.

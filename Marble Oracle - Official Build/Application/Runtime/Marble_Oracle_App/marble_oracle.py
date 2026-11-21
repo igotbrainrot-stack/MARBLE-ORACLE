@@ -2873,6 +2873,10 @@ def set_app_identity():
 WINDOW_ICONS = ("marble_oracle_window.ico", "marble_oracle.ico")     # BMP frames of the eye first (Tk refuses the PNG frames), then the full icon
 
 
+# Window icons stay alive for the whole process (see oracle_widgets._RETIRED_IMAGES).
+_WINDOW_ICONS_KEPT = []
+
+
 def apply_window_icon(root):
     """Put the eye on the window, its taskbar entry and every dialog.
 
@@ -2889,6 +2893,7 @@ def apply_window_icon(root):
                 image = tk.PhotoImage(master=root, file=path)
                 root.iconphoto(True, image)
                 root._marble_icon = image       # Tk forgets images nobody holds
+                _WINDOW_ICONS_KEPT.append(image)   # and never freed on a worker thread
                 applied = True
         except Exception:
             pass

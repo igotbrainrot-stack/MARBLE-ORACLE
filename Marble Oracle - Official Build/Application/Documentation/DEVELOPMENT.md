@@ -6,11 +6,19 @@
 - Pillow, Mutagen (and optionally NumPy, OpenCV) for the full suite; FFmpeg/FFprobe/FFplay for EIDOLITH.
 - For headless Linux testing: Xvfb.
 
-On Linux Mint / Ubuntu:
+On Linux Mint / Ubuntu / Debian:
 
 ```bash
 sudo apt install python3-tk python3-pil python3-pil.imagetk python3-mutagen python3-numpy python3-opencv ffmpeg xvfb
 ```
+
+On Fedora:
+
+```bash
+sudo dnf install python3-tkinter python3-pillow python3-pillow-tk python3-mutagen python3-numpy ffmpeg-free xorg-x11-server-Xvfb
+```
+
+Without network access to a package manager, see HANDOVER.md for running the suite from the six Ubuntu packages and three wheels used on the 0.4.9.8 development machine.
 
 On Windows: Python from python.org (includes Tk), then `python -m pip install pillow mutagen numpy opencv-python`, and FFmpeg from any source on `PATH`.
 
