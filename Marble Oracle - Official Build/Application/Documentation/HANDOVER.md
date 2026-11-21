@@ -1,4 +1,4 @@
-# Handover: Marble Oracle 0.4.9.8
+# Handover: Marble Oracle 0.4.9.9
 
 22 November 2026 (0.4.9.7: 16 November). For whoever picks this up next, human or AI. Earlier handovers (0.4.9.3 to 0.4.9.5) are in `History/HANDOVER_0.4.9.3-0.4.9.5.md`; this file replaces them.
 
@@ -15,7 +15,8 @@
 | #8 | `claude/marble-oracle-0495-unified-design` | 0.4.9.5 | One page shell (`oracle_shell.py`) for every workspace |
 | #9 | `claude/marble-oracle-0496-design-prototype` | 0.4.9.6 | Contrast, focus vs current, Escape never quits, EIDOLITH Convert, AUGURSPEX grid and axis |
 | #10 | `claude/marble-oracle-0497-polish` | 0.4.9.7 | HOME keyboard and hover, fit fixes at 900x580, Windows CI required, this handover |
-| **#11** | **`claude/marble-oracle-0498-ogg-rail`** | **0.4.9.8** | **OGGCULTIST rail: Settings always reachable, icons fit at 900x580** |
+| #11 | `claude/marble-oracle-0498-ogg-rail` | 0.4.9.8 | OGGCULTIST rail: Settings always reachable, icons fit at 900x580 |
+| **#12** | **`claude/marble-oracle-0499-professional`** | **0.4.9.9** | **Welcome guide, slim scrollbars and dropdowns, install for every Linux family, dead files removed** |
 
 - **The branch is the whole application:** every asset archive, font and texture is in Git. Only the two third-party research PDFs are left out (`.gitignore`); they are in the release ZIP under `Documentation/Research/`.
 - **Read next:** `README.md`, `ARCHITECTURE.md`, `DEVELOPMENT.md`, `CHANGELOG.md`, `TESTING_REPORT.md`.
@@ -23,6 +24,14 @@
 ## State in one paragraph
 
 All six workspaces work, share one page shell and one interaction look (hover, a cream keyboard-focus ring, an amber "current" fill), and HOME can now be used from the keyboard. The whole regression suite passes on GitHub's Linux runner (Tk under Xvfb) and on its Windows runner (native Tk), and since 0.4.9.7 the Windows job is required. **Nothing has been run on a physical PC, and none of the market sources added in 0.4.9.4 has been seen answering live.**
+
+## What 0.4.9.9 changed
+
+- **Welcome guide** (`oracle_suite_guide.py`): first-start window describing the six workspaces, with OPEN buttons, a "show at start" checkbox kept in `welcome.json`, F1 and a **?** button beside the tabs. Skipped under `--selftest` and `MARBLE_ORACLE_NO_WELCOME=1`.
+- **Widgets:** `oracle_widgets.SlimScrollbar` replaces every `ttk`/`tk` scrollbar; `oracle_widgets.style_dropdown` styles every OptionMenu. Use them for new UI.
+- **Install:** `launch_suite.pyw` and the Linux START script know apt, dnf, pacman and zypper (`LINUX_FAMILIES`); installs go through `pkexec` (or `pkcon`) and only for an allowlisted package set. The setup window was redesigned and gained ADD TO APP MENU.
+- **Removed:** the old `.bat`/`.vbs`/`.sh` launchers in `Runtime/` and `Marble_Oracle_App/`, the browser AUGURSPEX (`Augurspex/run.py`, `augurspex/server.py`, `__main__.py`, `index.html`, `app.js`, `style.css`, `icon.svg`) and `oracle_augurspex_bridge.py`, a second `VERSION.txt`, two unused requirements files, unused functions, output PNGs in `Tests/`. The single way in is the START script for each platform. `test_augurspex_native_tab.py` asserts the browser files stay gone.
+- **Tests write pictures outside the repository** (`MARBLE_ORACLE_TEST_OUTPUT`, else the temp folder), so the warning about `Tests/TAB_*.png` below no longer applies.
 
 ## What 0.4.9.8 changed
 
@@ -41,6 +50,8 @@ OGGCULTIST's Settings item was half covered by HOME at 1280x720 and unreachable 
 |---|---|
 | The suite launches and every workspace opens | GUI tests on Linux and Windows runners |
 | HOME keyboard focus, Enter, Escape, hover, ring after a resize | `test_home_keyboard_0497.py`, both runners |
+| Welcome guide fits and reflows at the four sizes; scrollbars and dropdowns behave | `test_welcome_and_widgets_0499.py`, both runners |
+| Distro detection and package names for apt, dnf, pacman, zypper | `test_install_0499.py` (detection and command building only) |
 | No overlap or cut-off text at the four supported sizes | Layout tests (EIDOLITH, AUGURSPEX, shell, polish) plus screenshots reviewed by eye |
 | Conversions never touch the original | `test_eidolith_file_safety_0493.py` with real FFmpeg, both runners |
 | No invented prices | Provider tests with controlled replies; live probe of the keyless sources on 15 Nov 2026 |
@@ -52,6 +63,8 @@ OGGCULTIST's Settings item was half covered by HOME at 1280x720 and unreachable 
 - Market sources from a home connection; every keyed source; all sources added in 0.4.9.4.
 - The hover outline and focus ring as seen with a real mouse on a real screen (tests drive them with synthetic events).
 - The embedded Oggcultist's own `Oggcultist/tests/` folder.
+- The new installer path on a real Fedora, Arch or openSUSE machine: the `pkexec` prompt and the package installs were never run for real (tests check the commands built, not their effect).
+- In the CRT housing, EIDOLITH's controls are clipped by the small glass area (as before 0.4.9.9).
 
 ## Next steps, in order of value
 
@@ -82,7 +95,7 @@ xvfb-run -a -s "-screen 0 1920x1080x24" <venv>/bin/python Application/Tools/run_
 xvfb-run -a -s "-screen 0 1920x1080x24" <venv>/bin/python Application/Tools/capture_screens.py <out>
 ```
 
-The whole suite runs in a few minutes and a full set of screenshots in under three, against about ten minutes per CI round. **A local test run rewrites `Tests/TAB_*.png`** (reference pictures the layout tests save); restore them with `git checkout -- 'Application/Tests/TAB_*.png'` before committing, or they ride along in the next commit. The machine's network did not reach any market-data host, so the live provider probe still has to run on CI or a home connection.
+The whole suite runs in a few minutes and a full set of screenshots in under three, against about ten minutes per CI round. Set `MARBLE_ORACLE_TEST_OUTPUT` to choose where the layout tests save their pictures, and `MARBLE_ORACLE_NO_WELCOME=1` when capturing screenshots. The machine's network did not reach any market-data host, so the live provider probe still has to run on CI or a home connection.
 
 ## Working without a local display
 
