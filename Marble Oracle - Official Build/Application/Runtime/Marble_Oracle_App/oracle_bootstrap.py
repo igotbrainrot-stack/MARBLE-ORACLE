@@ -35,53 +35,6 @@ def _has_v2_pillow():
         return False
 
 
-def _install_v2_pillow():
-    if _has_v2_pillow():
-        return True
-    cmd = [console_python(), '-m', 'pip', 'install',
-           '--disable-pip-version-check', 'Pillow>=10.0']
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=240,
-                                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-        if result.returncode:
-            _diagnostic_path().write_text(result.stdout+'\n'+result.stderr, encoding='utf-8')
-            return False
-        import importlib
-        importlib.invalidate_caches()
-        return _has_v2_pillow()
-    except (OSError, subprocess.TimeoutExpired):
-        return False
-
-
-def _has_barrel():
-    try:
-        import cv2
-        import numpy
-        from PIL import Image
-        return True
-    except ImportError:
-        return False
-
-
-def _install_barrel():
-    """The inner-glass bend needs NumPy, OpenCV and Pillow. The metal does not."""
-    if _has_barrel():
-        return True
-    cmd = [console_python(), '-m', 'pip', 'install', '--disable-pip-version-check',
-           'numpy>=1.26', 'opencv-python-headless>=4.9', 'Pillow>=10.0']
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300,
-                                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-        if result.returncode != 0:
-            _diagnostic_path().write_text(result.stdout + '\n' + result.stderr, encoding='utf-8')
-            return False
-        import importlib
-        importlib.invalidate_caches()
-        return _has_barrel()
-    except (OSError, subprocess.TimeoutExpired):
-        return False
-
-
 def _has_audio_capture():
     try:
         import numpy

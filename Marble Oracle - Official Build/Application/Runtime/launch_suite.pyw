@@ -67,13 +67,6 @@ print(json.dumps(results))
 """
 
 
-def private_bin() -> Path:
-    """Use Oggcultist's own tool directory, including its portable-mode setting."""
-    sys.path.insert(0, str(OGG_ROOT))
-    from oggcultist.paths import private_tools_dir
-    return private_tools_dir()
-
-
 def configure_media_path():
     sys.path.insert(0, str(OGG_ROOT))
     from oggcultist.paths import configure_tool_path

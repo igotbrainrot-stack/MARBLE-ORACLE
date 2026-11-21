@@ -25,7 +25,7 @@ from oracle_ogg_texture import frame as ogl_frame, label as ogl_label, install a
 from oggcultist_design_system import COLOR as C
 import oracle_shell as shell
 from oracle_version import SUITE_VERSION
-from oracle_widgets import flow, wrap_to_parent
+from oracle_widgets import SlimScrollbar, flow, style_dropdown, wrap_to_parent
 from oracle_assets import load_json, save_json, state_dir
 from oracle_eidolith_core import (PROFILES, PROFILE_ORDER, DEFAULT_PROFILE, LEGACY_PROFILE_NAMES, NAME_MODES, RESOLUTIONS, RESOLUTION_ORDER, output_name,
                                   detect_encoders, profile_support, seconds_label)
@@ -255,7 +255,7 @@ class EidolithPanel(tk.Frame):
         conv_shell = ogl_frame(page, bg=C['canvas'])
         conv_shell.grid(row=0, column=1, sticky='nsew', padx=(8, 0))
         conv_canvas = tk.Canvas(conv_shell, bg=C['canvas'], highlightthickness=0, bd=0)
-        conv_scroll = tk.Scrollbar(conv_shell, orient='vertical', command=conv_canvas.yview)
+        conv_scroll = SlimScrollbar(conv_shell, orient='vertical', command=conv_canvas.yview)
         conv_canvas.configure(yscrollcommand=conv_scroll.set)
         conv_canvas.pack(side='left', fill='both', expand=True)
         conv_scroll.pack(side='right', fill='y')
@@ -317,7 +317,7 @@ class EidolithPanel(tk.Frame):
                                     highlightthickness=1, highlightbackground=C['control_line'],
                                     selectbackground=C['hover'], selectforeground=C['text_bright'],
                                     font=shell.font('body'), height=2)   # grows with the window; asks little so MEDIA PROBE keeps room
-        ys = tk.Scrollbar(list_frame, orient='vertical', command=self.file_list.yview)
+        ys = SlimScrollbar(list_frame, orient='vertical', command=self.file_list.yview)
         self.file_list.config(yscrollcommand=ys.set)
         self.file_list.pack(side='left', fill='both', expand=True)
         ys.pack(side='right', fill='y')
@@ -349,7 +349,7 @@ class EidolithPanel(tk.Frame):
                                        highlightthickness=1, highlightbackground=C['control_line'],
                                        selectbackground=C['hover'], selectforeground=C['text_bright'],
                                        font=shell.font('body'))
-        ys = tk.Scrollbar(f, orient='vertical', command=self.convert_list.yview)
+        ys = SlimScrollbar(f, orient='vertical', command=self.convert_list.yview)
         self.convert_list.config(yscrollcommand=ys.set)
         self.convert_list.pack(side='left', fill='both', expand=True)
         ys.pack(side='right', fill='y')
@@ -375,7 +375,7 @@ class EidolithPanel(tk.Frame):
         body = ogl_frame(box, bg=C['raised'])
         body.pack(fill='both', expand=True, padx=10, pady=10)
         self.probe_text = self._text(body, height=2)
-        scroll = tk.Scrollbar(body, command=self.probe_text.yview)
+        scroll = SlimScrollbar(body, command=self.probe_text.yview)
         self.probe_text.configure(yscrollcommand=scroll.set)
         self.probe_text.pack(side='left', fill='both', expand=True)
         scroll.pack(side='right', fill='y')
@@ -391,8 +391,7 @@ class EidolithPanel(tk.Frame):
         self._label(profile_heading, 'PROFILE', 10, 'text_3', bold=True).pack(side='left')
         self._button(profile_heading, 'USE FAST PROFILE', self.select_fast_profile).pack(side='right')
         self.profile_menu = tk.OptionMenu(row1, self.profile, *PROFILE_ORDER, command=lambda *_: self._save_state())
-        self.profile_menu.config(relief='flat', bd=0, font=shell.font('body'), bg=C['control'], fg=C['text'], activebackground=C['hover'], activeforeground=C['text'])
-        self.profile_menu['menu'].config(font=shell.font('body'), bg=C['control'], fg=C['text'])
+        style_dropdown(self.profile_menu, font=shell.font('body'))
         self.profile_menu.pack(fill='x', pady=(4, 0))
         self.profile_desc = wrap_to_parent(self._label(row1, '', 10, 'text_3'))
         self.profile_desc.pack(anchor='w', pady=(6, 0))
@@ -401,14 +400,12 @@ class EidolithPanel(tk.Frame):
         row2.pack(fill='x', padx=pad, pady=(0, 8))
         self._label(row2, 'AUDIO', 10, 'text_3', bold=True).pack(anchor='w')
         audio_menu = tk.OptionMenu(row2, self.audio_mode, 'copy', 'opus', command=lambda *_: self._save_state())
-        audio_menu.config(relief='flat', bd=0, font=shell.font('body'), bg=C['control'], fg=C['text'], activebackground=C['hover'], activeforeground=C['text'])
-        audio_menu['menu'].config(font=shell.font('body'), bg=C['control'], fg=C['text'])
+        style_dropdown(audio_menu, font=shell.font('body'))
         audio_menu.pack(fill='x', pady=(4, 0))
         wrap_to_parent(self._label(row2, 'Copy audio by default; optional Opus transcode.', 10, 'text_3')).pack(anchor='w', pady=(4, 0))
         self._label(row2, 'RESOLUTION', 10, 'text_3', bold=True).pack(anchor='w', pady=(8, 0))
         res_menu = tk.OptionMenu(row2, self.resolution, *RESOLUTION_ORDER, command=lambda *_: self._save_state())
-        res_menu.config(relief='flat', bd=0, font=shell.font('body'), bg=C['control'], fg=C['text'], activebackground=C['hover'], activeforeground=C['text'])
-        res_menu['menu'].config(font=shell.font('body'), bg=C['control'], fg=C['text'])
+        style_dropdown(res_menu, font=shell.font('body'))
         res_menu.pack(fill='x', pady=(4, 0))
         wrap_to_parent(self._label(row2, 'Scale down only, keeping aspect ratio. From 1080p, 720p encodes about 2–3× faster (more for grainy video).',
                                    10, 'text_3', wraplength=430, justify='left')).pack(anchor='w', pady=(4, 0))
@@ -445,9 +442,7 @@ class EidolithPanel(tk.Frame):
         naming.pack(fill='x', padx=pad, pady=(0, 8))
         self._label(naming, 'ORGANISE OUTPUT FILENAME', 10, 'text_3', bold=True).pack(anchor='w')
         mode_menu = tk.OptionMenu(naming, self.rename_mode, *NAME_MODES, command=lambda *_: self._save_state())
-        mode_menu.config(relief='flat', bd=0, font=shell.font('body'), bg=C['control'], fg=C['text'],
-                         activebackground=C['hover'], activeforeground=C['text'])
-        mode_menu['menu'].config(font=shell.font('body'), bg=C['control'], fg=C['text'])
+        style_dropdown(mode_menu, font=shell.font('body'))
         mode_menu.pack(fill='x', pady=(3, 3))
         self._label(naming, 'TITLE OVERRIDE (OPTIONAL)', 10, 'text_3').pack(anchor='w')
         title_input = self._entry(naming, self.title_override)

@@ -1080,26 +1080,6 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
         return (g["l"], g["t"], g["r"], g["b"])
 
 
-    def _tab_size(self, n, room, width, gap):
-        """(w, h) every menu-row tab shares: the largest step of the tab size ladder no taller than `room` whose strip of n tabs
-        fits in `width`."""
-        best = None
-        for h, w in zip(self.TAB_H, self.TAB_W):
-            if best is None or (h <= room and n * w + (n - 1) * gap <= width):
-                best = (w, h)
-        if n > 1 and n * best[0] + (n - 1) * gap > width:                 # even the smallest step is too wide (five tabs, a narrow window): squeeze the width, keep the slant
-            best = (max(self.TAB_MIN_W, int((width - (n - 1) * gap) / n)), best[1])
-        return best
-
-    def _tab_shape(self, my1, ax, w, h, fill, outline):
-        """The shared tab outline: w x h, sitting on the menu row's bottom edge, every tab at the same slant."""
-        c = self.c
-        sl, top = h * TAB_SLOPE, my1 - h
-        poly = c.create_polygon(ax, my1, ax + sl, top, ax + w - sl, top, ax + w, my1, fill=fill, outline=outline, width=2,
-                                tags="chrome")
-        line = c.create_line(ax + 2, my1, ax + w - 2, my1, fill=fill, width=3, tags="chrome")
-        return poly, line, sl, top, (top + my1) / 2 + 1
-
     def _fit_px(self, text, px, room, bold=True, mono=False):
         """Largest font size (from px down) whose `text` fits in `room` px."""
         while px > TAB_MIN_PX and self.font(px, bold, mono).measure(text) > room:
@@ -1119,25 +1099,6 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
             return short, self._fit_px(probe, 12, room)
         return full, px
 
-
-    def _dk_tab(self, my1, ax, w, h):
-        """DICEKEY: a flat yellow field and a black die whose pips walk."""
-        c = self.c
-        on = self.dk is not None
-        poly, line, sl, top, mid = self._tab_shape(my1, ax, w, h, DK_TAB_ON if on else DK_TAB_OFF, TAB_EDGE)
-        d = max(8, min(int(h * 0.42), 18))
-        dx0 = ax + sl + 4
-        c.create_rectangle(dx0, mid - d / 2.0, dx0 + d, mid + d / 2.0, fill="#111111", outline=TAB_INK, width=2, tags="chrome")
-        r = max(1, d // 8)
-        pips = []
-        for fx, fy in ((0.3, 0.3), (0.7, 0.7)):                              # two pips: a die showing two
-            pips.append(c.create_oval(dx0 + d * fx - r, mid - d / 2.0 + d * fy - r, dx0 + d * fx + r, mid - d / 2.0 + d * fy + r,
-                          fill="#ffffff", outline="", tags="chrome"))
-        lx0 = dx0 + d + 6
-        label, px = self._tab_label("dk", "PASSPHRASE", ax + w - sl - 4 - lx0)
-        txt = self.T(lx0, mid, "CLOSE" if on else label, px, tab_ink(DK_TAB_ON if on else DK_TAB_OFF), "w", "chrome", True, False)
-        self.dk_tab = dict(poly=poly, line=line, txt=txt, label=label, motion="die", mark=(dx0, mid, d, r, pips))
-        self.hot.append((ax, top, ax + w, my1, "dk"))
 
     def _dk_state(self, on):
         self._update_primary_tab_state()
@@ -1881,10 +1842,6 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
         label.rune_safe_box = bounds
         label.lift()
 
-    def _rune_image(self, filename, maxsize):
-        """Cache a Tk image by canvas lifetime; never alter the supplied PNG on disk."""
-        return self.rune_deck.image_for(self.c, filename, maxsize)
-
     def draw_runes(self):
         """Original card panel positions retained; blank stone backs until reveal."""
         c = self.c
@@ -2180,8 +2137,6 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
         self._stack_seen = c.find_all()
 
     # ------------------------------------------------------------------ frame
-    def size_ok(self):
-        return self.c.winfo_width() == self.TW and self.c.winfo_height() == self.TH
 
     def tick(self):
         now = time.time()
@@ -2328,12 +2283,6 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
                 pass
             d[4:] = [False]
 
-
-
-
-
-    def sfx_play(self, path):
-        return Sfx.play(path)
 
 
 
@@ -2579,6 +2528,10 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
     def act(self, name, x=None):
         if name == "tab_home":
             return self.go_home()
+        if name == "guide":                     # the ? button beside the tabs (0.4.9.9)
+            from oracle_suite_guide import show_suite_guide
+            show_suite_guide(self)
+            return
         if name in ('aug_next', 'aug_previous'):
             self.augurspex_chart.advance(1 if name == 'aug_next' else -1)
             self.draw_augurspex_chart()
@@ -2921,7 +2874,24 @@ WINDOW_ICONS = ("marble_oracle_window.ico", "marble_oracle.ico")     # BMP frame
 
 
 def apply_window_icon(root):
-    """Put the eye on the window. The first file is the same picture as classic BMP frames, which Tk can read. The second is the full icon."""
+    """Put the eye on the window, its taskbar entry and every dialog.
+
+    Windows reads the .ico files. Linux desktops (GNOME, KDE, Cinnamon) ignore
+    those, so there the PNG is set with iconphoto as the default for every
+    window (0.4.9.9: before, Linux showed a generic icon).
+    """
+    applied = False
+    if os.name != "nt":
+        path = oracle_assets.asset("marble_oracle.png") or os.path.join(HERE, "marble_oracle.png")
+        try:
+            if path and os.path.isfile(path):
+                import tkinter as tk
+                image = tk.PhotoImage(master=root, file=path)
+                root.iconphoto(True, image)
+                root._marble_icon = image       # Tk forgets images nobody holds
+                applied = True
+        except Exception:
+            pass
     for name in WINDOW_ICONS:
         path = oracle_assets.asset(name)
         if not path:
@@ -2931,7 +2901,7 @@ def apply_window_icon(root):
             return True
         except Exception:
             continue
-    return False
+    return applied
 
 
 # --------------------------------------------------------------------------- apps
@@ -3023,18 +2993,6 @@ class WindowApp:
         # Win32 window. Clip the entire actual window to the metal outline.
         if os.name == 'nt' and self.borderless and self._has_photo():
             self._schedule_metal_shape()
-
-    def _warn_missing_pixel_warp(self):
-        if self.pixel_crt is not None:
-            return
-        try:
-            from tkinter import messagebox
-            messagebox.showwarning('Marble_Oracle',
-                'True CRT screen bending is NOT ACTIVE because Pillow is missing.\n\n'
-                'Run Marble_Oracle.bat (the normal Windows launcher) to install it, '
-                'then restart.\n\nThe flat optical fallback is currently displayed.')
-        except Exception:
-            pass
 
     def _schedule_metal_shape(self):
         if os.name != 'nt' or not self.borderless or not self._has_photo():
@@ -3359,6 +3317,11 @@ class WindowApp:
     def run(self):
         self.loop()
         self.root.after_idle(self._announce_suite_ready)
+        try:                                   # 0.4.9.9: the welcome window on first start
+            from oracle_suite_guide import maybe_show_welcome
+            maybe_show_welcome(self.scene)
+        except Exception:
+            pass
         self.root.mainloop()
 
     def quit(self, *, intentional=True):

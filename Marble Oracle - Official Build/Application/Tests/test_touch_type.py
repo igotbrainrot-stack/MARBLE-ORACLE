@@ -1,5 +1,10 @@
 """Typing engine, UI and Oracle tab integration regressions (Tk uses Xvfb)."""
 from pathlib import Path
+import os as _os
+import tempfile as _tempfile
+# Pictures saved by this test are diagnostics, never kept in the repository.
+SHOTS = Path(_os.environ.get('MARBLE_ORACLE_TEST_OUTPUT') or Path(_tempfile.gettempdir()) / 'marble-oracle-test-output')
+SHOTS.mkdir(parents=True, exist_ok=True)
 import os
 import sys
 import random
@@ -126,7 +131,7 @@ def gui_tests():
             from PIL import ImageGrab
             x,y=root.winfo_rootx(),root.winfo_rooty()
             ImageGrab.grab(bbox=(x,y,x+root.winfo_width(),y+root.winfo_height())).save(
-                str(HERE/'TOUCH_TYPE_PREVIEW.png'))
+                str(SHOTS/'TOUCH_TYPE_PREVIEW.png'))
         scene.act('tab_home')
         # run a tighter layout and ensure the TYPE tab exists and is clickable
         scene.resized(760,550)
@@ -143,7 +148,7 @@ def gui_tests():
             from PIL import ImageGrab
             x,y=root.winfo_rootx(),root.winfo_rooty()
             ImageGrab.grab(bbox=(x,y,x+root.winfo_width(),y+root.winfo_height())).save(
-                str(HERE/'TOUCH_TYPE_SMALL.png'))
+                str(SHOTS/'TOUCH_TYPE_SMALL.png'))
         print('TOUCH TYPE UI: overlay, 6 tabs, pause, restore, modes, resize PASS')
     finally:
         app.quit()

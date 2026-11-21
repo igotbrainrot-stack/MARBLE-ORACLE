@@ -15,7 +15,7 @@ from marble_uberata import FAMILY
 from oracle_ogg_texture import frame as ogl_frame, label as ogl_label, install as ogl_install
 from oggcultist_design_system import COLOR as C
 import oracle_shell as shell
-from oracle_widgets import tooltip
+from oracle_widgets import style_dropdown, tooltip
 from oracle_assets import load_json, save_json
 
 LESSONS = (
@@ -278,12 +278,7 @@ class TouchTypePanel(tk.Frame):
         self.shell.group('CURRENT LESSON')
         self.lesson_value = tk.StringVar(value=LESSONS[0][0])
         self.lesson_menu = tk.OptionMenu(self.rail, self.lesson_value, *(l[0] for l in LESSONS), command=self.change_lesson)
-        self.lesson_menu.configure(bg=C['control'], fg=C['text'], activebackground=C['hover'],
-                                   activeforeground=C['text'], highlightthickness=0, bd=0,
-                                   font=shell.font('body'), anchor='w', relief='flat')
-        self.lesson_menu['menu'].configure(bg=C['raised'], fg=C['text'], font=shell.font('body'),
-                                           activebackground=C['accent_soft'],
-                                           activeforeground=C['text'])
+        style_dropdown(self.lesson_menu, font=shell.font('body'))
         self.lesson_menu.pack(fill='x', padx=shell.RAIL_PADX)
         shell.label(self.rail, 'HOME ROW · QWERTY', 'small', 'text_3').pack(anchor='w', padx=shell.RAIL_PADX, pady=(5, 0))
 

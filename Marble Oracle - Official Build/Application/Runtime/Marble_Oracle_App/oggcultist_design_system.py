@@ -108,11 +108,6 @@ def points(role: str, body: int = BODY_POINTS) -> int:
     return max(MIN_POINTS, body + TYPE[role][1])
 
 
-def sidebar_font_points(base_size: int) -> int:
-    """Sidebar item size: one step above body, capped so labels never crowd the 208 px rail."""
-    return max(MIN_POINTS, min(15, base_size + TYPE['nav'][1]))
-
-
 def contrast(foreground: str, background: str) -> float:
     """WCAG 2 contrast ratio between two #RRGGBB colours."""
     def luminance(colour: str) -> float:

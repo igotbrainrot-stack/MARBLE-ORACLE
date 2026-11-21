@@ -1,4 +1,9 @@
 from pathlib import Path
+import os as _os
+import tempfile as _tempfile
+# Pictures saved by this test are diagnostics, never kept in the repository.
+SHOTS = Path(_os.environ.get('MARBLE_ORACLE_TEST_OUTPUT') or Path(_tempfile.gettempdir()) / 'marble-oracle-test-output')
+SHOTS.mkdir(parents=True, exist_ok=True)
 import sys, os
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent/'Runtime'/'Marble_Oracle_App'))
 from marble_oracle import WindowApp
@@ -20,11 +25,11 @@ for bezel in (False, True):
     root.update()
     x,y=root.winfo_rootx(),root.winfo_rooty()
     ImageGrab.grab(bbox=(x,y,x+root.winfo_width(),y+root.winfo_height())).save(
-        str(Path(__file__).parent/f'TAB_LAYOUT_{name}.png'))
+        str(SHOTS/f'TAB_LAYOUT_{name}.png'))
     sc.act('tab_oggcultist'); root.update()
     assert sc.ogg and sc.ogg.frame.process is None
     ImageGrab.grab(bbox=(x,y,x+root.winfo_width(),y+root.winfo_height())).save(
-        str(Path(__file__).parent/f'TAB_OGGCULTIST_{name}.png'))
+        str(SHOTS/f'TAB_OGGCULTIST_{name}.png'))
     sc.act('tab_home'); sc.act('tab_passphrase'); root.update()
     assert sc.dk
     sc.dk.frame.home_button.invoke(); root.update()

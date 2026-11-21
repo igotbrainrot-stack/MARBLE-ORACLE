@@ -42,43 +42,6 @@ def source_at(x: float, y: float, width: int, height: int,
             max(0., min(height - 1., sy)))
 
 
-def remap_arrays(np, width: int, height: int,
-                 strength: float = DEFAULT_STRENGTH):
-    """Vectorized exact equivalent of source_at, cached by PixelCRT per size."""
-    yy, xx = np.mgrid[0:height, 0:width].astype(np.float32)
-    cx, cy = width * .5, height * .5
-    nx, ny = (xx - cx) / max(1., cx), (yy - cy) / max(1., cy)
-    radial = np.minimum(1.0, (nx * nx + ny * ny) / 1.70)
-    bend = strength * (.15 + .45 * radial)
-    sx = cx + (xx - cx) * (1.0 - bend * (.72 * ny * ny + .28 * radial))
-    sy = cy + (yy - cy) * (1.0 - bend * (.72 * nx * nx + .28 * radial))
-    return (np.clip(sx, 0, width - 1).astype(np.float32),
-            np.clip(sy, 0, height - 1).astype(np.float32))
-
-
-def barrel_mesh(width: int, height: int, strength=DEFAULT_STRENGTH, steps=28):
-    """Build a Pillow MESH transform with smooth radial mapping and straight tiles.
-
-    Each output rectangle maps to a source quad. All six coordinates use one
-    formula and shared vertices, avoiding visible seams between tiles.
-    """
-    cols = max(4, min(32, round(width / max(18, width / steps))))
-    rows = max(4, min(24, round(height / max(18, height / (steps * .65)))))
-    xs = [round(i*width/cols) for i in range(cols+1)]
-    ys = [round(i*height/rows) for i in range(rows+1)]
-    mesh = []
-    for j in range(rows):
-        for i in range(cols):
-            x0, x1, y0, y1 = xs[i], xs[i+1], ys[j], ys[j+1]
-            # Pillow QUAD point order: top-left, bottom-left, bottom-right, top-right.
-            quad = (*source_at(x0,y0,width,height,strength),
-                    *source_at(x0,y1,width,height,strength),
-                    *source_at(x1,y1,width,height,strength),
-                    *source_at(x1,y0,width,height,strength))
-            mesh.append(((x0,y0,x1,y1), quad))
-    return mesh
-
-
 class PixelCRT:
     """Bends the live dashboard and leaves the metal bezel alone.
 

@@ -718,7 +718,7 @@ class ChromeMixin(PhotoBezelMixin):
         h = min(max(22, round(28 * self.k)), max(20, y1 - y0 - 4))
         font = self.font(12, True, False)
         widths = [font.measure(label) + 2 * pad for label, _ in tabs]
-        available = max(165, x1 - x - max(85, round(116 * self.k)))
+        available = max(165, x1 - x - max(85, round(116 * self.k)) - (h + gap))   # room for the ? guide button
         scale = min(1.0, max(0.5, (available - (len(tabs)-1) * gap) / sum(widths)))
         widths = [max(52, int(w * scale)) for w in widths]
         y = int((y0 + y1 - h) / 2)
@@ -737,6 +737,12 @@ class ChromeMixin(PhotoBezelMixin):
             self.hot.append((x0, y0, x2, y1, action))
             self.nav_tabs[action] = (panel, tid)
             x = x2 + gap
+        # 0.4.9.9: a visible way to the welcome guide (F1 is not discoverable).
+        gx0 = int(x) + gap
+        c.create_rectangle(gx0, y, gx0 + h, y + h, fill=OGG_EMBER['canvas'], outline=OGG_EMBER['line_strong'],
+                           width=1, tags="chrome")
+        self.T(gx0 + h / 2, y + h / 2, "?", min(12, max(8, round(12 * scale))), "dim", "center", "chrome", True, False)
+        self.hot.append((gx0, y0, gx0 + h, y1, "guide"))
         self._update_primary_tab_state()
 
     def _update_primary_tab_state(self):
@@ -754,77 +760,6 @@ class ChromeMixin(PhotoBezelMixin):
             except Exception:
                 pass
 
-    def _tab_strip(self, menu_end, hint_ink):
-        """The menu row's right side: the passphrase tab strip from menu_end, the key hints at the far right.
-        Every tab is the same size: the largest step of the tab size ladder that fits the row, every tab at the same slant."""
-        c = self.c
-        mx0, my0, mx1, my1 = self.rect["menu"]
-        lx = mx1 - int(12 * self.sx)
-        h1 = self.T(lx, my0 + (my1 - my0) * 0.30, "SPACE next  ENTER speak  N word  T deal", 11, hint_ink, "e", "chrome", False, False)
-        hints = (["K passphrase"] if self.dk_mod else []) + ["F size", "ESC quit"]
-        h2 = self.T(lx, my0 + (my1 - my0) * 0.72, "  ".join(hints), 11, hint_ink, "e", "chrome", False, False)
-        self.deck_tab = self.dk_tab = self.ld_tab = None
-        strip = ["dk"] if self.dk_mod else []
-        gap = max(6, int(TAB_GAP * self.sx))
-        tx = menu_end + gap
-        tw, th = self._tab_size(len(strip), my1 - my0 - int(5 * self.sy), lx - tx, gap)
-        if len(strip) > 1 and tx + len(strip) * tw + (len(strip) - 1) * gap > lx:          # still too wide even squeezed: close the gaps up (never below 3 px)
-            gap = max(3, (lx - tx - len(strip) * tw) // (len(strip) - 1))
-        if tx + len(strip) * (tw + gap) > min(c.bbox(h1)[0], c.bbox(h2)[0]):     # the key hints give way to the strip
-            c.delete(h1)
-            c.delete(h2)
-        self.tab_size = (tw, th)
-        draw = {"dk": self._dk_tab}
-        for name in strip:
-            draw[name](my1, tx, tw, th)
-            tx += tw + gap
-
-    def _tab_strip_clean(self, x, hints_too=True):
-        """1046: the clean look's tabs are one segmented control.  1047: PASSPHRASE sits on the home bench, so there the bar is
-        only the passphrase control.  An open tool is the filled segment and the word stays, so a second click returns to the dashboard.  The 90s tab art stays in --retro."""
-        from oracle_skin import bar, hexmix, px
-        c, k = self.c, self.k
-        mx0, my0, mx1, my1 = self.rect["menu"]
-        mid = (my0 + my1) / 2.0
-        lx = mx1 - int(12 * self.sx)
-        home = False  # Passphrase is an actual tab now
-        hints = ["SPACE next", "ENTER speak", "N word", "T deal"] + \
-                (["K roll" if home else "K passphrase"] if self.dk_mod else []) + ["ESC quit"]
-        self.deck_tab = self.dk_tab = self.ld_tab = None
-        f = self.font(12, True, False)
-        pad = px(12, k)
-        items = [] if home or self.case_on() else ([("dk", "PASSPHRASE", "dk")] if self.dk_mod else [])      # PASS in the case
-        words, widths = [], []
-        for key, label, act in items:
-            word = label
-            w_ = f.measure(word) + 2 * pad
-            words.append(word)
-            widths.append(w_)
-        ch = min(px(28, k), max(18, int(my1 - my0) - px(8, k)))
-        cy0 = int((my0 + my1) / 2.0 - ch / 2.0)
-        top = getattr(self, "menu_bg", self.col("bg"))
-        grp = hexmix(top, "#000000", 0.18)
-        if items:
-            self.put_three(bar(k, ch, grp, grp, 8, hexmix(grp, "#ffffff", 0.08), None, 0.0, 0.0, 6, 0.0, top), x, cy0, x + sum(widths), "chrome")
-        for i, ((key, label, act), word, w_) in enumerate(zip(items, words, widths)):
-            if i:
-                c.create_line(x, cy0 + px(6, k), x, cy0 + ch - px(6, k), fill=hexmix(grp, "#ffffff", 0.12), tags="chrome")
-            on = key == "dk" and self.dk is not None
-            mark = c.create_rectangle(x + px(2, k), cy0 + px(2, k), x + w_ - px(2, k), cy0 + ch - px(2, k),
-                                      fill=self.col("cyan"), outline="", state="normal" if on else "hidden", tags="chrome")
-            txt = self.T(x + w_ / 2.0, mid, word, 12, "bg" if on else "txt", "center", "chrome", True, False)
-            rec = dict(poly=None, line=mark, txt=txt, label=word, motion=None, mark=None)
-            if key == "dk":
-                self.dk_tab = rec
-            self.hot.append((x, my0, x + w_, my1, act))
-            x += w_
-        tw = self.font(11, False, False)
-        line1, line2 = "  ".join(hints[:5]), "  ".join(hints[5:])
-        if hints_too and not self.case_on() and max(tw.measure(line1), tw.measure(line2)) + px(16, k) < lx - mx1 * 0.6:
-            self.T(lx, my0 + (my1 - my0) * 0.32, line1, 11, "dim", "e", "chrome", False, False)
-            self.T(lx, my0 + (my1 - my0) * 0.70, line2, 11, "dim", "e", "chrome", False, False)
-
-
     def clean_tab_state(self, t, on, label):
         """1046: the open segment is filled; the word stays the tool's name, and a second click returns to the dashboard."""
         try:
@@ -832,26 +767,6 @@ class ChromeMixin(PhotoBezelMixin):
         except Exception:
             self.c.itemconfigure(t["line"], fill=self.col("cyan") if on else getattr(self, "menu_bg", self.col("bg")))
         self.c.itemconfigure(t["txt"], text=label, fill=self.col("bg") if on else self.col("txt"))
-
-    def _nav_group(self, x, my0, my1, top, look_too):
-        """The menu words in one rounded segmented group on `top`, from x; returns where it ends.  1036: Look (A) in the clean look."""
-        from oracle_skin import bar, hexmix, px
-        c, k = self.c, self.k
-        ch = px(28, k)
-        cy0 = (my0 + my1) // 2 - ch // 2
-        pad, f = px(12, k), self.font(14, False, False)
-        items = (("Wire", "next"), ("Tongue", "word"), ("Cut", "deal"), ("Grade", "view")) + ((("Look", "look"),) if look_too else ())
-        gw = sum(f.measure(l) + 2 * pad for l, _ in items)
-        grp = hexmix(top, self.col("bg"), 0.55)
-        self.put_three(bar(k, ch, grp, grp, 8, hexmix(grp, "#ffffff", 0.07), None, 0.0, 0.0, 6, 0.0, top), x, cy0, x + gw, "chrome")
-        for i, (label, act) in enumerate(items):
-            w_ = f.measure(label) + 2 * pad
-            if i:
-                c.create_line(x, cy0 + px(7, k), x, cy0 + ch - px(7, k), fill=hexmix(grp, "#ffffff", 0.10), tags="chrome")
-            self.T(x + pad, (my0 + my1) / 2, label, 14, "txt", "w", "chrome", False, False)
-            self.hot.append((x, my0, x + w_, my1, act))
-            x += w_
-        return x
 
     def _win_glyphs(self, x1, y0, y1, ink):
         """Close, maximise and minimise as bare glyphs (no boxes), right to left from x1, full height; their hot spots quit / full / min."""

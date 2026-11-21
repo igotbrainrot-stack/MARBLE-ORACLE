@@ -25,10 +25,6 @@ MARKET_LABELS = {'stocks': 'STOCKS', 'fx': 'FX', 'crypto': 'CRYPTO'}
 HOME_LABEL = 'HOME'
 
 
-def market_color(category: str) -> str:
-    return MARKET_COLORS.get(category, COLOR['text'])
-
-
 def flow_layout(sizes, width, gap_x=8, gap_y=4):
     """Positions for items laid left to right that wrap to a new row at `width`.
 

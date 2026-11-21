@@ -230,14 +230,6 @@ def photo_fit_size(available_width, available_height):
     return g['outer_w'], g['outer_h']
 
 
-def _blend_hex(dim: str, bright: str, q: float) -> str:
-    q = max(0.0, min(1.0, float(q)))
-    da = [int(dim[i:i + 2], 16) for i in (1, 3, 5)]
-    ba = [int(bright[i:i + 2], 16) for i in (1, 3, 5)]
-    vals = [round(d + (b - d) * q) for d, b in zip(da, ba)]
-    return '#%02x%02x%02x' % tuple(vals)
-
-
 def _soft_glow_png(rx, ry, color, opacity):
     """Generate an alpha-feathered illumination sprite, never a drawn square.
 
@@ -772,44 +764,6 @@ class PhotoBezelMixin:
         # Quench: the side indicator lamps are bare plate metal. Nothing is lit there.
 
         self.photo_animate = a
-
-    def _ring_points(self):
-        # Just outside the metal opening, so the spark rides the lip.
-        x0, y0, x1, y1 = APERTURE
-        box = (x0 - 12, y0 - 10, x1 + 12, y1 + 8)
-        rad = 88
-        x0, y0, x1, y1 = box
-        w = x1 - x0 - 2 * rad
-        h = y1 - y0 - 2 * rad
-        perim = 2 * (w + h) + 2 * math.pi * rad
-        return [self.groove_point(box, rad, perim * i / 36.0) for i in range(36)]
-
-    def _lip_points(self):
-        return [(280 + i * (880 / 19.0), 888) for i in range(20)]
-
-    def _chase_chain(self, g, points, color, purpose, rx, ry, peak=80):
-        pics = self._glow_sprites(purpose, color, rx, ry, peak=peak)
-        items = []
-        for x, y in points:
-            cx, cy = self._src(g, x, y)
-            items.append(self.c.create_image(cx, cy, image=pics[0], anchor='center', tags='bezel'))
-        return dict(items=items, images=pics, last=[-1] * len(items))
-
-    def _chase(self, chain, elapsed, speed, closed=True):
-        if not chain or not chain['items']:
-            return
-        c = self.c
-        n = len(chain['items'])
-        pos = (elapsed * speed) % n
-        for i, item in enumerate(chain['items']):
-            d = abs(i - pos)
-            if closed:
-                d = min(d, n - d)
-            q = max(0.0, 1.0 - d / 3.2)
-            level = max(0, min(6, round(q * 6)))
-            if level != chain['last'][i]:
-                c.itemconfigure(item, image=chain['images'][level])
-                chain['last'][i] = level
 
     def _photo_tick(self, now):
         if v2_active():
