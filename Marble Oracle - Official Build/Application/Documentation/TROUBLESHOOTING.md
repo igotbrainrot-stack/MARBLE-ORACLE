@@ -6,7 +6,7 @@
 |---|---|
 | Windows: nothing happens, or "Windows Script Host is disabled" | VBScript is blocked. Use `START MARBLE ORACLE - WINDOWS (if the VBS launcher is blocked).bat`. |
 | Windows: "Python was not found" | Install Python 3 from python.org (tick "tcl/tk and IDLE") and start again. |
-| Linux: a message that Tk is missing | `sudo apt install python3-tk`, then start again. |
+| Linux: a message that Tk is missing | The Linux launcher offers to install it. To do it yourself: `sudo apt install python3-tk` (Mint, Ubuntu, Debian), `sudo dnf install python3-tkinter` (Fedora), `sudo pacman -S tk` (Arch), `sudo zypper install python3-tk` (openSUSE); then start again. |
 | Linux: the launcher opens in a text editor | `chmod +x "START MARBLE ORACLE - LINUX.sh"`, or install the menu entry with `bash Application/Runtime/install_linux_desktop.sh`. |
 | The requirements window reports a failed install | It shows the path of its log. Python libraries go into a private environment under `MarbleOracleSuite` in your user-data folder; deleting only that `venv` folder makes the next start rebuild it. |
 
@@ -23,7 +23,7 @@ To see errors directly: `python3 Application/Runtime/Marble_Oracle_App/marble_or
 
 | Symptom | Cause and fix |
 |---|---|
-| "FFmpeg not found" | Install FFmpeg (Linux: `sudo apt install ffmpeg`; Windows: any build with `ffmpeg.exe`, `ffprobe.exe` and `ffplay.exe` on `PATH`) and restart. |
+| "FFmpeg not found" | Tick the FFmpeg option in the setup window and press INSTALL, or install it yourself (Linux: `sudo apt install ffmpeg`, `sudo dnf install ffmpeg-free` on Fedora; Windows: any build with `ffmpeg.exe`, `ffprobe.exe` and `ffplay.exe` on `PATH`) and restart. |
 | A job says FAILED | Select it and press **OPEN LOG** for FFmpeg's own output. The queue has already moved on to the next job; **RETRY SELECTED** runs it again. |
 | A job is refused before it starts | The reason is on the job line: HDR source, a track that cannot go in the chosen container, or under 200 MB free in the output folder. The original is untouched. |
 | Conversion is slow | Use **Fast AV1** or **Turbo AV1**, lower **RESOLUTION**, or **USE FAST PROFILE** to try a hardware encoder. |

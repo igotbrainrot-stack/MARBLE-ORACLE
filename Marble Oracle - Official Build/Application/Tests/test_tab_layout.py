@@ -3,6 +3,11 @@
 Run with a graphical display, e.g. xvfb-run -a python3 test_tab_layout.py.
 """
 from pathlib import Path
+import os as _os
+import tempfile as _tempfile
+# Pictures saved by this test are diagnostics, never kept in the repository.
+SHOTS = Path(_os.environ.get('MARBLE_ORACLE_TEST_OUTPUT') or Path(_tempfile.gettempdir()) / 'marble-oracle-test-output')
+SHOTS.mkdir(parents=True, exist_ok=True)
 import os
 import sys
 import tkinter as tk
@@ -81,7 +86,7 @@ def go(flags):
             root.update()
             x,y=root.winfo_rootx(),root.winfo_rooty()
             ImageGrab.grab(bbox=(x,y,x+root.winfo_width(),y+root.winfo_height())).save(
-                str(Path(__file__).parent/'TAB_LAYOUT_PREVIEW.png'))
+                str(SHOTS/'TAB_LAYOUT_PREVIEW.png'))
         except Exception as exc:
             print('SCREENSHOT UNAVAILABLE:', exc)
     app.quit()

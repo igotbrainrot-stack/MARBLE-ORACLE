@@ -5,12 +5,16 @@ Only the builder needs Pillow; the running Oracle uses stock Tk PhotoImage.
 from pathlib import Path
 from zipfile import ZipFile
 import json
+import sys
 import tkinter as tk
-from oracle_runes import RuneDeck
+
+APP = Path(__file__).resolve().parent.parent / 'Runtime' / 'Marble_Oracle_App'
+sys.path.insert(0, str(APP))
+from oracle_runes import RuneDeck  # noqa: E402
 
 d = RuneDeck()
 assert d._consistent_assets and d.flip_frames == 12
-path = Path(__file__).parent / 'data' / 'rune_consistent_flips.zip'
+path = APP / 'data' / 'rune_consistent_flips.zip'
 with ZipFile(path) as archive:
     assert archive.testzip() is None
     names = set(archive.namelist())

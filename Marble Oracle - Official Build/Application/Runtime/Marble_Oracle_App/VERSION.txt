@@ -1,1 +1,0 @@
-V2.9 — CPU meter +7 px alignment and restored MIN / FULL metal window buttons beside POWER. CRT V2 default; legacy mode retained.

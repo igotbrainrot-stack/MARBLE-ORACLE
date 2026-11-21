@@ -266,14 +266,3 @@ def audio_path(name, here=None):
     except Exception:
         return None
 
-
-def warm_audio(names, here=None):
-    """Inflate packed sounds on a background thread, so the first play does not wait for it."""
-    import threading
-
-    def run():
-        for n in names:
-            audio_path(n, here)
-    t = threading.Thread(target=run, daemon=True)
-    t.start()
-    return t

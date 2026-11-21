@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Official Linux Mint entry point: verify Tk first, then enter Python requirements setup.
+# Linux entry point (Debian/Ubuntu/Mint, Fedora, Arch, openSUSE): make sure Python 3
+# with Tk exists, then open the requirements check, which starts the suite.
 # No terminal is opened by this launcher when launched graphically.
 set -euo pipefail
 BASE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -15,34 +16,75 @@ if [[ ! -f "$BOOT" ]]; then
   exit 2
 fi
 
-if ! command -v python3 >/dev/null 2>&1 || ! python3 -c 'import tkinter; root=tkinter.Tk();root.withdraw();root.destroy()' >/dev/null 2>&1; then
-  PROMPT="Marble Oracle requires Python 3 and Tkinter to show its graphical setup.\n\nInstall the Linux Mint packages python3, python3-tk and python3-venv?\n\nAdministrator approval will be requested."
-  APPROVED=1
-  if command -v zenity >/dev/null 2>&1; then
-    zenity --question --title="Marble Oracle — Install initial requirements" --width=500 --text="$PROMPT" && APPROVED=0 || true
-  elif command -v kdialog >/dev/null 2>&1; then
-    kdialog --yesno "$PROMPT" --title "Marble Oracle — Install initial requirements" && APPROVED=0 || true
+# Python 3 with Tk is the one thing setup cannot show a window without.
+# Package names differ between Linux families; only these fixed names are used.
+TK_PACKAGES=""
+MANAGER=""
+DISTRO="your Linux distribution"
+OS_RELEASE="${MARBLE_ORACLE_OS_RELEASE:-/etc/os-release}"   # overridable for tests
+if [[ -r "$OS_RELEASE" ]]; then
+  IDS="$(. "$OS_RELEASE"; echo "${ID:-} ${ID_LIKE:-}" | tr '[:upper:]' '[:lower:]')"
+  case " $IDS " in
+    *" debian "*|*" ubuntu "*|*" linuxmint "*|*" pop "*|*" elementary "*|*" zorin "*)
+      DISTRO="Debian / Ubuntu / Linux Mint"; MANAGER="apt-get install -y"; TK_PACKAGES="python3 python3-tk python3-venv" ;;
+    *" fedora "*|*" rhel "*|*" centos "*|*" nobara "*|*" ultramarine "*)
+      DISTRO="Fedora"; MANAGER="dnf install -y"; TK_PACKAGES="python3 python3-tkinter" ;;
+    *" arch "*|*" manjaro "*|*" endeavouros "*|*" cachyos "*)
+      DISTRO="Arch Linux"; MANAGER="pacman -S --needed --noconfirm"; TK_PACKAGES="python tk" ;;
+    *opensuse*|*" suse "*|*" sles "*)
+      DISTRO="openSUSE"; MANAGER="zypper --non-interactive install"; TK_PACKAGES="python3 python3-tk" ;;
+  esac
+fi
+
+if [[ -n "${MARBLE_ORACLE_PRINT_DISTRO:-}" ]]; then   # for tests: report and stop
+  echo "$DISTRO|$MANAGER|$TK_PACKAGES"
+  exit 0
+fi
+
+say() {   # say error|question "text"  (returns 0 for yes)
+  local kind="$1" text="$2"
+  if command -v kdialog >/dev/null 2>&1; then
+    if [[ "$kind" == question ]]; then kdialog --title "Marble Oracle setup" --yesno "$text"; else kdialog --title "Marble Oracle" --error "$text"; fi
+  elif command -v zenity >/dev/null 2>&1; then
+    if [[ "$kind" == question ]]; then zenity --question --title="Marble Oracle setup" --width=480 --text="$text"; else zenity --error --title="Marble Oracle" --width=480 --text="$text"; fi
   elif command -v xmessage >/dev/null 2>&1; then
-    xmessage -center -buttons 'Install:0,Cancel:1' "$PROMPT" && APPROVED=0 || true
+    if [[ "$kind" == question ]]; then xmessage -center -buttons 'Install:0,Cancel:1' "$text"; else xmessage -center "$text"; fi
+  else
+    echo "$text" >&2
+    [[ "$kind" != question ]] || return 1
   fi
-  if [[ "$APPROVED" -ne 0 ]]; then
-    echo 'Python/Tkinter setup cancelled or no graphical dialog available.' >&2
-    exit 3
-  fi
-  if command -v pkexec >/dev/null 2>&1 && command -v apt-get >/dev/null 2>&1; then
-    pkexec apt-get install -y python3 python3-tk python3-venv || true
-  elif command -v pkcon >/dev/null 2>&1; then
-    pkcon --plain -y install python3 python3-tk python3-venv || true
-  fi
-  if ! command -v python3 >/dev/null 2>&1 || ! python3 -c 'import tkinter; root=tkinter.Tk();root.withdraw();root.destroy()' >/dev/null 2>&1; then
-    MSG="Python 3 / Tkinter could not be installed. Use Linux Mint Software Manager, or run: sudo apt install python3 python3-tk python3-venv"
-    if command -v zenity >/dev/null 2>&1; then
-      zenity --error --title="Marble Oracle" --text="$MSG" || true
-    elif command -v kdialog >/dev/null 2>&1; then
-      kdialog --error "$MSG" || true
+}
+
+tk_ok() { command -v python3 >/dev/null 2>&1 && python3 -c 'import tkinter; root=tkinter.Tk();root.withdraw();root.destroy()' >/dev/null 2>&1; }
+
+if ! tk_ok; then
+  if [[ -n "$MANAGER" ]]; then
+    HINT="sudo ${MANAGER% -y*} ${TK_PACKAGES}"
+    [[ "$MANAGER" == pacman* ]] && HINT="sudo pacman -S ${TK_PACKAGES}"
+    [[ "$MANAGER" == zypper* ]] && HINT="sudo zypper install ${TK_PACKAGES}"
+    if say question "Marble Oracle needs Python 3 with Tk to open its setup window.
+
+Install ${TK_PACKAGES} on ${DISTRO} now? Your desktop will ask for your password."; then
+      if command -v pkexec >/dev/null 2>&1; then
+        # shellcheck disable=SC2086  # fixed, known package names only
+        pkexec ${MANAGER} ${TK_PACKAGES} || true
+      elif command -v pkcon >/dev/null 2>&1; then
+        # shellcheck disable=SC2086
+        pkcon --plain -y install ${TK_PACKAGES} || true
+      fi
     else
-      echo "$MSG" >&2
+      exit 3
     fi
+  else
+    HINT="install Python 3 and its Tk package with your software manager"
+  fi
+  if ! tk_ok; then
+    say error "Python 3 with Tk is still missing, so Marble Oracle cannot start.
+
+Install it with your software manager, or in a terminal:
+${HINT}
+
+Then start Marble Oracle again."
     exit 4
   fi
 fi

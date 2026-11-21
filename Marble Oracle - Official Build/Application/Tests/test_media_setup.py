@@ -66,7 +66,7 @@ def test_no_graphical_installer_does_not_elevate():
         boot.install_ffmpeg(q,platform='linux',check_tools=lambda:status(ffmpeg=False),
             command_picker=lambda:(None,None),
             runner=lambda *args,**kwargs: (_ for _ in ()).throw(AssertionError('unexpected process')))
-    except RuntimeError as exc: assert 'Software Manager' in str(exc)
+    except RuntimeError as exc: assert 'software manager' in str(exc).lower()   # 0.4.9.9: any distribution's
     else: raise AssertionError('Missing graphical installer reported as success')
 
 def test_all_names_in_status():

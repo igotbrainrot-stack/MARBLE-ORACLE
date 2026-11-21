@@ -1,9 +1,9 @@
 {
-  "release": "Marble Oracle 0.4.9.8",
-  "version": "0.4.9.8",
+  "release": "Marble Oracle 0.4.9.9",
+  "version": "0.4.9.9",
   "title": "Design prototype: contrast, focus, Escape, EIDOLITH Convert, AUGURSPEX grid",
   "release_date": "2026-11-16",
-  "generated_utc": "2026-11-21T14:24:43+00:00",
+  "generated_utc": "2026-11-21T15:23:56+00:00",
   "platform_targets": [
     "Windows 11",
     "Linux Mint"
@@ -23,11 +23,11 @@
     "PASSPHRASE",
     "TOUCH TYPE"
   ],
-  "file_count": 482,
-  "inventory_file_count": 480,
-  "python_source_count": 232,
-  "test_script_count": 106,
-  "total_bytes": 115729055,
+  "file_count": 457,
+  "inventory_file_count": 455,
+  "python_source_count": 229,
+  "test_script_count": 108,
+  "total_bytes": 110245775,
   "previous_release": {
     "version": "0.4.9.4",
     "branch": "claude/marble-oracle-0494-data-sources"

@@ -98,7 +98,7 @@ class AtlasTests(unittest.TestCase):
                 guide=app.scene._guide_window
                 app.root.update()
                 self.assertTrue(guide.winfo_exists())
-                self.assertIn('FIELD GUIDE',guide.title())
+                self.assertIn('Marble Oracle',guide.title())   # 0.4.9.9: the welcome guide
                 guide.destroy()
             finally:app.quit()
 

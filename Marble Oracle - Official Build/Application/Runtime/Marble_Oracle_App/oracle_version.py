@@ -5,7 +5,7 @@ Oggcultist); this is the version of the Marble Oracle release as a whole, shown
 in the window title, printed by --version and stamped into the build manifest.
 """
 SUITE_NAME = 'Marble Oracle'
-SUITE_VERSION = '0.4.9.8'
+SUITE_VERSION = '0.4.9.9'
 RELEASE_DATE = '2026-11-16'
 RELEASE_TITLE = 'Design prototype: contrast, focus, Escape, EIDOLITH Convert, AUGURSPEX grid'
 

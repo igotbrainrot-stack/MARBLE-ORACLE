@@ -149,11 +149,6 @@ class PassphrasePanel(tk.Frame):
         if self.on_home is not None:
             self.on_home()
 
-    @staticmethod
-    def _shortcut(fn):
-        fn()
-        return "break"
-
     def _refresh(self):
         parts = self.engine.split(self.phrase)
         if parts is None:

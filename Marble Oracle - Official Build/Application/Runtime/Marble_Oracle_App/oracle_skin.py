@@ -394,17 +394,6 @@ class SkinMixin:
         c.create_line(x0 + ins, y0 + hh, x1 - ins, y0 + hh, fill=self.col("edge"), tags="content")
         return tid, rid
 
-    def skin_tile(self, box, tags, radius=10, lift=0.035):
-        """A raised tile inside a panel (a ticker row): a little lighter than the panel, a faint hairline, no shadow."""
-        fill = hexmix(self.skin_fill(), "#ffffff", lift)
-        art = card(self.k, fill, hexmix(fill, "#ffffff", 0.05), 0.0, radius, 2, 0, None, 0.0, self.skin_fill())
-        ids = self.put_nine(art["body"], box, tags, fill=art["fill"], out=art["S"])
-        x0, y0, x1, y1 = map(int, box)
-        if x1-x0 > 4 and y1-y0 > 4:
-            self.put(warm_grain(OGG_EMBER['raised']), x0+1, y0+1, tags,
-                     w=max(1, int(x1-x0-2)), h=max(1, int(y1-y0-2)))
-        return ids
-
     def skin_well(self, box, tags, radius=8, border=None, glow_a=0.0, under=None):
         """A field set into a surface (ticker, status, a reading, the plaque).  1033: flat and a shade darker, a hairline edge (an accent edge
         is muted; only a strong accent, the chosen card, keeps a soft glow)."""
@@ -441,16 +430,6 @@ class SkinMixin:
         art = bar(self.k, h, fill, fill, h / 2.0 / self.k if radius is None else radius, acc, None, 0.0, 0.0, 5, 0.0,
                   fill if under is None else (under or None))
         return self.put_three(art, x0, y0, x1, tags)
-
-    def skin_dialog(self, box, tags, fill=None, border=None, radius=14):
-        """1035: a floating dialog (application message): a rounded card with a hairline outline on a wide soft shadow, drawn over anything
-        (its corners and shadow are part-transparent, so it is kept to things that open now and then)."""
-        fill = fill or self.skin_fill()
-        art = card(self.k, fill, border or hexmix(fill, "#ffffff", 0.12), 0.65, radius, 22, 8, None, 0.0, None)
-        S = art["S"]
-        ids = self.put_nine(art["shadow"], box, tags, out=S)
-        ids += self.put_nine(art["body"], box, tags, fill=fill, out=S)
-        return ids
 
     def skin_chip(self, item, colour, tag, extra=()):
         """1032: a pill behind a short status text (OFFLINE, AUD SIM, PLATE 5/14, a market's move) that follows the text: redrawn only when the

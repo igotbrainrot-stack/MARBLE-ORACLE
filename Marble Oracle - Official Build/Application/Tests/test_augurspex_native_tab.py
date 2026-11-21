@@ -66,10 +66,12 @@ def test_scene_native_entry():
     opts=vars(parse(['--selftest','--no-network','--no-markets','--no-bezel','--os-frame']))
     app=WindowApp(opts);scene=app.scene;root=app.root
     root.update();scene.resized(1216,848);root.update()
-    import oracle_augurspex_bridge
-    original=oracle_augurspex_bridge.launch
-    def fail():raise AssertionError('old browser launcher used')
-    oracle_augurspex_bridge.launch=fail
+    # 0.4.9.9: the old browser companion and its launcher were removed; make
+    # sure they stay gone, so the workspace cannot fall back to a browser.
+    import importlib.util
+    assert importlib.util.find_spec('oracle_augurspex_bridge') is None, 'old browser launcher is back'
+    app_dir=Path(__file__).resolve().parents[1]/'Runtime'/'Marble_Oracle_App'/'Augurspex'
+    assert not (app_dir/'run.py').exists() and not (app_dir/'augurspex'/'server.py').exists()
     try:
         scene.act('tab_augurspex');root.update()
         assert scene._which_overlay()=='aug'
@@ -88,7 +90,6 @@ def test_scene_native_entry():
         scene.on_key(type('E',(),{'keysym':'Escape','char':''})());root.update()
         assert scene._which_overlay() is None
     finally:
-        oracle_augurspex_bridge.launch=original
         app.quit()
 
 if __name__=='__main__':

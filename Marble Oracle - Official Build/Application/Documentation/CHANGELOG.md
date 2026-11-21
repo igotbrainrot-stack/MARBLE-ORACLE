@@ -2,6 +2,40 @@
 
 Newest first. Releases before 0.4.9.3 have their original notes in `History/ReleaseNotes/`.
 
+## 0.4.9.9 · 22 November 2026 · Welcome, install, clean-up
+
+Built on 0.4.9.8. No saved setting changes format; every workspace keeps its features.
+
+### First start
+
+- **Welcome guide.** On first start a window explains what Marble Oracle is and what each of the six workspaces is for, with two or three tips each and an OPEN button that goes straight there. A checkbox ("Show this when Marble Oracle starts") decides whether it comes back; the choice is kept in the state folder (`welcome.json`). F1, or the new **?** button beside the tabs, opens it at any time. It is sized from the main window, reflows its cards into three, two or one column, scrolls, and works from the keyboard (Tab, Enter, Escape). It does not open during `--selftest` or when `MARBLE_ORACLE_NO_WELCOME` is set. In the CRT housing the ? button is left out (the curved glass has no room); F1 still works there. New module content in `oracle_suite_guide.py`.
+
+### Look
+
+- **Slim scrollbars.** Every scrollbar in EIDOLITH, AUGURSPEX (watch list, charts, insights tables) and the setup window is a thin themed bar that shows a thumb only when there is something to scroll; it lightens on hover and turns amber while dragged. The platform scrollbars (grey on Linux, white on Windows) are gone. `oracle_widgets.SlimScrollbar`.
+- **One dropdown look.** EIDOLITH's profile and audio menus, AUGURSPEX's chart controls and TOUCH TYPE's lesson menu share one style: flat, 1 px outline, a drawn chevron, the cream focus ring, and Space or Enter to open. `oracle_widgets.style_dropdown`.
+- The window has a proper class name (`MarbleOracle`) and icon on Linux, so the taskbar and app menu group it correctly.
+
+### Install
+
+- **Every common Linux family.** The Linux start script and the setup window recognise Debian/Ubuntu/Mint (apt), Fedora (dnf), Arch (pacman) and openSUSE (zypper), name the right packages (for example `python3-tkinter` and `ffmpeg-free` on Fedora) and install them through `pkexec`, or PackageKit where that is missing. Messages use kdialog on KDE, then zenity, then xmessage.
+- **A clearer setup window.** One line per requirement with a READY / MISSING / NOT INSTALLED badge; the media-tools option only while tools are missing; a progress bar only while installing; the main button reads START when everything is ready and INSTALL when not.
+- **ADD TO APP MENU** (Linux) creates a desktop entry with icon, description and keywords; `install_linux_desktop.sh --remove` takes it away again.
+
+### Clean-up
+
+- Removed launchers that the START scripts replaced (five in `Runtime/`, four in `Marble_Oracle_App/`), the browser version of AUGURSPEX (`Augurspex/run.py` and its web server, page, script, style and icon) with the bridge that started it, a duplicate `VERSION.txt` and two requirements files nothing read, unused functions, and seven test pictures that were outputs, not references. Each was checked for references first. About 2,500 lines fewer.
+- Tests no longer write pictures into the repository; they go to `MARBLE_ORACLE_TEST_OUTPUT` or the temp folder. Two stray test scripts moved into `Tests/`.
+
+### Fixes
+
+- A Tk image could be freed on a worker thread after its window closed, printing "main thread is not in main loop"; such images are now kept until exit.
+
+### Tests
+
+- New `test_welcome_and_widgets_0499.py` (34 checks): guide sizes and column reflow at the four sizes, preferences file, keyboard, the ? button, scrollbar and dropdown behaviour.
+- New `test_install_0499.py` (38 checks): distro detection for each family, package names, the install-command allowlist, the start script's detection, the desktop entry.
+
 ## 0.4.9.8 · 22 November 2026 · OGGCULTIST rail
 
 Built on 0.4.9.7. One defect, found by running the suite on a virtual display rather than by reading screenshots from CI.

@@ -1,4 +1,24 @@
-# Testing report: Marble Oracle 0.4.9.8
+# Testing report: Marble Oracle 0.4.9.9
+
+## 0.4.9.9 addendum (22 November 2026)
+
+Same development machine as 0.4.9.8 (Ubuntu 24.04, Python 3.12.3, Tk 8.6.14 under Xvfb at 1920x1080). Still a virtual display, not a physical PC.
+
+| Check | Development machine (Xvfb) | GitHub Linux (Xvfb) | GitHub Windows (native Tk) |
+|---|---|---|---|
+| `--selftest` (from a fresh extraction of the ZIP) | pass | | |
+| Regression scripts | **69 passed, 0 failed, 0 skipped** | **69 passed, 0 failed** (run 44918082283) | **69 passed, 0 failed** (same run) |
+| `test_welcome_and_widgets_0499.py` | 34/34 | pass | pass |
+| `test_install_0499.py` | 40/40 | pass | pass (the Linux shell-script checks are skipped on Windows, where `bash` is the WSL stub) |
+| Screenshots | 71 captured; the welcome guide at 1280x720 and 900x580, the setup window at 780x720 and its minimum 760x640, every workspace at 900x580 and 1280x720 and the CRT housing reviewed by eye | 71 captured | not captured |
+| `verify_release.py` | pass on the tree and on a fresh extraction | | |
+| "main thread is not in main loop" warnings | 0 (was several per run before the image-lifetime fix) | | |
+
+Found by this round and fixed: the setup window at its old minimum (640x600) clipped its text and squeezed ADD TO APP MENU to 69 px (new check fails on the old layout); the ? guide button did not fit the CRT housing's curved glass (now flat layout only); stale Tk images freed on a worker thread; `test_install_0499.py` failed on Windows because `bash` there is the WSL stub.
+
+Not verified: the installer's `pkexec`/`dnf`/`pacman`/`zypper` installs for real (tests check the command built, not its effect); KDE's `kdialog` messages; the app-menu entry in a real KDE or GNOME menu; anything on a physical PC; sound; live market data. In the CRT housing, EIDOLITH's controls are still clipped by the small glass area (as in 0.4.9.8).
+
+---
 
 ## 0.4.9.8 addendum (22 November 2026)
 

@@ -91,8 +91,9 @@ def _tree(parent, colours, columns, widths):
     for col, width in zip(columns, widths):
         tree.heading(col, text=col.upper())
         tree.column(col, width=width, stretch=True, anchor='w')
-    sy = ttk.Scrollbar(parent, orient='vertical', command=tree.yview)
-    sx = ttk.Scrollbar(parent, orient='horizontal', command=tree.xview)
+    from oracle_widgets import SlimScrollbar
+    sy = SlimScrollbar(parent, orient='vertical', command=tree.yview)
+    sx = SlimScrollbar(parent, orient='horizontal', command=tree.xview)
     tree.configure(yscrollcommand=sy.set, xscrollcommand=sx.set)
     tree.grid(row=0, column=0, sticky='nsew')
     sy.grid(row=0, column=1, sticky='ns')

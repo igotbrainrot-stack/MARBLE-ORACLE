@@ -30,7 +30,7 @@ from Augurspex.augurspex.providers import (MarketRouter, shared_market_router,
     local_stock_path, read_local_stock_csv, LOCAL_IMPORT_LIMIT)
 from marble_uberata import FAMILY
 from oracle_design import HOME_LABEL, MARKET_COLORS, MARKET_LABELS, flow_layout
-from oracle_widgets import tooltip
+from oracle_widgets import SlimScrollbar, style_dropdown, tooltip
 import oracle_shell as shell
 # Re-exported on purpose: tests and oracle_augurspex_insights import these names from this module.
 from oracle_augurspex_logic import (  # noqa: F401
@@ -487,12 +487,9 @@ class AugurspexPanel(tk.Frame):
 
     def _option(self,parent,var,values,command):
         btn=tk.OptionMenu(parent,var,*values,command=command)
-        btn.configure(bg=self.p['control'],fg=self.p['ink'],activebackground=self.p['active'],
-                      activeforeground=self.p['ink'],highlightthickness=0,bd=0,relief='flat',
-                      font=(FAMILY,11),indicatoron=True)
-        btn['menu'].configure(bg=self.p['control'],fg=self.p['ink'],activebackground=self.p['active'],
-                              activeforeground=self.p['ink'],font=(FAMILY,11))
-        return btn
+        # 0.4.9.9: the suite's dropdown look (chevron, outline, focus ring), in the GRADE palette.
+        return style_dropdown(btn,bg=self.p['control'],fg=self.p['ink'],hover=self.p['active'],
+                              line=self.p['border'],font=(FAMILY,11))
 
     def _fit(self,label,text,width=None):
         """Show `text` in one line of `label`, ellipsised to its measured width."""
@@ -573,7 +570,7 @@ class AugurspexPanel(tk.Frame):
                               activestyle='none',font=(FAMILY,13,'bold'))
         self._watch_full=[]
         tooltip(self.watch,self._watch_tip)        # a shortened row shows its whole name on hover
-        sb=tk.Scrollbar(lst,orient='vertical',command=self.watch.yview)
+        sb=SlimScrollbar(lst,orient='vertical',command=self.watch.yview)
         self.watch.configure(yscrollcommand=sb.set)
         self.watch.pack(side='left',fill='both',expand=True);sb.pack(side='right',fill='y')
         self.watch.bind('<<ListboxSelect>>',lambda _e:self._choose_from_list())
@@ -656,7 +653,7 @@ class AugurspexPanel(tk.Frame):
         self.chart_port.pack(fill='both',expand=True,padx=mx-4,pady=4)
         self.chart_canvas=tk.Canvas(self.chart_port,bg=self.p['bg'],bd=0,
                                     highlightthickness=0,width=120,height=140)
-        self.chart_scroll=tk.Scrollbar(self.chart_port,orient='vertical',command=self.chart_canvas.yview)
+        self.chart_scroll=SlimScrollbar(self.chart_port,orient='vertical',command=self.chart_canvas.yview)
         self.chart_canvas.configure(yscrollcommand=self.chart_scroll.set)
         self.chart_scroll.pack(side='right',fill='y')
         self.chart_canvas.pack(side='left',fill='both',expand=True)
@@ -1257,9 +1254,6 @@ class AugurspexPanel(tk.Frame):
             try:self._layout_job=self.after_idle(self._apply_layout)
             except tk.TclError:self._layout_job=None
 
-    def _layout_chart_cards(self,_columns=None):
-        self._schedule_layout()
-
     def _update_count_badge(self,charts):
         n=self.settings['layout'];period=self.settings['interval']
         plan=self._space_plan()
@@ -1467,7 +1461,7 @@ class AugurspexPanel(tk.Frame):
             'MARKET ATLAS — inspect all watchlist data and compare percentage changes.\n'
             'OBSERVATION TABLE — keyboard-scrollable dated price records.\n'
             'CSV — export real provider observations for the selected chart.\n'
-            'F1 — suite-wide field guide with six workspaces.\n\n'
+            'F1 (or ? beside the tabs) — the welcome guide to all six workspaces.\n\n'
             'Prices are historical; provider and exchange delays may apply.', parent=self)
 
     def _source_details_text(self):

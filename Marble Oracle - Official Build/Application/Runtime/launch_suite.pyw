@@ -35,6 +35,8 @@ LOCAL_DATA = (Path(os.environ.get('LOCALAPPDATA') or Path.home() / 'AppData' / '
               if os.name == 'nt' else Path(os.environ.get('XDG_DATA_HOME') or Path.home() / '.local' / 'share'))
 STATE_DIR = LOCAL_DATA / 'MarbleOracleSuite' / SUITE_ID
 VENV_DIR = STATE_DIR / 'venv'
+MENU_INSTALLER = APP_DIR / 'install_linux_desktop.sh'
+MENU_ENTRY = Path(os.environ.get('XDG_DATA_HOME') or Path.home() / '.local' / 'share') / 'applications' / 'marble-oracle.desktop'
 STATE_FILE = STATE_DIR / 'first_run.json'
 LOG_FILE = STATE_DIR / 'requirements-install.log'
 STARTUP_LOG = STATE_DIR / 'startup.log'
@@ -65,13 +67,6 @@ for name, module in modules.items():
         results[name] = {'ok':False,'reason':str(exc)[:180]}
 print(json.dumps(results))
 """
-
-
-def private_bin() -> Path:
-    """Use Oggcultist's own tool directory, including its portable-mode setting."""
-    sys.path.insert(0, str(OGG_ROOT))
-    from oggcultist.paths import private_tools_dir
-    return private_tools_dir()
 
 
 def configure_media_path():
@@ -243,7 +238,7 @@ def install_venv(out_queue, include_optional):
         if proc.returncode:
             detail=(proc.stderr or proc.stdout or 'venv creation failed')[-1800:]
             raise RuntimeError('Cannot create Python environment. '+detail+
-                               ('\nOn Linux Mint: install python3-venv with Software Manager or sudo apt install python3-venv.'
+                               ('\nOn Linux: ' + linux_install_hint('python3-venv') + '.'
                                 if sys.platform.startswith('linux') else ''))
         python=venv_python()
         args=[str(python),'-m','pip','install','--disable-pip-version-check',
@@ -263,21 +258,73 @@ def install_venv(out_queue, include_optional):
         out_queue.put(('error',str(exc)))
 
 
-def linux_media_command(package='ffmpeg'):
-    """Pick a graphical-authentication path; never invoke sudo in a terminal.
+# Linux families and their package names for the few things setup may install.
+# Only these names can ever be passed to a package manager (never free text).
+LINUX_FAMILIES = {
+    'debian': {'label': 'Debian / Ubuntu / Linux Mint', 'manager': ('apt-get', 'install', '-y'),
+               'ffmpeg': ('ffmpeg',), 'python3-venv': ('python3-venv',), 'tk': ('python3-tk',)},
+    'fedora': {'label': 'Fedora', 'manager': ('dnf', 'install', '-y'),
+               'ffmpeg': ('ffmpeg-free',), 'python3-venv': (), 'tk': ('python3-tkinter',)},
+    'arch':   {'label': 'Arch Linux', 'manager': ('pacman', '-S', '--needed', '--noconfirm'),
+               'ffmpeg': ('ffmpeg',), 'python3-venv': (), 'tk': ('tk',)},
+    'suse':   {'label': 'openSUSE', 'manager': ('zypper', '--non-interactive', 'install'),
+               'ffmpeg': ('ffmpeg',), 'python3-venv': (), 'tk': ('python3-tk',)},
+}
 
-    Packages are restricted to explicit requirements rather than accepting
-    arbitrary command strings. Polkit handles authentication outside the app.
+
+def linux_family(os_release='/etc/os-release'):
+    """'debian', 'fedora', 'arch', 'suse' or None, from /etc/os-release ID and ID_LIKE."""
+    try:
+        text = Path(os_release).read_text(encoding='utf-8', errors='replace')
+    except OSError:
+        return None
+    ids = []
+    for line in text.splitlines():
+        key, _, value = line.partition('=')
+        if key in ('ID', 'ID_LIKE'):
+            ids.extend(value.strip().strip('"').lower().split())
+    for name in ids:
+        if name in ('debian', 'ubuntu', 'linuxmint', 'pop', 'elementary', 'zorin'):
+            return 'debian'
+        if name in ('fedora', 'rhel', 'centos', 'nobara', 'ultramarine'):
+            return 'fedora'
+        if name in ('arch', 'manjaro', 'endeavouros', 'cachyos'):
+            return 'arch'
+        if name.startswith('opensuse') or name in ('suse', 'sles'):
+            return 'suse'
+    return None
+
+
+def linux_install_hint(package='ffmpeg', family=None):
+    """The command a person can type themselves, for error messages."""
+    family = family if family is not None else linux_family()
+    info = LINUX_FAMILIES.get(family)
+    if not info or not info.get(package):
+        return 'install ' + package + ' with your distribution\'s software manager'
+    return 'sudo ' + ' '.join(info['manager'][:2] + tuple(info[package]))
+
+
+def linux_media_command(package='ffmpeg', family=None):
+    """The privileged install command for one known package, or (None, reason).
+
+    Uses Polkit (pkexec) so the desktop shows its own password prompt; never
+    sudo in a terminal. Falls back to PackageKit's pkcon with the same names.
     """
-    if package not in ('ffmpeg','python3-venv'):
+    if package not in ('ffmpeg', 'python3-venv', 'tk'):
         raise ValueError('Unsupported Linux setup package: '+str(package))
-    apt = shutil.which('apt-get')
+    family = family if family is not None else linux_family()
+    info = LINUX_FAMILIES.get(family)
+    names = tuple(info[package]) if info else ((package,) if package != 'tk' else ('python3-tk',))
+    if info is not None and not names:
+        return None, 'not needed on ' + info['label']
     pkexec = shutil.which('pkexec')
-    if apt and pkexec:
-        return [pkexec, apt, 'install', '-y', package], 'Linux Mint / apt with Polkit'
+    if info is not None:
+        manager = shutil.which(info['manager'][0])
+        if manager and pkexec:
+            return [pkexec, manager, *info['manager'][1:], *names], info['label'] + ' with Polkit'
     pkcon = shutil.which('pkcon')
     if pkcon:
-        return [pkcon, '--plain', '-y', 'install', package], 'Linux PackageKit'
+        return [pkcon, '--plain', '-y', 'install', *names], 'PackageKit'
     return None, None
 
 
@@ -307,10 +354,10 @@ def install_ffmpeg(out_queue, *, runner=None, platform=None, check_tools=None,
     elif platform.startswith('linux'):
         command, method = command_picker()
         if not command:
-            raise RuntimeError('No graphical package installer was found. On Linux Mint, install '
-                               'the ffmpeg package using Software Manager, or use '
-                               'sudo apt install ffmpeg in a terminal. Then reopen setup.')
-        out_queue.put(('log',method+': requesting permission to install the ffmpeg system package...'))
+            raise RuntimeError('No graphical package installer was found. Install FFmpeg with your '
+                               'software manager, or in a terminal: ' + linux_install_hint('ffmpeg') +
+                               '. Then reopen setup.')
+        out_queue.put(('log',method+': requesting permission to install FFmpeg ('+' '.join(command[-1:])+')...'))
         out_queue.put(('log','Approve the administrator authentication dialog if it appears. No terminal is needed.'))
         try:
             result=runner(command, capture_output=True, text=True, timeout=1200)
@@ -324,9 +371,9 @@ def install_ffmpeg(out_queue, *, runner=None, platform=None, check_tools=None,
                 raise RuntimeError('Installation was declined or administrator authorization was unavailable. '
                                    'No changes were made by Marble Oracle. '+detail)
             raise RuntimeError(f'Linux FFmpeg installation failed (exit {result.returncode}): {detail}\n'
-                               'You can also install ffmpeg using Linux Mint Software Manager.')
+                               'You can also install it yourself: ' + linux_install_hint('ffmpeg') + '.')
     else:
-        raise RuntimeError('Automatic FFmpeg installation is supported on Windows 11 and Linux Mint. '
+        raise RuntimeError('Automatic FFmpeg installation is supported on Windows and Linux. '
                            'Use the operating system package manager on this platform.')
     remaining=[name for name,found in check_tools().items() if not found]
     if remaining:
@@ -340,8 +387,8 @@ class Setup(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title('Marble Oracle — Requirements and Startup')
-        self.geometry('760x700')
-        self.minsize(680,660)
+        self.geometry('780x720')
+        self.minsize(760,640)   # every button and status badge fits at this width
         self.configure(bg='#1D1714')
         apply_tk_fonts(self)
         self._queue=queue.Queue()
@@ -379,46 +426,157 @@ class Setup(tk.Tk):
             self._pump_after=None
         super().destroy()
 
-    def _label(self,parent,text,size=11,fg='#F2E8DE',**kwargs):
-        return tk.Label(parent,text=text,font=(FAMILY,size),bg='#1D1714',fg=fg,**kwargs)
+    # ---- look ------------------------------------------------------------
+    # The suite's colours (oggcultist_design_system), spelled out once here.
+    BG = OGG_EMBER['canvas']
+    CARD = OGG_EMBER['raised']
+    LINE = OGG_EMBER['control_line']
+    TEXT = OGG_EMBER['text']
+    MUTED = OGG_EMBER['text_3']
+    ACCENT = OGG_EMBER['accent']
+    GOOD = '#8FC98A'
+
+    def _label(self,parent,text,size=11,fg=None,bold=False,bg=None,**kwargs):
+        return tk.Label(parent,text=text,font=(FAMILY,size,'bold' if bold else 'normal'),
+                        bg=bg or self.BG,fg=fg or self.TEXT,**kwargs)
+
+    @staticmethod
+    def _wrap_to_width(label):
+        """Keep a label's text wrapped to the width it is given, so it never runs off the edge."""
+        label.bind('<Configure>',lambda event:label.configure(wraplength=max(200,event.width-4)),add='+')
+
+    def _button(self,parent,text,command,primary=False):
+        return tk.Button(parent,text=text,command=command,cursor='hand2',relief='flat',bd=0,
+                         font=(FAMILY,11,'bold'),padx=16,pady=8,
+                         bg=self.ACCENT if primary else OGG_EMBER['control'],
+                         fg=OGG_EMBER['text_on_accent'] if primary else self.TEXT,
+                         activebackground=OGG_EMBER['accent_deep'] if primary else OGG_EMBER['hover'],
+                         activeforeground=OGG_EMBER['text_on_accent'] if primary else self.TEXT,
+                         disabledforeground=self.MUTED,highlightthickness=2,
+                         highlightbackground=self.ACCENT if primary else self.LINE,
+                         highlightcolor=OGG_EMBER['focus'])
+
+    def _check(self,parent,text,variable):
+        return tk.Checkbutton(parent,text=text,variable=variable,font=(FAMILY,10),cursor='hand2',
+                              bg=self.CARD,fg=self.TEXT,selectcolor=OGG_EMBER['control'],
+                              activebackground=self.CARD,activeforeground=OGG_EMBER['text_bright'],
+                              highlightthickness=0,bd=0,anchor='w',justify='left')
 
     def _build(self):
-        pad=tk.Frame(self,bg='#1D1714',padx=22,pady=12)
+        self.configure(bg=self.BG)
+        style=ttk.Style(self)
+        try:
+            style.theme_use('clam')
+        except tk.TclError:
+            pass
+        style.configure('Oracle.Horizontal.TProgressbar',troughcolor=self.CARD,background=self.ACCENT,
+                        bordercolor=self.CARD,lightcolor=self.ACCENT,darkcolor=self.ACCENT,thickness=6)
+        pad=tk.Frame(self,bg=self.BG,padx=26,pady=16)
         pad.pack(fill='both',expand=True)
-        self._label(pad,'MARBLE ORACLE  ·  REQUIREMENTS CHECK',16,fg='#FB8E22').pack(anchor='w')
-        self._label(pad,'Every launch checks requirements before opening Marble Oracle.',11).pack(anchor='w',pady=(9,4))
-        self._label(pad,'Nothing installs without your approval. Python libraries use a private\nenvironment. FFmpeg is optional for the main Oracle window.',10,
-                    justify='left',wraplength=630).pack(anchor='w')
-        self.details=self._label(pad,'',10,justify='left',anchor='nw',wraplength=625)
-        self.details.pack(anchor='w',fill='x',pady=(15,12))
-        self.opt=tk.Checkbutton(pad,text='Include optional CRT rendering / Linux media-key enhancements',variable=self.extras,
-                                bg='#1D1714',fg='#F2E8DE',selectcolor='#2F2620',activebackground='#1D1714',
-                                activeforeground='#FFF4E6')
-        self.opt.pack(anchor='w')
-        self.media_opt=tk.Checkbutton(pad,text='Install FFmpeg + FFprobe + FFplay for Oggcultist media functions',
-                                variable=self.media,bg='#1D1714',fg='#F2E8DE',selectcolor='#2F2620',
-                                activebackground='#1D1714',activeforeground='#FFF4E6')
-        self.media_opt.pack(anchor='w',pady=(2,8))
-        self._label(pad,'Linux Mint: missing FFmpeg or python3-venv may request administrator approval.\nIf authorization is unavailable, use Software Manager. Missing Tkinter: install python3-tk.',9,
-                    justify='left',fg='#B9A99B').pack(anchor='w',pady=(0,9))
-        self.progress=ttk.Progressbar(pad,mode='indeterminate')
-        self.progress.pack(fill='x',pady=(0,8))
-        self.log=tk.Text(pad,height=5,wrap='word',bg='#16110F',fg='#F2E8DE',relief='flat',bd=0,
-                         highlightthickness=1,highlightbackground='#59473B',state='disabled',font=(FAMILY,10))
+
+        # Footer first, from the bottom: the buttons never leave the window.
+        buttons=tk.Frame(pad,bg=self.BG)
+        buttons.pack(side='bottom',fill='x',pady=(12,0))
+        self.start_btn=self._button(buttons,'START MARBLE ORACLE',self.start,primary=True)
+        self.start_btn.pack(side='right')
+        self.install_btn=self._button(buttons,'INSTALL REQUIREMENTS',self.install)
+        self.install_btn.pack(side='right',padx=(0,10))
+        self._button(buttons,'EXIT',self.destroy).pack(side='left')
+
+        head=tk.Frame(pad,bg=self.BG)
+        head.pack(fill='x')
+        self._label(head,'MARBLE ORACLE',22,fg=self.ACCENT,bold=True).pack(side='left')
+        self._label(head,'SETUP',11,fg=self.MUTED,bold=True).pack(side='left',padx=12,pady=(10,0))
+        if sys.platform.startswith('linux') and MENU_INSTALLER.is_file():
+            # In the header, not the footer: the footer keeps room for its three buttons.
+            self.menu_btn=self._button(head,'ADD TO APP MENU',self.add_to_menu)
+            self.menu_btn.configure(font=(FAMILY,9,'bold'),padx=10,pady=4)
+            self.menu_btn.pack(side='right',pady=(6,0))
+            if MENU_ENTRY.is_file():
+                self.menu_btn.configure(text='IN APP MENU ✓')
+        intro=self._label(pad,'Marble Oracle checks its parts each time it starts. Nothing is installed '
+                    'without your approval: Python libraries go into a private folder for this app '
+                    'only, and system packages ask for your password first.',10,fg=OGG_EMBER['text_2'],
+                    justify='left',anchor='w',wraplength=700)
+        intro.pack(fill='x',pady=(6,10))
+        self._wrap_to_width(intro)
+
+        # The checklist.
+        card=tk.Frame(pad,bg=self.CARD,highlightthickness=1,highlightbackground=OGG_EMBER['line'],
+                      padx=18,pady=8)
+        card.pack(fill='x')
+        self.rows={}
+        rows=[('python','Python 3 with Tk','Draws every window',True),
+              ('pillow','Pillow','Images, artwork and the CRT screen',True),
+              ('mutagen','Mutagen','Reads music tags in OGGCULTIST',True)]
+        if sys.platform.startswith('linux'):
+            rows.append(('jeepney','Jeepney','Keyboard media keys on Linux',False))
+        rows+= [('ffmpeg','FFmpeg and FFprobe','Video and audio converting',False),
+                ('ffplay','FFplay','Video preview with sound',False)]
+        for index,(key,name,role,essential) in enumerate(rows):
+            line=tk.Frame(card,bg=self.CARD)
+            line.pack(fill='x',pady=2)
+            pill=self._label(line,'…',10,bold=True,bg=self.CARD,fg=self.MUTED,anchor='e')
+            pill.pack(side='right')
+            self._label(line,name,11,bold=True,bg=self.CARD,anchor='w').pack(side='left')
+            self._label(line,('' if essential else 'optional · ')+role,9,fg=self.MUTED,bg=self.CARD,
+                        anchor='w').pack(side='left',padx=(10,0),pady=(2,0))
+            self.rows[key]=(pill,essential)
+        # A one-line summary kept for scripts and tests that read it.
+        self.details=self._label(card,'',9,fg=self.MUTED,bg=self.CARD,anchor='w',justify='left')
+
+        options=tk.Frame(pad,bg=self.CARD,padx=18,pady=8)
+        options.pack(fill='x',pady=(8,0))
+        self.media_opt=self._check(options,'Also install FFmpeg, FFprobe and FFplay',self.media)
+        self.media_opt.pack(fill='x')
+        self.opt=self._check(options,'Also install optional extras (faster CRT drawing, Linux media keys)',self.extras)
+        self.opt.pack(fill='x',pady=(2,0))
+        if sys.platform.startswith('linux'):
+            family=linux_family()
+            info=LINUX_FAMILIES.get(family)
+            hint=(info['label']+': system packages are installed with '+info['manager'][0]+
+                  ' after your desktop asks for your password.') if info else \
+                 ('System packages are installed through your desktop\'s software installer '
+                  '(PackageKit) after it asks for your password.')
+            hint_label=self._label(options,hint,9,fg=self.MUTED,bg=self.CARD,anchor='w',justify='left',
+                                   wraplength=660)
+            hint_label.pack(fill='x',pady=(6,0))
+            self._wrap_to_width(hint_label)
+
+        self.progress=ttk.Progressbar(pad,mode='indeterminate',style='Oracle.Horizontal.TProgressbar')
+        self._progress_slot=tk.Frame(pad,bg=self.BG,height=10)
+        self._progress_slot.pack(fill='x',pady=(8,2))
+        self._label(pad,'MESSAGES',9,fg=self.MUTED,bold=True,anchor='w').pack(fill='x')
+        log_box=tk.Frame(pad,bg=OGG_EMBER['sunken'],
+                         highlightthickness=1,highlightbackground=self.LINE)
+        log_box.pack(fill='both',expand=True,pady=(4,0))
+        self.log=tk.Text(log_box,height=4,wrap='word',bg=log_box.cget('bg'),fg=self.TEXT,relief='flat',bd=0,
+                         padx=10,pady=8,highlightthickness=0,state='disabled',font=(FAMILY,10))
+        try:
+            from oracle_widgets import SlimScrollbar
+            bar=SlimScrollbar(log_box,command=self.log.yview)
+            bar.pack(side='right',fill='y')
+            self.log.configure(yscrollcommand=bar.set)
+        except Exception:
+            pass
         self.log.pack(fill='both',expand=True)
-        self._label(pad,'Setup logs are kept in your user profile for troubleshooting.',9,fg='#B9A99B').pack(anchor='w',pady=(7,0))
-        buttons=tk.Frame(pad,bg='#1D1714')
-        buttons.pack(fill='x',pady=(11,0))
-        self.install_btn=tk.Button(buttons,text='INSTALL REQUIREMENTS',command=self.install,
-            bg='#FB8E22',fg='#2B1405',activebackground='#FDA629',relief='flat',padx=16,pady=9)
-        self.install_btn.pack(side='left')
-        self.start_btn=tk.Button(buttons,text='START MARBLE ORACLE',command=self.start,
-            bg='#2F2620',fg='#F2E8DE',activebackground='#372A23',relief='flat',padx=12,pady=9)
-        self.start_btn.pack(side='left',padx=8)
-        tk.Button(buttons,text='EXIT',command=self.destroy,bg='#1D1714',fg='#B9A99B',relief='flat',
-                  padx=10,pady=9).pack(side='right')
-        self._label(pad,'FFmpeg is recommended for Oggcultist playback/conversion, but not required\nto open Marble Oracle. Setup stays open after installation; choose START.',9,
-                    justify='left',fg='#B9A99B').pack(anchor='w',pady=(8,0))
+        self._write('Logs are kept in '+str(STATE_DIR)+' for troubleshooting.')
+
+    def add_to_menu(self):
+        """Linux: put Marble Oracle in the applications menu (no administrator rights needed)."""
+        try:
+            result=run_hidden(['bash',str(MENU_INSTALLER)],capture_output=True,text=True,timeout=60)
+        except (OSError,subprocess.TimeoutExpired) as exc:
+            self._write('Could not add the menu entry: '+str(exc))
+            return
+        if result.returncode:
+            self._write('Could not add the menu entry: '+(result.stderr or result.stdout or '').strip()[-400:])
+            return
+        self._write('Marble Oracle is now in your applications menu. Search for "Marble Oracle".')
+        try:
+            self.menu_btn.configure(text='IN APP MENU ✓')
+        except (tk.TclError,AttributeError):
+            pass
 
     def _write(self,txt):
         self.log.configure(state='normal')
@@ -426,26 +584,64 @@ class Setup(tk.Tk):
         self.log.see('end')
         self.log.configure(state='disabled')
 
+    def _pill(self,key,ok,version=''):
+        pill,essential=self.rows.get(key,(None,True))
+        if pill is None:
+            return
+        if ok:
+            pill.configure(text='READY'+(' '+version if version else ''),fg=self.GOOD)
+        elif essential:
+            pill.configure(text='MISSING',fg=self.ACCENT)
+        else:
+            pill.configure(text='NOT INSTALLED',fg=self.MUTED)
+
     def refresh(self):
         self.python, self.python_status, tools, missing_media = requirements_snapshot()
         def status(k):
             d = self.python_status.get(k, {})
             return 'Ready ('+str(d.get('version',''))+')' if d.get('ok') else 'Missing / incompatible'
+        self._pill('python',True,'%d.%d'%sys.version_info[:2])
+        for key in ('pillow','mutagen','jeepney'):
+            d=self.python_status.get(key,{})
+            self._pill(key,bool(d.get('ok')),str(d.get('version','') or ''))
+        converter=bool(tools.get('ffmpeg') and tools.get('ffprobe'))
+        self._pill('ffmpeg',converter)
+        self._pill('ffplay',bool(tools.get('ffplay')))
         lines = ['Python 3 / Tkinter: Ready (setup is running)',
                  'Pillow + ImageTk: '+status('pillow'),
                  'Mutagen: '+status('mutagen')]
         if sys.platform.startswith('linux'):
             lines.append('Jeepney (optional media keys): '+status('jeepney'))
-        lines.extend(['FFmpeg / FFprobe (optional converter): '+('Ready' if tools.get('ffmpeg') and tools.get('ffprobe') else 'Missing'),
+        lines.extend(['FFmpeg / FFprobe (optional converter): '+('Ready' if converter else 'Missing'),
                       'FFplay (optional player): '+('Ready' if tools.get('ffplay') else 'Missing')])
         if missing_media:
             lines.append('Media tools unavailable: '+', '.join(missing_media))
         self.details.configure(text='\n'.join(lines))
         self.ready = self.python is not None
+        # The media option only matters while something is missing.
+        try:
+            if missing_media and not self.media_opt.winfo_manager():
+                self.media_opt.pack(fill='x', before=self.opt)
+            elif not missing_media:
+                self.media_opt.pack_forget()
+        except tk.TclError:
+            pass
         # Don't reset the user's media-install selection during a failed or
         # partial install. A new setup window defaults to selecting missing tools.
         self.status.set('Marble Oracle ready to start' if self.ready else 'Essential Python libraries missing')
         self.start_btn.configure(text='START MARBLE ORACLE', state='normal' if self.ready and not self.running else 'disabled')
+        # The bright button is the next useful step: START when ready, INSTALL when not.
+        primary_install = not self.ready
+        for button, primary in ((self.install_btn, primary_install), (self.start_btn, not primary_install)):
+            try:
+                button.configure(bg=self.ACCENT if primary else OGG_EMBER['control'],
+                                 fg=OGG_EMBER['text_on_accent'] if primary else self.TEXT,
+                                 activebackground=OGG_EMBER['accent_deep'] if primary else OGG_EMBER['hover'],
+                                 activeforeground=OGG_EMBER['text_on_accent'] if primary else self.TEXT,
+                                 highlightbackground=self.ACCENT if primary else self.LINE)
+            except tk.TclError:
+                pass
+        self.install_btn.configure(text='INSTALL REQUIREMENTS' if not self.ready else 'INSTALL SELECTED')
         return self.ready
 
     def _report_setup_error(self, context, exc):
@@ -467,8 +663,13 @@ class Setup(tk.Tk):
         self.running=busy
         self.install_btn.configure(state='disabled' if busy else 'normal')
         self.start_btn.configure(state='disabled' if busy else 'normal')
-        if busy: self.progress.start(12)
-        else: self.progress.stop()
+        # The progress bar is shown only while setup is actually working.
+        if busy:
+            self.progress.pack(in_=self._progress_slot,fill='x')
+            self.progress.start(12)
+        else:
+            self.progress.stop()
+            self.progress.pack_forget()
 
     def install(self):
         if self.running or self.launching: return

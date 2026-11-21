@@ -1,12 +1,19 @@
 """Regression: Native rune art must never be cropped by its Tk widget or panel.
 
-Run: xvfb-run -a python3 test_rune_border_fit.py
+Run: xvfb-run -a python3 Application/Tests/test_rune_border_fit.py
 No Pillow is required by Marble Oracle itself; PIL here is optional screenshots.
 """
 from pathlib import Path
+import os as _os
+import tempfile as _tempfile
+# Pictures saved by this test are diagnostics, never kept in the repository.
+SHOTS = Path(_os.environ.get('MARBLE_ORACLE_TEST_OUTPUT') or Path(_tempfile.gettempdir()) / 'marble-oracle-test-output')
+SHOTS.mkdir(parents=True, exist_ok=True)
+import sys
 import tkinter as tk
 
-from marble_oracle import WindowApp, LAYOUTS
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'Runtime' / 'Marble_Oracle_App'))
+from marble_oracle import WindowApp, LAYOUTS  # noqa: E402
 
 
 def verify():
@@ -55,7 +62,7 @@ def verify():
                     from PIL import ImageGrab
                     root.update()
                     im = ImageGrab.grab(bbox=(30,30,30+width,30+height))
-                    dest = Path('/mnt/data/oracle_clip_fix') / f'runes_border_{width}x{height}.png'
+                    dest = SHOTS / f'runes_border_{width}x{height}.png'
                     im.save(dest)
                 except (ImportError,OSError):
                     pass
@@ -72,7 +79,7 @@ def verify():
         root.update()
         try:
             from PIL import ImageGrab
-            ImageGrab.grab(bbox=(30,30,1246,878)).save('/mnt/data/oracle_clip_fix/runes_border_all_revealed.png')
+            ImageGrab.grab(bbox=(30,30,1246,878)).save(str(SHOTS / 'runes_border_all_revealed.png'))
         except (ImportError, OSError):
             pass
         scene.divination_mode = 'tarot'

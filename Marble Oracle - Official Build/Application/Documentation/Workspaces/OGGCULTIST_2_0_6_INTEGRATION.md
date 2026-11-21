@@ -15,7 +15,7 @@
 - `Marble_Oracle_App/Oggcultist/oggcultist/gui/app.py`
 - `Marble_Oracle_App/Oggcultist/oggcultist/gui/{converter_view,art_view,media_keys}.py`
 - `Marble_Oracle_App/Oggcultist/` — complete Oggcultist 2.0.6 program
-- `Marble_Oracle_App/{WINDOWS LAUNCHER.bat,LINUX LAUNCHER.sh,INSTALL_LINUX_MINT_MENU.sh}` — optional standalone Oggcultist wrappers from original release
+- (Oggcultist's own standalone launchers were removed in 0.4.9.9; it runs inside the suite.)
 - `test_ogg206_embedded.py` — regression test
 
 ## Preserved

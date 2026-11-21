@@ -7,7 +7,9 @@ Marble Oracle - Official Build/
 ├── START MARBLE ORACLE - WINDOWS.vbs / .bat / LINUX.sh   launchers (no console window)
 └── Application/
     ├── Runtime/
-    │   ├── launch_suite.pyw            requirements check (asks before installing), then starts the app
+    │   ├── launch_suite.pyw            setup window: checks requirements, asks before installing, starts the app
+    │   ├── Marble_Oracle.pyw           the entry point launch_suite.pyw starts (via oracle_bootstrap.py)
+    │   ├── install_linux_desktop.sh    Linux applications-menu entry (--remove takes it out)
     │   └── Marble_Oracle_App/          the application (see below)
     ├── Tests/                          regression scripts, one process each
     ├── Tools/                          run_tests, verify_release, build_release, capture_screens, probe_providers
@@ -22,10 +24,10 @@ Reading order for a new developer. Each layer only imports from the ones above i
 |---|---|---|
 | **Release identity** | `oracle_version.py` | The one suite version; window title, `--version`, build manifest. |
 | **Design system** | `oggcultist_design_system.py` (colours, type scale, spacing), `oracle_shell.py` (the page shell every workspace is built in: rail, brand, page title, HOME, status line, button and type scale; 0.4.9.5), `oracle_design.py` (market category colours, the HOME wording, `flow_layout`), `oracle_ogg_texture.py` (grain textures), `marble_uberata.py` (the bundled font) | Every colour, size and label a workspace uses. No Tk in the first two. |
-| **Shared widgets** | `oracle_widgets.py` | `flow` (toolbars that wrap) and `wrap_to_parent` (text that wraps). |
+| **Shared widgets** | `oracle_widgets.py` | `flow` (toolbars that wrap), `wrap_to_parent` (text that wraps), `ellipsize` (one line with …), `tooltip`, `install_interaction_defaults` (hover, focus ring, disabled), `SlimScrollbar` (the suite's scrollbar), `style_dropdown` (the suite's dropdown). |
 | **Platform and state** | `oracle_assets.py` (asset lookup, `state_dir()`, atomic `save_json`/`load_json`), `oracle_asset_recovery.py`, `oracle_native_files.py` (native file dialogs), `oracle_window_shape.py`, `oracle_bootstrap.py` | Everything that differs between Windows and Linux. |
 | **Workspace logic (no Tk)** | `oracle_augurspex_logic.py`, `oracle_augurspex_signals.py`, `Augurspex/augurspex/providers.py` and `core.py`, `oracle_eidolith_core.py`, `oracle_eidolith_jobs.py`, `oracle_dicekey.py` | Rules, calculations, provider adapters, the conversion queue, the passphrase generator. Testable without a display. |
-| **Workspace interfaces (Tk)** | `oracle_augurspex_tab.py`, `oracle_augurspex_insights.py`, `oracle_augurspex_home.py`, `oracle_eidolith.py`, `oracle_eidolith_player.py`, `marble_passphrase_tab.py`, `oracle_touch_type.py`, `oracle_ogg_tab.py` (adapter for the embedded `Oggcultist/` app), `oracle_suite_guide.py` | One module (or a small group) per workspace. Each exposes an `Embedded…` class with `layout(box)`, `clear()`, `shutdown()` and `key()`. |
+| **Workspace interfaces (Tk)** | `oracle_augurspex_tab.py`, `oracle_augurspex_insights.py`, `oracle_augurspex_home.py`, `oracle_eidolith.py`, `oracle_eidolith_player.py`, `marble_passphrase_tab.py`, `oracle_touch_type.py`, `oracle_ogg_tab.py` (adapter for the embedded `Oggcultist/` app), `oracle_suite_guide.py` (the welcome window: first start, F1, the ? button), `oracle_home_focus.py` (HOME's keyboard focus and hover) | One module (or a small group) per workspace. Each exposes an `Embedded…` class with `layout(box)`, `clear()`, `shutdown()` and `key()`. |
 | **Shell** | `marble_oracle.py` (`Scene`, `WindowApp`, `launch_plan`, the HOME panels), `oracle_chrome.py` (tab strip, window chrome, themes), `oracle_skin.py` | Owns the window, the render loop, navigation and the workspace lifecycle. |
 | **HOME content** | `oracle_media.py`, `oracle_runes.py`, `oracle_ascii*.py`, `oracle_latin.py`, `oracle_sententiae.py`, `oracle_audio.py`, `oracle_wire.py`, `oracle_train.py` | Tarot, runes, statues, Latin, voices, the transmission scene. |
 | **Optional CRT housing** | `oracle_crt_v2.py`, `oracle_photo_bezel.py`, `oracle_pixel_crt.py`, `oracle_nixie.py`, `oracle_glass.py`, `oracle_vhs.py`, `crt_barrel_no_feedback.py`, `oracle_sysmetrics.py`, `oracle_audio_scope.py` | The photographic CRT frame (`--crt-v2`). Not used by the default window. |

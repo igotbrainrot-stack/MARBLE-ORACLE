@@ -12,19 +12,6 @@ from oracle_assets import rgba_png
 
 
 
-def convex_warp(x, y, w, h, strength=0.12):
-    """Map a point inside the aperture to its convex-CRT position.
-    strength > 0 bows edges outward (convex). Matches the photographic glass curve.
-    """
-    if w < 2 or h < 2:
-        return x, y
-    nx = (x / (w - 1) - 0.5) * 2.0
-    ny = (y / (h - 1) - 0.5) * 2.0
-    r2 = nx * nx + ny * ny
-    # Outward barrel: edges move further from center
-    f = 1.0 + strength * r2
-    return (nx * f * 0.5 + 0.5) * (w - 1), (ny * f * 0.5 + 0.5) * (h - 1)
-
 def edge_png(vertical=True, width=32, reverse=False):
     """Transparent neutral-black glass falloff, fading fully to zero inward."""
     rows=[]

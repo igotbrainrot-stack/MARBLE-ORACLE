@@ -236,3 +236,229 @@ def ellipsize(label, margin=0):
     tooltip(label, lambda _e: label._full_text if str(label.cget('text')) != label._full_text else '')
     refit()
     return label
+
+
+class SlimScrollbar(tk.Canvas):
+    """A thin, dark scrollbar in the suite's colours; a drop-in for tk.Scrollbar.
+
+    Tk's own scrollbar is a grey bar with arrow buttons from another decade.
+    This one is a 10 px track with a thumb that appears only when there is
+    something to scroll, lightens under the pointer and turns amber while
+    dragged. Click the track to move a page; the mouse wheel over it scrolls.
+    It speaks the same protocol as tk.Scrollbar: pass `command=widget.yview`
+    (or xview) and give the widget `yscrollcommand=bar.set`.
+    """
+    MIN_THUMB = 28
+
+    def __init__(self, master, orient='vertical', command=None, width=10, **kwargs):
+        try:
+            background = kwargs.pop('bg', None) or kwargs.pop('background', None) or master.cget('bg')
+        except (tk.TclError, AttributeError):
+            background = COLOR['canvas']
+        self._vertical = str(orient).startswith('v')
+        # Ask for almost nothing along its length (a Tk canvas otherwise asks for ~270 px
+        # and squeezes what it scrolls); it is stretched to fit with fill='y' / 'x'.
+        size = {'width': width, 'height': 24} if self._vertical else {'height': width, 'width': 24}
+        super().__init__(master, bg=background, highlightthickness=0, bd=0, cursor='arrow', **size, **kwargs)
+        self._command = command
+        self._first, self._last = 0.0, 1.0
+        self._hover = self._drag = False
+        self._grab = 0.0
+        self._thumb = None
+        self.bind('<Configure>', lambda _e: self._draw(), add='+')
+        self.bind('<Enter>', lambda _e: self._set_hover(True), add='+')
+        self.bind('<Leave>', lambda _e: self._set_hover(False), add='+')
+        self.bind('<ButtonPress-1>', self._press, add='+')
+        self.bind('<B1-Motion>', self._motion, add='+')
+        self.bind('<ButtonRelease-1>', self._release, add='+')
+        for sequence in ('<MouseWheel>', '<Button-4>', '<Button-5>'):
+            self.bind(sequence, self._wheel, add='+')
+
+    # -- the tk.Scrollbar protocol ------------------------------------------
+    def set(self, first, last):
+        self._first, self._last = max(0.0, float(first)), min(1.0, float(last))
+        self._draw()
+
+    def get(self):
+        return self._first, self._last
+
+    def configure(self, cnf=None, **kwargs):
+        if isinstance(cnf, dict):
+            kwargs = {**cnf, **kwargs}
+            cnf = None
+        if 'command' in kwargs:
+            self._command = kwargs.pop('command')
+        kwargs.pop('orient', None)
+        kwargs.pop('troughcolor', None)
+        if cnf is None and not kwargs:
+            return None
+        return super().configure(cnf, **kwargs)
+
+    config = configure
+
+    # -- drawing ------------------------------------------------------------
+    def _length(self):
+        return max(1, self.winfo_height() if self._vertical else self.winfo_width())
+
+    def _span(self):
+        length = self._length()
+        start = self._first * length
+        end = max(start + self.MIN_THUMB, self._last * length) if self._last - self._first < 1 else length
+        if end > length:
+            start, end = max(0, length - (end - start)), length
+        return start, end
+
+    def _draw(self):
+        self.delete('thumb')
+        self._thumb = None
+        if self._first <= 0.0 and self._last >= 1.0:
+            return                                    # nothing to scroll: a quiet track
+        start, end = self._span()
+        colour = COLOR['accent'] if self._drag else (COLOR['text_3'] if self._hover else COLOR['control_line'])
+        thickness = self.winfo_width() if self._vertical else self.winfo_height()
+        inset = 2 if self._hover or self._drag else 3
+        if self._vertical:
+            box = (inset, start + 2, thickness - inset, end - 2)
+        else:
+            box = (start + 2, inset, end - 2, thickness - inset)
+        self._thumb = self.create_rectangle(*box, fill=colour, outline=colour, tags='thumb')
+
+    def _set_hover(self, on):
+        self._hover = on
+        self._draw()
+
+    # -- input --------------------------------------------------------------
+    def _position(self, event):
+        return event.y if self._vertical else event.x
+
+    def _press(self, event):
+        if self._command is None or (self._first <= 0.0 and self._last >= 1.0):
+            return
+        start, end = self._span()
+        at = self._position(event)
+        if start <= at <= end:
+            self._drag = True
+            self._grab = at - start
+            self._draw()
+        else:
+            self._command('scroll', -1 if at < start else 1, 'pages')
+
+    def _motion(self, event):
+        if not self._drag or self._command is None:
+            return
+        length = self._length()
+        self._command('moveto', max(0.0, min(1.0, (self._position(event) - self._grab) / length)))
+
+    def _release(self, _event):
+        if self._drag:
+            self._drag = False
+            self._draw()
+
+    def _wheel(self, event):
+        if self._command is None:
+            return
+        up = getattr(event, 'num', None) == 4 or getattr(event, 'delta', 0) > 0
+        self._command('scroll', -3 if up else 3, 'units')
+
+
+_CHEVRONS = {}
+# Images whose Tk has gone are kept here instead of being freed: Python may run
+# an image's destructor on a worker thread, which Tk refuses with
+# "main thread is not in main loop". They are a few bytes each.
+_RETIRED_IMAGES = []
+
+
+def _chevron(widget, colour):
+    """A small downward chevron image (cached per window and colour)."""
+    # Keyed by the Tk instance, not the window name: a later Tk() reuses the
+    # name "." but not the images of an interpreter that has gone.
+    key = (widget.tk.interpaddr(), colour)
+    image = _CHEVRONS.get(key)
+    try:
+        alive = image is not None and str(image) in widget.tk.splitlist(widget.tk.call('image', 'names'))
+    except tk.TclError:
+        alive = False
+    if not alive:
+        if image is not None:
+            _RETIRED_IMAGES.append(image)
+        image = tk.PhotoImage(master=widget, width=11, height=7)
+        points = [(x, y) for y in range(5) for x in (y, y + 1, 9 - y, 10 - y)]
+        for x, y in points:
+            image.put(colour, to=(x, y + 1))
+        _CHEVRONS[key] = image
+    return image
+
+
+def style_dropdown(menu_button, *, bg=None, fg=None, hover=None, line=None, font=None, menu_bg=None):
+    """One look for every dropdown (tk.OptionMenu) in the suite.
+
+    Replaces Tk's Motif indicator bar with a drawn chevron on the right, gives
+    the button a 1 px outline that turns into the cream focus ring on keyboard
+    focus, and styles the pop-up list to match. Colours default to the suite
+    tokens; AUGURSPEX passes its GRADE palette instead.
+    """
+    bg = bg or COLOR['control']
+    fg = fg or COLOR['text']
+    hover = hover or COLOR['hover']
+    line = line or COLOR['control_line']
+    options = dict(bg=bg, fg=fg, activebackground=hover, activeforeground=fg, relief='flat', bd=0,
+                   indicatoron=False, anchor='w', padx=10, pady=4, highlightthickness=1,
+                   highlightbackground=line, highlightcolor=COLOR['focus'], takefocus=True,
+                   image=_chevron(menu_button, COLOR['text_2']), compound='right', cursor='hand2')
+    if font is not None:
+        options['font'] = font
+    menu_button.configure(**options)
+    menu = menu_button['menu']
+    menu_options = dict(bg=menu_bg or COLOR['raised'], fg=fg, activebackground=COLOR['accent_soft'],
+                        activeforeground=COLOR['text_bright'], relief='flat', bd=1, activeborderwidth=0)
+    if font is not None:
+        menu_options['font'] = font
+    menu.configure(**menu_options)
+    # Space or Enter on a focused dropdown opens it, as a button would.
+    def open_menu(_event=None):
+        try:
+            x = menu_button.winfo_rootx()
+            y = menu_button.winfo_rooty() + menu_button.winfo_height()
+            menu.tk_popup(x, y)
+        finally:
+            try:
+                menu.grab_release()
+            except tk.TclError:
+                pass
+        return 'break'
+    menu_button.bind('<space>', open_menu, add='+')
+    menu_button.bind('<Return>', open_menu, add='+')
+
+    # A dropdown that sizes to its text keeps the chevron straight after it.
+    # One stretched across a column gets the chevron pinned to its right edge
+    # instead, where people look for it.
+    chevron = options['image']
+    pin = tk.Label(menu_button, image=chevron, bg=bg, bd=0, cursor='hand2')
+    pin.bind('<Button-1>', open_menu, add='+')
+    state = {'stretched': None}
+
+    def fit(_event=None):
+        try:
+            stretched = menu_button.winfo_width() > menu_button.winfo_reqwidth() + 8
+            if stretched == state['stretched']:
+                return
+            state['stretched'] = stretched
+            if stretched:
+                menu_button.configure(image='', compound='none')
+                pin.place(relx=1.0, rely=0.5, x=-10, anchor='e')
+            else:
+                pin.place_forget()
+                menu_button.configure(image=chevron, compound='right')
+        except tk.TclError:
+            pass
+
+    def shade(active):
+        try:
+            pin.configure(bg=menu_button.cget('activebackground' if active else 'bg'))
+        except tk.TclError:
+            pass
+
+    menu_button.bind('<Configure>', fit, add='+')
+    menu_button.bind('<Enter>', lambda _e: shade(True), add='+')
+    menu_button.bind('<Leave>', lambda _e: shade(False), add='+')
+    return menu_button

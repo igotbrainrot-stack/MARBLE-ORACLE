@@ -54,6 +54,7 @@ NAMES = {
     'say_c': 'SPEAK · CLASSICAL', 'say_e': 'SPEAK · ECCLESIASTICAL',
     'next': 'NEXT QUOTE', 'word': 'NEW WORD', 'deal': 'DEAL', 'view': 'GRADE', 'full': 'FULL SCREEN',
     'aug_next': 'NEXT MARKET', 'aug_previous': 'PREVIOUS MARKET', 'dk': 'PASSPHRASE',
+    'guide': 'WELCOME GUIDE',
 }
 
 

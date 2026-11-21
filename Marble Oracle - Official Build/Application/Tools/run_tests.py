@@ -29,7 +29,7 @@ from pathlib import Path
 
 APPLICATION = Path(__file__).resolve().parents[1]
 ROOT = APPLICATION.parent
-TEST_DIRS = (APPLICATION / 'Tests', APPLICATION / 'Runtime' / 'Marble_Oracle_App')
+TEST_DIRS = (APPLICATION / 'Tests',)
 SKIP_MARKERS = (
     ("No module named 'tkinter'", 'Tk is not installed for this Python'),
     ("No module named '_tkinter'", 'Tk is not installed for this Python'),
