@@ -2,6 +2,17 @@
 
 Newest first. Releases before 0.4.9.3 have their original notes in `History/ReleaseNotes/`.
 
+## 0.4.9.8 · 22 November 2026 · OGGCULTIST rail
+
+Built on 0.4.9.7. One defect, found by running the suite on a virtual display rather than by reading screenshots from CI.
+
+- **OGGCULTIST's Settings could be hidden.** The suite packs its HOME button and Oggcultist's version line ahead of the rail's other items so they always keep their place; Settings, which also sits at the foot of the rail, was left last in line. At 1280x720 HOME covered half of it, and at 900x580 it was not reachable at all. It is now kept with HOME and the version line.
+- **900x580: the icon rail fits.** In the 64 px icon rail of a short window, Converter was cut in half and Album Art was gone. The rail's logo, which repeats the OGGCULTIST tab directly above it, now gives way when (and only when) the items would not otherwise fit, and comes back as soon as there is room. Oggcultist's own code is unchanged; both fixes are in the suite's `oracle_ogg_tab.py`.
+
+### Tests
+
+- New `test_ogg_rail_0498.py`: resizes the window through seven sizes and checks that every rail item and HOME are fully inside the rail, that HOME covers nothing, that Settings sits just above HOME, and that the logo, when shown, is at the top. It fails on 0.4.9.7 (six failures at 900x580) and passes on 0.4.9.8.
+
 ## 0.4.9.7 · 16 November 2026 · Keyboard and fit
 
 Built on 0.4.9.6. Nothing removed; no saved setting changes format.
