@@ -1,4 +1,4 @@
-# Handover: Marble Oracle 0.4.9.9
+# Handover: Marble Oracle 0.5.0
 
 22 November 2026 (0.4.9.7: 16 November). For whoever picks this up next, human or AI. Earlier handovers (0.4.9.3 to 0.4.9.5) are in `History/HANDOVER_0.4.9.3-0.4.9.5.md`; this file replaces them.
 
@@ -16,7 +16,8 @@
 | #9 | `claude/marble-oracle-0496-design-prototype` | 0.4.9.6 | Contrast, focus vs current, Escape never quits, EIDOLITH Convert, AUGURSPEX grid and axis |
 | #10 | `claude/marble-oracle-0497-polish` | 0.4.9.7 | HOME keyboard and hover, fit fixes at 900x580, Windows CI required, this handover |
 | #11 | `claude/marble-oracle-0498-ogg-rail` | 0.4.9.8 | OGGCULTIST rail: Settings always reachable, icons fit at 900x580 |
-| **#12** | **`claude/marble-oracle-0499-professional`** | **0.4.9.9** | **Welcome guide, slim scrollbars and dropdowns, install for every Linux family, dead files removed** |
+| #12 | `claude/marble-oracle-0499-professional` | 0.4.9.9 | Welcome guide, slim scrollbars and dropdowns, install for every Linux family, dead files removed |
+| **#13** | **`claude/marble-oracle-0500-overcast`** | **0.5.0** | **OVERCAST 1.1.2 as the seventh workspace** |
 
 - **The branch is the whole application:** every asset archive, font and texture is in Git. Only the two third-party research PDFs are left out (`.gitignore`); they are in the release ZIP under `Documentation/Research/`.
 - **Read next:** `README.md`, `ARCHITECTURE.md`, `DEVELOPMENT.md`, `CHANGELOG.md`, `TESTING_REPORT.md`.
@@ -24,6 +25,12 @@
 ## State in one paragraph
 
 All six workspaces work, share one page shell and one interaction look (hover, a cream keyboard-focus ring, an amber "current" fill), and HOME can now be used from the keyboard. The whole regression suite passes on GitHub's Linux runner (Tk under Xvfb) and on its Windows runner (native Tk), and since 0.4.9.7 the Windows job is required. **Nothing has been run on a physical PC, and none of the market sources added in 0.4.9.4 has been seen answering live.**
+
+## What 0.5.0 changed
+
+- **OVERCAST workspace:** `oracle_overcast_tab.EmbeddedOvercast` mounts the self-contained `overcast/` package (it never imports suite code). It is wired into `Scene` like AUGURSPEX: `ovc`, `_ovc_cached`, `ovcwin`, `tab_overcast`. Read `Documentation/Overcast/MARBLE_ORACLE_INTEGRATION.md` first.
+- **The vendored copy is OVERCAST 1.1.2, not the delivered 1.1.1.** 1.1.1 could not open on real Tk, and its controls were mis-sized. Keep the suite's copy and any standalone release in step: fixes made here belong in OVERCAST too.
+- **OVERCAST's tests:** they live in `Tests/overcast/` and run through `test_overcast_package.py`.
 
 ## What 0.4.9.9 changed
 

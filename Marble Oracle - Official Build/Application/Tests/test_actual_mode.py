@@ -18,7 +18,7 @@ for bezel in (False, True):
     sc=app.scene
     sc.resized(app.canvas.winfo_width(), app.canvas.winfo_height())
     root.update()
-    assert len(sc.nav_tabs)==6
+    assert len(sc.nav_tabs)==7
     for h in [h for h in sc.hot if h[4] in ('tab_home','tab_passphrase','tab_oggcultist','tab_touch_type')]:
         assert sc.hit((h[0]+h[2])/2,(h[1]+h[3])/2)[4]==h[4]
     name = 'BEZEL' if bezel else 'DEFAULT'

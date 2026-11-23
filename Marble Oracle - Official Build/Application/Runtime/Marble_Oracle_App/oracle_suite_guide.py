@@ -1,4 +1,4 @@
-"""The welcome window: what Marble Oracle is, its six workspaces, and how to get around.
+"""The welcome window: what Marble Oracle is, its seven workspaces, and how to get around.
 
 Shown once, shortly after the first start (and again at start while "Show this
 when Marble Oracle starts" stays ticked). F1 opens it at any time.
@@ -39,11 +39,15 @@ WORKSPACES = (
      '23 starter markets (US stocks and ETFs, currencies, crypto) as line or candle charts with '
      'simple signals. Every price comes from a named public source; none is ever made up.',
      ('CHARTS 1 / 2 / 4 / 6 / 9', 'SOURCE DETAILS: where data came from', 'MANAGE LIST: add markets or a CSV')),
-    ('05', 'PASSPHRASE', 'tab_passphrase', 'Strong, memorable passphrases',
+    ('05', 'OVERCAST', 'tab_overcast', 'News forecasting desk',
+     'Mostly cloudy, with a chance of being right. Reads public news feeds and asks a model running on '
+     'your own computer (LM Studio) for broad outlooks and yes/no forecasts, then keeps score as they resolve.',
+     ('Settings: connect LM Studio', 'Refresh: fetch headlines', 'Broad outlook: scenarios and risks')),
+    ('06', 'PASSPHRASE', 'tab_passphrase', 'Strong, memorable passphrases',
      'Builds passphrases from the EFF word list with your system\'s secure random generator. '
      'A copied phrase is cleared from the clipboard after a minute.',
      ('Choose how many words', 'Copy, then paste where needed', 'Roll again for a new one')),
-    ('06', 'TOUCH TYPE', 'tab_touch_type', 'Typing practice',
+    ('07', 'TOUCH TYPE', 'tab_touch_type', 'Typing practice',
      'Learn the home row first, then unlock more letters as you improve, with lessons, games and '
      'a record of your progress.',
      ('Click the typing field to start', 'Follow the finger hints', 'Unlock letters as you go')),
@@ -199,8 +203,9 @@ def show_suite_guide(scene, first_run=False):
     tk.Label(title_row, text=SUITE_VERSION, bg=C['raised'], fg=C['text_2'], font=shell.font('small'),
              padx=8, pady=2).pack(side='left', padx=12, pady=(8, 0))
     intro = tk.Label(head, bg=C['canvas'], fg=C['text'], font=shell.font('body'), justify='left', anchor='w',
-                     text=('Welcome. Marble Oracle is six tools in one window: an oracle dashboard, a music '
-                           'player, a video converter, market charts, a passphrase maker and a typing tutor. '
+                     text=('Welcome. Marble Oracle is seven tools in one window: an oracle dashboard, a music '
+                           'player, a video converter, market charts, a news forecasting desk, a passphrase maker '
+                           'and a typing tutor. '
                            'Pick a workspace below, or use the tabs along the top at any time.'))
     intro.pack(fill='x', pady=(8, 0))
     head.bind('<Configure>', lambda e: intro.configure(wraplength=max(200, e.width - 4)), add='+')
