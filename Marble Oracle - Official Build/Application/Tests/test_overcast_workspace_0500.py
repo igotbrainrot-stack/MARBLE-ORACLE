@@ -138,6 +138,25 @@ with redirect_stderr(stderr):
     pump()
     check('Escape returns HOME', scene._which_overlay() is None)
 
+    # Larger type than this machine's (another font or DPI, as on CI): the sidebar compacts until every page fits.
+    import tkinter as tk
+    import overcast.theme as theme_mod
+    from overcast.ui import NewsOraclePanel
+    plain_f = theme_mod.Theme.f
+    theme_mod.Theme.f = lambda self, size=11, weight='normal': plain_f(self, size + 2, weight)
+    try:
+        top = tk.Toplevel(root)
+        top.geometry('1038x680+0+0')
+        big = NewsOraclePanel(top, state_dir=tempfile.mkdtemp())
+        big.pack(fill='both', expand=True)
+        pump(14)
+        cut = [b.cget('text') for b in big._nav_map.values() if not inside(b, big)]
+        check('with larger type (+2 pt) every sidebar page still fits at 1038x680', not cut, cut)
+        big.destroy()
+        top.destroy()
+    finally:
+        theme_mod.Theme.f = plain_f
+
     # Closing the suite while a refresh is pending.
     release.clear()
     started.clear()
