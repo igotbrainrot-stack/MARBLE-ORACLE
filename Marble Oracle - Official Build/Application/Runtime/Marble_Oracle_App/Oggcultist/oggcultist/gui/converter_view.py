@@ -231,7 +231,8 @@ class ConverterPage(ttk.Frame):
             self._toolbar_hint.pack_forget()
             self._review_count.pack_forget()
             self.detail.configure(height=2)
-            self.folders_toggle.pack(side='right', padx=(4, 8))
+            # Packed before the chips (Marble Oracle 0.5.1) so a narrow window squeezes the chips, not this button.
+            self.folders_toggle.pack(side='right', padx=(4, 8), before=self._chip_area)
             if self.tracks and self._folders_expanded:
                 self._toggle_folders()
             if self._details_visible:

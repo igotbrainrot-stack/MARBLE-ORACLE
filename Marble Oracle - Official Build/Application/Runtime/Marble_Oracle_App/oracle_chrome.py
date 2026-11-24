@@ -636,6 +636,8 @@ class ChromeMixin(PhotoBezelMixin):
 
     def _chrome(self):
         """Windows-98 window frame around the dark instrument panels."""
+        if getattr(self, 'modern_chrome', lambda: False)():
+            return self._chrome_modern()            # 0.5.1 Dark / Light (oracle_sidebar)
         c, r = self.c, self.rect
         W, H = self.W, self.H
         G = "#c0c0c0"
@@ -756,6 +758,8 @@ class ChromeMixin(PhotoBezelMixin):
             "tab_eidolith" if getattr(self, "eido", None) is not None else (
             "tab_overcast" if getattr(self, "ovc", None) is not None else (
             "tab_augurspex" if getattr(self, "aug", None) is not None else "tab_home")))))
+        if getattr(self, 'modern_chrome', lambda: False)() and getattr(self, '_side_rows', None):
+            return self._update_modern_state(active)
         for action, pair in getattr(self, "nav_tabs", {}).items():
             on = action == active
             try:

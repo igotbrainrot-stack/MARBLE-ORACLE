@@ -166,15 +166,35 @@ class PlaylistsPage(_ListAndSongsPage):
     def build_left_extras(self, frame) -> None:
         create = ttk.Frame(frame)
         create.pack(side='bottom', fill='x', pady=(8, 0))
-        entry = ttk.Entry(create, textvariable=self.new_name, width=8)   # shrinks so Create stays whole
+        entry = ttk.Entry(create, textvariable=self.new_name, width=5)   # shrinks so Create stays whole
         entry.pack(side='left', fill='x', expand=True)
         entry.bind('<Return>', lambda _e: self.create())
         self.name_entry = entry
         ttk.Button(create, text='Create', command=self.create).pack(side='left', padx=(6, 0))
         manage = ttk.Frame(frame)
         manage.pack(side='bottom', fill='x', pady=(8, 0))
-        ttk.Button(manage, text='Rename', style='Ghost.TButton', command=self.rename).pack(side='left')
-        ttk.Button(manage, text='Delete', style='Danger.TButton', command=self.delete).pack(side='left', padx=(4, 0))
+        rename = ttk.Button(manage, text='Rename', style='Ghost.TButton', command=self.rename)
+        delete = ttk.Button(manage, text='Delete', style='Danger.TButton', command=self.delete)
+
+        def place(_event=None):
+            # Side by side when both fit whole; otherwise one above the other (Marble Oracle 0.5.1).
+            try:
+                stacked = manage.winfo_width() < rename.winfo_reqwidth() + delete.winfo_reqwidth() + 4
+            except Exception:
+                return
+            if getattr(manage, '_stacked', None) == stacked:
+                return
+            manage._stacked = stacked
+            rename.grid_forget()
+            delete.grid_forget()
+            if stacked:
+                rename.grid(row=0, column=0, sticky='w')
+                delete.grid(row=1, column=0, sticky='w', pady=(4, 0))
+            else:
+                rename.grid(row=0, column=0, sticky='w')
+                delete.grid(row=0, column=1, sticky='w', padx=(4, 0))
+        manage.bind('<Configure>', place, add='+')
+        place()
 
     def build_right_actions(self, frame) -> None:
         ttk.Button(frame, text='▶  Play', style='Accent.TButton', command=self.play_group).pack(side='left')

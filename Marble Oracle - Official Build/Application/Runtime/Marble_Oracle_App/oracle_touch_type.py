@@ -366,11 +366,11 @@ class TouchTypePanel(tk.Frame):
         self._fit_state = (compact, narrow)
         self._compact = compact
         self.shell.set_rail_width(shell.RAIL_NARROW if narrow else shell.RAIL_WIDTH)
-        self.rail_subtitle.configure(text='LEARN · PLAY' if narrow else 'LEARN · PLAY · IMPROVE')
+        self.rail_subtitle.configure(text=shell.shown('LEARN · PLAY' if narrow else 'LEARN · PLAY · IMPROVE'))
         short_names = ('HOME ROW', 'SPRINT', 'KEYFALL', 'SENTENCES')
         for i, mode in enumerate(MODES):
-            self.mode_buttons[mode].configure(text='%02d  %s' % (i + 1, short_names[i])
-                                              if narrow else '%02d   %s' % (i + 1, MODE_NAMES[i]))
+            self.mode_buttons[mode].configure(text=shell.shown('%02d  %s' % (i + 1, short_names[i])
+                                                               if narrow else '%02d   %s' % (i + 1, MODE_NAMES[i])))
         # The page description is hidden by the shell itself in short windows.
         if compact:
             self.keyboard.pack_forget()

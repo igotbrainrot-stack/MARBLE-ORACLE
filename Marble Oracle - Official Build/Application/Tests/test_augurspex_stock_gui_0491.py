@@ -1,6 +1,7 @@
 """Verify stock-data repair controls are usable and secrets remain ephemeral."""
 from __future__ import annotations
 import os,sys,tkinter as tk,tempfile
+os.environ.setdefault('MARBLE_ORACLE_APPEARANCE', 'classic')   # 0.5.1: this test checks Classic's labels and surfaces
 from pathlib import Path
 from unittest.mock import patch
 APP=Path(__file__).resolve().parents[1]/'Runtime/Marble_Oracle_App'

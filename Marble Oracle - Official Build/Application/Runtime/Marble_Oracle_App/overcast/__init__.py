@@ -12,14 +12,16 @@ __version__ = '1.1.2'
 EVENT_SCHEMA_VERSION = 1
 
 
-def create_panel(parent, *, state_dir=None, on_event=None):
+def create_panel(parent, *, state_dir=None, on_event=None, appearance=None, accent=None):
     """Mount the application in an existing tkinter parent widget.
 
     Returns a NewsOraclePanel (tk.Frame). The host owns its layout.
     Optional on_event(dict) receives versioned activity events.
+    Optional appearance ('dark'/'light') and accent (1.1.2): the host's look, used instead of OVERCAST's own
+    saved setting (which is left untouched); Settings › Appearance then says the host decides.
     """
     from .ui import NewsOraclePanel
-    return NewsOraclePanel(parent, state_dir=state_dir, on_event=on_event)
+    return NewsOraclePanel(parent, state_dir=state_dir, on_event=on_event, appearance=appearance, accent=accent)
 
 
 def __getattr__(name):

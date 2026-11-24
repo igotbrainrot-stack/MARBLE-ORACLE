@@ -18,6 +18,16 @@ ROLE_COLOURS = {
     '#2f2620': 'control', '#4a2c18': 'accent_soft',
 }
 FILES = {role: TEXTURES / f'{role}.png' for role in ('page','card','side','sunken','sunken_alt','control','accent_soft')}
+# Classic draws the grain; Dark and Light (oracle_appearance) switch it off and these helpers return flat widgets.
+ENABLED = True
+
+def _parent_bg(parent):
+    try:
+        return parent.cget('bg')
+    except tk.TclError:
+        from oggcultist_design_system import COLOR
+        return COLOR['canvas']
+
 
 def role_of(color, default='page'):
     return ROLE_COLOURS.get(str(color).lower(), default)
@@ -59,7 +69,13 @@ def install(root):
 
 def frame(parent, *, bg=None, padx=0, pady=0, highlightthickness=0,
           highlightbackground=None, **opts):
-    """Ttk frame whose body uses Oggcultist's same tiled PNG surface."""
+    """Ttk frame whose body uses Oggcultist's same tiled PNG surface (a flat frame when ENABLED is off)."""
+    if not ENABLED:
+        widget = tk.Frame(parent, bg=bg or _parent_bg(parent), padx=padx, pady=pady,
+                          highlightthickness=highlightthickness,
+                          highlightbackground=highlightbackground or (bg or _parent_bg(parent)), **opts)
+        widget._marble_ogg_role = 'flat'
+        return widget
     install(parent)
     role = role_of(bg, getattr(parent,'_marble_ogg_role','page'))
     if padx or pady:
@@ -72,7 +88,16 @@ def frame(parent, *, bg=None, padx=0, pady=0, highlightthickness=0,
 
 
 def label(parent, *, bg=None, fg=None, padx=0, pady=0, **opts):
-    """Tiled ttk label: text stays above the source Oggcultist grain."""
+    """Tiled ttk label: text stays above the source Oggcultist grain (a flat label when ENABLED is off)."""
+    if not ENABLED:
+        options = {('fg' if k == 'foreground' else k): v for k, v in opts.items()}
+        if fg is not None:
+            options['fg'] = fg
+        if 'style' in options:
+            options.pop('style')
+        widget = tk.Label(parent, bg=bg or _parent_bg(parent), padx=padx, pady=pady, **options)
+        widget._marble_ogg_role = 'flat'
+        return widget
     install(parent)
     role = role_of(bg, getattr(parent, '_marble_ogg_role', 'page'))
     if fg is not None:

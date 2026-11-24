@@ -5,6 +5,8 @@
 Before 0.4.9.7 HOME's controls were only rectangles on a canvas: Tab did
 nothing there, and nothing but the cursor changed under the pointer.
 """
+import os
+os.environ.setdefault('MARBLE_ORACLE_APPEARANCE', 'classic')   # 0.5.1: this test checks Classic's labels and surfaces
 from pathlib import Path
 import sys
 import time

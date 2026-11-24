@@ -40,10 +40,15 @@ class EmbeddedOvercast:
 
     def __init__(self, canvas, on_home=None, on_status=None):
         from overcast import create_panel
+        import oracle_appearance
         self.canvas = canvas
         self.on_home = on_home
         self.on_status = on_status
-        self.frame = create_panel(canvas, state_dir=str(overcast_state_dir()), on_event=self._event)
+        # 0.5.1: in Dark and Light OVERCAST follows the suite's appearance and accent (its own saved choice is
+        # kept for when it runs on its own). In Classic it keeps its own.
+        look = oracle_appearance.appearance() if oracle_appearance.modern() else None
+        self.frame = create_panel(canvas, state_dir=str(overcast_state_dir()), on_event=self._event,
+                                  appearance=look, accent=oracle_appearance.accent() if look else None)
         self.window = canvas.create_window(0, 0, anchor='nw', window=self.frame, tags=(self.TAG,))
         self._box = None
 

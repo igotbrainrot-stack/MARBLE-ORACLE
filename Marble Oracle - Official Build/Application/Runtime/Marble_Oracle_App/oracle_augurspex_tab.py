@@ -214,7 +214,11 @@ class PriceChart(tk.Frame):
         return status_for_error(error, getattr(self,'symbol',''))
 
     def _draw_texture(self, width, height):
-        """Tile the original bundled Oggcultist grain behind charts, not labels."""
+        """Tile the original bundled Oggcultist grain behind charts, not labels (Classic only)."""
+        import oracle_ogg_texture
+        if not oracle_ogg_texture.ENABLED:
+            self.canvas.delete('bgtex')
+            return
         if self._texture_tile is None:
             try:
                 self._texture_tile=tk.PhotoImage(master=self.canvas,file=str(OGG_TEXTURE_FILES['sunken']))

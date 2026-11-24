@@ -17,6 +17,8 @@ saved slots 1/5/9 and then only in 4/8:
 * SHOW ALL MARKETS shows N full cards; CHARTS persists across a restart.
 """
 from __future__ import annotations
+import os
+os.environ.setdefault('MARBLE_ORACLE_APPEARANCE', 'classic')   # 0.5.1: this test checks Classic's labels and surfaces
 
 import itertools
 import json

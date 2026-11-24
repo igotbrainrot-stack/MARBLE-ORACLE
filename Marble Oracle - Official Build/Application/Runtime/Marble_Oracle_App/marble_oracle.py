@@ -41,6 +41,7 @@ from oracle_chrome import (DECK_TAB_OFF, DECK_TAB_ON, DK_TAB_OFF, DK_TAB_ON, LD_
                            THEMES, THEME_NAMES, noise_tile_png, scan_tile_png, hexrgb, mix, ChromeMixin, bezel_geometry, bezel_step)
 from oracle_skin import SkinMixin, hexmix  # noqa: E402
 from oracle_home_focus import HomeFocusMixin  # noqa: E402
+from oracle_sidebar import SidebarMixin, sidebar_width  # noqa: E402
 from oracle_augurspex_home import MarketCarousel
 from oracle_version import suite_title  # noqa: E402
 from oracle_audio import respell, synth_wav, VoiceBank, Sfx  # noqa: E402,F401
@@ -199,18 +200,21 @@ def key_colour(bg):
     return "#%02x%02x%02x" % (r + 1 if r < 255 else r - 1, g, b + 2 if b < 254 else b - 2)
 
 
-def integrate_boxes(boxes, m, g, top, bot, W=REF_W, x0=8, x1=1208, y0=86, y1=772):
+def integrate_boxes(boxes, m, g, top, bot, W=REF_W, x0=8, x1=1208, y0=86, y1=772, ml=None):
     """1036: a layout's panels re-flowed for the integrated looks: the 8 px gutters become g (0: flush panes that share their hairlines) and
-    the outer margin m, between the header (top) and the footer (bot).  Panels keep their order and proportions."""
+    the outer margin m, between the header (top) and the footer (bot).  Panels keep their order and proportions.
+    0.5.1: `ml`, a larger left margin (the Dark / Light sidebar)."""
+    ml = m if ml is None else ml
+
     def lx(v):
-        return m + (v - x0) * (W - 2.0 * m) / (x1 - x0)
+        return ml + (v - x0) * (W - ml - m) / (x1 - x0)
 
     def ly(v):
         return top + (v - y0) * float(bot - top) / (y1 - y0)
 
     out = {}
     for n, (a, b, c, d) in boxes.items():
-        out[n] = (int(round(m if a <= x0 else lx(a - 4) + g / 2.0)), int(round(top if b <= y0 else ly(b - 4) + g / 2.0)),
+        out[n] = (int(round(ml if a <= x0 else lx(a - 4) + g / 2.0)), int(round(top if b <= y0 else ly(b - 4) + g / 2.0)),
                   int(round(W - m if c >= x1 else lx(c + 4) - g / 2.0)), int(round(bot if d >= y1 else ly(d + 4) - g / 2.0)))
     return out
 
@@ -779,7 +783,7 @@ class EmbeddedPassphrase:
         return None
 
 
-class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
+class Scene(SidebarMixin, HomeFocusMixin, ChromeMixin, SkinMixin):
     # Preserve the archived marble plate's contrast: the CRT/sepia and glass
     # passes sit over ordinary content, but the ASCII statue is a protected
     # foreground ink layer.  Popup, chrome and bezel still render above it.
@@ -798,8 +802,10 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
         from marble_uberata import apply_tk_fonts, FAMILY
         apply_tk_fonts(root)
         fams = set(tkfont.families(root))
+        import marble_uberata
         self.family = FAMILY
         self.ui_family = FAMILY
+        self.art_family = marble_uberata.ART_FAMILY      # the statue keeps Uberata Clear in every appearance
         self.fonts = {}
         self.rng = random.Random()
         self.W = self.H = 0
@@ -1007,7 +1013,14 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
         c.configure(bg=self.ground())
         lays = CLEAN_LAYOUTS if self.clean() else LAYOUTS             # 1064: the clean look's twin columns
         boxes = dict(lays.get(self.o.get("layout", "CLASSIC"), lays["CLASSIC"]))
-        if self.integrated():                                      # 1036: one header row, one footer row, no title bar
+        if self.integrated() and self.modern_chrome():             # 0.5.1 Dark / Light: a sidebar, rounded cards with gutters
+            side = sidebar_width(W) * REF_W / float(W)           # the sidebar's width in reference px
+            g = 12.0 / ((self.sx + self.sy) / 2.0)              # about 12 canvas px between cards
+            hb, fb = HEAD_H, REF_H - FOOT_H
+            boxes = integrate_boxes(boxes, g, g, hb, fb - g, ml=side + g)
+            boxes.update(title=(side, 0, REF_W, hb), menu=(side, 0, REF_W, hb), status=(side, fb, REF_W, REF_H),
+                         side=(0, 0, side, REF_H))
+        elif self.integrated():                                      # 1036: one header row, one footer row, no title bar
             m = g = 10 if self.floating() else 0
             hb, fb = m + HEAD_H, REF_H - m - FOOT_H
             boxes = integrate_boxes(boxes, m, g, hb + g, fb - g)
@@ -1030,7 +1043,8 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
         # Use the darker Oggcultist surface across the HOME canvas so the
         # background between panels matches the darker embedded sections.
         # The source texture is tiled exactly, never stretched.
-        if self.clean():
+        import oracle_ogg_texture
+        if self.clean() and oracle_ogg_texture.ENABLED:          # Classic's grain; Dark and Light are flat
             from oracle_ogg_texture import png_bytes
             self.put(png_bytes('side'), 0, 0, 'content', w=W, h=H)
         self._bezel()
@@ -1153,11 +1167,18 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
         redraws (especially the Rune flip frames) cannot hide them.
         """
         c = self.c
+        import oracle_appearance
+        modern = self.modern_chrome()
         controls = (("trans", "WIRE", "next"), ("lex", "TONGUE", "word"),
                     ("cards", "CUT", "deal"), ("status", "GRADE", "view"))
+        if modern:     # 0.5.1: plain names for what each does
+            controls = (("trans", "Next quote", "next"), ("lex", "New word", "word"),
+                        ("cards", "Deal again", "deal"), ("status", "Layout", "view"))
         for section, label, action in controls:
             x0, y0, x1, y1 = self.rect[section]
             width = min(max(62, int(88 * self.k)), max(45, (x1 - x0) - 18))
+            if modern:
+                width = min(max(width, self.font(10, True, False).measure(label) + int(28 * self.k)), max(45, (x1 - x0) - 18))
             height = min(max(18, int(25 * self.k)), max(14, (y1 - y0) - 6))
             if section == "status":
                 # Keep GRADE at the right-hand end of the global footer.
@@ -1177,11 +1198,19 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
             right, bottom = left + width, top + height
             # Secondary actions match Oggcultist's matte button treatment:
             # the orange accent remains for the selected tab and primary CTA.
-            c.create_rectangle(left, top, right, bottom, fill="#2F2620",
-                               outline="#59473B", width=1,
-                               tags=("chrome", "section-actions"))
-            self.T((left+right)/2, (top+bottom)/2, label,
-                   10, "txt", "center", ("chrome", "section-actions"), True, False)
+            if modern:
+                from oracle_sidebar import round_rect
+                p = oracle_appearance.palette()
+                round_rect(c, left, top, right, bottom, max(5, int(7 * self.k)), fill=p['field'], outline='',
+                           tags=("chrome", "section-actions"))
+                self.T((left+right)/2, (top+bottom)/2, label, 10, p['ink'], "center", ("chrome", "section-actions"),
+                       True, False)
+            else:
+                c.create_rectangle(left, top, right, bottom, fill="#2F2620",
+                                   outline="#59473B", width=1,
+                                   tags=("chrome", "section-actions"))
+                self.T((left+right)/2, (top+bottom)/2, label,
+                       10, "txt", "center", ("chrome", "section-actions"), True, False)
             self.hot.append((left, top, right, bottom, action))
 
     def _arch(self):
@@ -1223,14 +1252,14 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
         # Probe fit using a smaller minimum face so the high-detail archive plates
         # can keep more characters on screen before the underlying data is
         # downsampled. This increases the apparent ASCII resolution.
-        fo = self.tkfont.Font(family=self.family, size=-3, weight="bold")
+        fo = self.tkfont.Font(family=self.art_family, size=-3, weight="bold")
         wmin = max(1, fo.measure("M"))
         hmin = max(max(fo.metrics("linespace") - 2, 4), int(wmin / self.ART_ASPECT * 0.84))
         self.statue.set_fit(plate, aw // wmin, ah // hmin)
         cols, rows = self.statue.dims(plate)
         best = None
         for px in range(20, 2, -1):
-            fo = self.tkfont.Font(family=self.family, size=-px, weight="bold")
+            fo = self.tkfont.Font(family=self.art_family, size=-px, weight="bold")
             w = max(1, fo.measure("M"))
             if w * cols > aw:
                 continue
@@ -1243,7 +1272,7 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
             if best:
                 break
         if best is None:
-            fo = self.tkfont.Font(family=self.family, size=-3, weight="bold")
+            fo = self.tkfont.Font(family=self.art_family, size=-3, weight="bold")
             w = max(1, fo.measure("M"))
             best = (fo, w, max(4, int(round(w / self.ART_ASPECT))))
         self.arch_fit[plate] = best
@@ -2296,6 +2325,8 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
 
     # ------------------------------------------------------------------ overlay glue
     def overlay_box(self):
+        if self.modern_chrome() and 'side' in self.rect:     # 0.5.1: everything right of the sidebar, under the header
+            return (self.rect['side'][2] + 1, self.rect['menu'][3], self.W, self.H)
         panels = [self.rect[n] for n in ("arch", "lex", "trans", "cards") if n in self.rect]
         return (min(r[0] for r in panels), min(self.rect["menu"][3] + 6, min(r[1] for r in panels)),          # 1055: never shorter than the panels,
                 max(r[2] for r in panels), max(self.rect["status"][3], max(r[3] for r in panels)))   # 0.4.9.6: workspaces also cover the GRADE footer, which acts only on HOME
@@ -2550,6 +2581,10 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
     def act(self, name, x=None):
         if name == "tab_home":
             return self.go_home()
+        if name == "appearance":                # 0.5.1: Dark / Light / Classic (the sidebar row, or the A key)
+            from oracle_appearance_window import show_appearance
+            show_appearance(self)
+            return
         if name == "guide":                     # the ? button beside the tabs (0.4.9.9)
             from oracle_suite_guide import show_suite_guide
             show_suite_guide(self)
@@ -2751,6 +2786,7 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
         elif k == "m": self.cycle_bezel()
         elif k == "e": self.act("ecc")
         elif k == "v": self.act("view")
+        elif k == "a": self.act("appearance")
         elif k == "escape":
             # 0.4.9.6: Escape never quits. From a workspace it already means
             # 'go HOME'; quitting on a second press closed the suite, running
@@ -2952,6 +2988,9 @@ class WindowApp:
         # className sets the Linux WM_CLASS, which the menu entry's StartupWMClass
         # matches, so the taskbar shows Marble Oracle's icon and name (0.4.9.9).
         self.root = root = tk.Tk(className='MarbleOracle')
+        # 0.5.1: Dark, Light or Classic. Must run before anything is drawn or any workspace module is imported.
+        import oracle_appearance
+        oracle_appearance.apply(root)
         root.title(suite_title())
         apply_window_icon(root)
         from oracle_widgets import install_interaction_defaults

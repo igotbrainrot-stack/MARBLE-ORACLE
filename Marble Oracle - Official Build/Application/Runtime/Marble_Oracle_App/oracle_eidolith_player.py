@@ -138,14 +138,13 @@ class InTabVideoPlayer:
              ('+10 SEC', lambda: self.seek(self.position + 10)),
              ('FULLSCREEN', self.open_fullscreen)),
         )
-        for idx, items in enumerate(commands):
-            controls = tk.Frame(self.root, bg=c['raised'])
-            controls.pack(fill='x', padx=10, pady=(8 if idx == 0 else 3, 1))
-            for label, callback in items:
-                primary = label == 'PLAY / RESUME'
-                # The suite button (oracle_shell), a little narrower so a row of three fits.
-                shell.button(controls, label, callback, primary=primary,
-                             padx=10, pady=5).pack(side='left', padx=(0, 6))
+        # 0.5.1: one wrapping row (oracle_widgets.flow): as many per line as fit, never squeezed.
+        from oracle_widgets import flow
+        controls = tk.Frame(self.root, bg=c['raised'])
+        controls.pack(fill='x', padx=10, pady=(8, 1))
+        buttons = [shell.button(controls, label, callback, primary=label == 'PLAY / RESUME', padx=10, pady=5)
+                   for items in commands for label, callback in items]
+        flow(controls, buttons, gap_x=6, gap_y=4)
         self.volume_var = tk.IntVar(value=85)
         volume = tk.Frame(self.root, bg=c['raised'])
         volume.pack(fill='x', padx=10, pady=(7, 5))

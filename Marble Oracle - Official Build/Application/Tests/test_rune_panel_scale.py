@@ -2,6 +2,8 @@
 
 Run: xvfb-run -a python3 Application/Tests/test_rune_panel_scale.py
 """
+import os
+os.environ.setdefault('MARBLE_ORACLE_APPEARANCE', 'classic')   # 0.5.1: this test checks Classic's labels and surfaces
 from pathlib import Path
 import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[1] / 'Runtime' / 'Marble_Oracle_App'))

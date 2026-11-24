@@ -300,15 +300,15 @@ class EidolithPanel(tk.Frame):
     def _section_files(self, parent):
         outer, box = self._section_frame(parent, 'SOURCE FILES', 'Choose the video to preview or inspect.')
         outer.pack(fill='both', expand=True)
-        tools = ogl_frame(box, bg=C['raised'])
+        # 0.5.1: the five file tools in one wrapping row, never squeezed at small sizes.
+        tools = tk.Frame(box, bg=C['raised'])
         tools.pack(fill='x', padx=8, pady=8)
-        self._button(tools, 'OPEN', self.open_files, primary=True).pack(side='left')
-        self._button(tools, 'FOLDER', self.add_folder).pack(side='left', padx=(5, 0))
-        self._button(tools, 'SELECT ALL', self.select_all).pack(side='left', padx=(5, 0))
-        act2 = ogl_frame(box, bg=C['raised'])
-        act2.pack(fill='x', padx=8, pady=(0, 8))
-        self._button(act2, 'REMOVE', self.remove_selected).pack(side='left')
-        self._button(act2, 'CLEAR LIST', self.clear_files).pack(side='left', padx=(5, 0))
+        tight = dict(padx=9, pady=5)     # compact, so the five usually take two rows and the media probe keeps room
+        flow(tools, [shell.button(tools, 'OPEN', self.open_files, primary=True, **tight),
+                     shell.button(tools, 'FOLDER', self.add_folder, **tight),
+                     shell.button(tools, 'SELECT ALL', self.select_all, **tight),
+                     shell.button(tools, 'REMOVE', self.remove_selected, **tight),
+                     shell.button(tools, 'CLEAR LIST', self.clear_files, **tight)], gap_x=5, gap_y=4)
 
         list_frame = ogl_frame(box, bg=C['raised'])
         list_frame.pack(fill='both', expand=True, padx=8, pady=(0, 8))

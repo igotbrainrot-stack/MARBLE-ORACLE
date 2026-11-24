@@ -2,6 +2,41 @@
 
 Newest first. Releases before 0.4.9.3 have their original notes in `History/ReleaseNotes/`.
 
+## 0.5.1 · 24 November 2026 · OVERCAST's design for the whole suite
+
+Built on 0.5.0. No saved setting changes format. Your forecasts, music library, queues and scores are untouched.
+
+- **Three appearances.** The choice is saved in `appearance.json` in the state folder. `MARBLE_ORACLE_APPEARANCE` and `MARBLE_ORACLE_ACCENT` override it for one run.
+  - **Dark**, the new default, and **Light** use OVERCAST's design throughout:
+    - its palette, with WCAG AA text contrast;
+    - a sans-serif face (SF Pro, Inter, Adwaita Sans or Segoe UI, whichever the system has);
+    - flat rounded cards, no film grain, and sentence-case labels.
+  - Dark and Light also take an accent: Amber, Blue, Green or Graphite.
+  - **Classic** is the suite exactly as in 0.5.0.
+  - The **Appearance** window (sidebar, or the A key on HOME) saves the choice and offers **Restart now**. A conversion in progress still asks before the suite closes.
+- **The left sidebar** (Dark and Light) replaces the tab strip.
+  - It has the seven workspaces with drawn icons, plus Welcome guide and Appearance at its foot.
+  - It is 212 px wide from 1200 px, 184 px from 1100 px, and a 60 px icon rail below that, so the workspaces keep their width at 900x580.
+  - A header names the open workspace and what it is for.
+  - Every workspace opens in the whole area right of the sidebar. The CRT housing keeps the tab strip.
+- **How the restyle is done:**
+  - Every workspace already took its colours from the shared Ember tokens and its font from `marble_uberata.FAMILY`.
+  - `oracle_appearance.apply()` points those tokens at OVERCAST's palette once at start-up, before anything is drawn.
+  - **HOME** gets flat cards with titles like "Plate vault", and plainly named buttons: Next quote, New word, Deal again, Layout.
+  - **Shared helpers:** `oracle_shell`'s buttons, labels and rail items lose their box and use sentence case.
+  - **Grain:** the film-grain helpers return flat widgets.
+  - **The embedded Oggcultist:** its own tokens and fonts are retinted. Its generated artwork is drawn without grain or bevel, and its few literal Ember colours are mapped to the matching OVERCAST colour.
+  - The ASCII statue keeps Uberata Clear, because its proportions depend on it.
+- **OVERCAST follows the suite.** In Dark and Light it uses the suite's appearance and accent, and its own saved setting is left for when it runs alone. Its Settings say so.
+- **Nothing squeezed at 900x580** (every appearance):
+  - EIDOLITH's player controls and file tools wrap instead of squeezing SELECT ALL, STOP and FULLSCREEN.
+  - OGGCULTIST's Folders, Create and Delete buttons stay whole. These are three small layout changes inside the bundled Oggcultist (`converter_view.py`, `collection_pages.py`).
+- **Tests:**
+  - `test_appearance_0510.py` (260 checks):
+    - the sentence-case rule, the saved choice and its overrides, and the colour mapping;
+    - in Dark and in Light, at four sizes: the sidebar, where HOME's panels sit, every workspace filling its box and being marked in the sidebar and header, no button squeezed or cut off in any workspace, rune stones, passphrase words, the Appearance window and the A key, and no Tk call from a worker thread.
+  - Ten older tests that check Classic's exact labels and surfaces now pin Classic.
+
 ## 0.5.0 · 24 November 2026 · OVERCAST joins the suite
 
 Built on 0.4.9.9. No saved setting changes format.
