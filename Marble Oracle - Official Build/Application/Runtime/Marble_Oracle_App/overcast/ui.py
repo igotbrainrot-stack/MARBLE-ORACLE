@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime, date, timedelta, timezone
 import json
+import re
 import calendar as std_calendar
 from pathlib import Path
 from queue import Empty, Queue
@@ -506,7 +507,31 @@ class NewsOraclePanel(tk.Frame):
         # 0 roomy; 1 (under 820 px) no tagline, tighter group headings; 2 (under 640 px, the suite at 900x580)
         # no brand block or page description, no group headings, smaller title and rows.
         level=2 if event.height<640 else (1 if event.height<820 else 0)
-        if getattr(self,'_panel_level',None)==level:return
+        self._panel_height=event.height
+        if getattr(self,'_panel_base',None)==level:return
+        self._panel_base=level
+        self._apply_panel_level(level)
+        self.after_idle(self._settle_rail)
+
+    def _rail_needs(self):
+        """Height the sidebar's packed items ask for, padding included."""
+        total=0
+        for child in self._rail.pack_slaves():
+            pady=child.pack_info().get('pady',0)
+            pads=[int(float(v)) for v in re.findall(r'-?\d+(?:\.\d+)?',str(pady))] or [0]
+            total+=child.winfo_reqheight()+(sum(pads) if len(pads)>1 else 2*pads[0])
+        return total
+
+    def _settle_rail(self):
+        """If the sidebar still does not fit (larger fonts or DPI than expected), step up the compaction."""
+        try:
+            while self._panel_level<2 and self._rail_needs()>self._rail.winfo_height():
+                self._apply_panel_level(self._panel_level+1)
+                self.update_idletasks()
+        except tk.TclError:
+            pass
+
+    def _apply_panel_level(self,level):
         self._panel_level=level
         self._panel_short=level==2
         short=level==2
