@@ -2,6 +2,22 @@
 
 Newest first. Releases before 0.4.9.3 have their original notes in `History/ReleaseNotes/`.
 
+## 0.5.2 · 24 November 2026 · A faint pumice surface for Dark and Light
+
+Built on 0.5.1. No saved setting changes format.
+
+- **Pumice instead of flat colour.** Dark and Light surfaces now carry a faint pumice-stone texture, where Classic has its film grain. It covers HOME's page and cards, the sidebar, header and footer, the workspaces' textured frames and labels, AUGURSPEX's chart backgrounds, and the embedded Oggcultist's generated artwork.
+  - The texture is small pores stretched along one direction, with ragged edges, a lit inner wall and a faint rim, plus a slow mottle and a fine grain.
+  - It is faint: 95% of pixels move by 3 levels or fewer, the deepest pores by about 15. Light surfaces get a quarter more, so the pores still read on white.
+- **How:**
+  - `oracle_pumice.py` computes one seamless 256 px relief in pure Python and tints it to each surface colour. It needs no Pillow and takes about 0.3 s at start-up.
+  - `oracle_ogg_texture.use_pumice()` puts these tiles where Classic uses the grain PNGs.
+  - HOME's cards are the tile with drawn rounded corners and a hairline.
+  - Oggcultist's artwork gets the relief in place of its film grain.
+- **Not textured:** OVERCAST's own panel. Its pages are built from plain Tk frames and labels, which cannot sit on a picture, so a texture there would show only as gaps between them.
+- **Fixes:** texture images are shared per window and kept for the life of the process, so none is freed from a worker thread. This is the same issue 0.4.9.9 fixed for other images.
+- **Tests:** `test_appearance_0510.py` now has 275 checks. They cover the relief (deterministic, fast, faint, has pores, tiles without a seam, encodes) and that the page, sidebar and cards carry it in Dark and Light at four sizes.
+
 ## 0.5.1 · 24 November 2026 · OVERCAST's design for the whole suite
 
 Built on 0.5.0. No saved setting changes format. Your forecasts, music library, queues and scores are untouched.

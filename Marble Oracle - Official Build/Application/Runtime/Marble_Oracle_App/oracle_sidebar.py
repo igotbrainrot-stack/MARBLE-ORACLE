@@ -120,12 +120,20 @@ class SidebarMixin:
         hx0, hy0, hx1, hy1 = self.rect['menu']
         fx0, fy0, fx1, fy1 = self.rect['status']
         self.menu_bg = p['bg']
-        # Sidebar surface and its hairline.
+        import oracle_ogg_texture
+        pumice = oracle_ogg_texture.MODE == 'pumice'
+        # Sidebar surface and its hairline (0.5.2: pumice-textured, like the page).
         c.create_rectangle(0, 0, sx1, self.H, fill=p['side'], outline='', tags='chrome')
+        if pumice:
+            self.put(oracle_ogg_texture.png_bytes('side'), 0, 0, 'chrome', w=sx1, h=self.H)
         c.create_line(sx1, 0, sx1, self.H, fill=p['line'], tags='chrome')
         # Header and footer on the page background.
         c.create_rectangle(sx1 + 1, hy0, hx1, hy1, fill=p['bg'], outline='', tags='chrome')
         c.create_rectangle(sx1 + 1, fy0, fx1, fy1, fill=p['bg'], outline='', tags='chrome')
+        if pumice:
+            for y0_, y1_ in ((hy0, hy1), (fy0, fy1)):
+                if y1_ > y0_ and hx1 > sx1 + 1:
+                    self.put(oracle_ogg_texture.png_bytes('page'), sx1 + 1, y0_, 'chrome', w=hx1 - sx1 - 1, h=y1_ - y0_)
         c.create_line(sx1 + 1, fy0, fx1, fy0, fill=p['line'], tags='chrome')
         pad = px(14, k)
         rail = sx1 - sx0 <= RAIL + 1
@@ -190,7 +198,7 @@ class SidebarMixin:
     def _side_row(self, action, name, icon, x0, y0, x1, y1, p, nav=True, rail=False):
         from oracle_skin import px
         c, k = self.c, self.k
-        pill = round_rect(c, x0, y0, x1, y1, px(7, k), fill=p['side'], outline='', tags='chrome')
+        pill = round_rect(c, x0, y0, x1, y1, px(7, k), fill='', outline='', tags='chrome')
         size = max(14 if rail else 12, px(17, k))
         icon_x = (x0 + x1) / 2.0 if rail else x0 + px(12, k) + size / 2.0
         cy = (y0 + y1) / 2.0
@@ -210,7 +218,7 @@ class SidebarMixin:
         for action, (pill, text, icon_tag) in getattr(self, '_side_rows', {}).items():
             on = action == active
             try:
-                c.itemconfigure(pill, fill=p['select_side'] if on else p['side'])
+                c.itemconfigure(pill, fill=p['select_side'] if on else '')
                 c.itemconfigure(text, font=self.font(12, on, False))
                 for item in c.find_withtag(icon_tag):
                     kind = c.type(item)

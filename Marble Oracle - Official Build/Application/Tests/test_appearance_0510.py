@@ -58,6 +58,32 @@ def pure_checks():
         check('an unknown appearance is refused', False)
     except ValueError:
         check('an unknown appearance is refused', True)
+    # 0.5.2: the pumice tile.
+    import time as _time
+    import oracle_pumice
+    started = _time.time()
+    heights = oracle_pumice.relief()
+    took = _time.time() - started
+    size = oracle_pumice.SIZE
+    check('pumice: the relief is computed quickly (under 1.5 s)', took < 1.5, round(took, 2))
+    check('pumice: the same every time (seeded)', oracle_pumice.relief.__wrapped__(size) == heights)
+    levels = sorted(abs(v) for v in heights)
+    check('pumice: faint (95% of pixels within 3 levels, none beyond 16)',
+          levels[int(len(levels) * 0.95)] <= 3.0 and levels[-1] <= 16, (levels[int(len(levels) * 0.95)], levels[-1]))
+    darker = sum(1 for v in heights if v < -2.5) / len(heights)
+    check('pumice: has pores (2-15% of pixels clearly darker)', 0.02 <= darker <= 0.15, round(darker, 3))
+
+    def jump(a, b):
+        return sum(abs(heights[a(i)] - heights[b(i)]) for i in range(size)) / size
+    inner = jump(lambda i: i * size + size // 2 - 1, lambda i: i * size + size // 2)
+    seam_x = jump(lambda i: i * size + size - 1, lambda i: i * size)
+    seam_y = jump(lambda i: (size - 1) * size + i, lambda i: i)
+    check('pumice: tiles without a seam (the wrap is no rougher than any other column or row)',
+          seam_x <= inner * 1.6 and seam_y <= inner * 1.6, (round(seam_x, 2), round(seam_y, 2), round(inner, 2)))
+    png = oracle_pumice.tile_png('#1C1C1E')
+    check('pumice: a tile is a PNG of the tile size', png[:8] == b'\x89PNG\r\n\x1a\n' and int.from_bytes(png[16:20], 'big') == size)
+    corner = oracle_pumice.corner_png(12, '#1C1C1E', 'tl')
+    check('pumice: card corners are drawn', corner[:8] == b'\x89PNG\r\n\x1a\n')
     from overcast.theme import palette
     for look in ('dark', 'light'):
         p = palette(look, 'Amber')
@@ -84,7 +110,7 @@ def gui_checks(look):
         p = oracle_appearance.palette()
         check(f'{look}: the appearance is applied', oracle_appearance.appearance() == look and p is not None)
         print(f'INFO {look}: interface font {oracle_appearance.family()}')
-        check(f'{look}: no film grain', oracle_ogg_texture.ENABLED is False)
+        check(f'{look}: pumice instead of film grain (0.5.2)', oracle_ogg_texture.ENABLED and oracle_ogg_texture.MODE == 'pumice')
         check(f'{look}: HOME uses the palette', scene.th['bg'] == p['bg'] and scene.th['panel'] == p['card'])
 
         def pump(n=6):
@@ -102,6 +128,9 @@ def gui_checks(look):
             scene.resized(w, h)
             pump()
             check(f'{look} {size}: the sidebar is drawn', scene.modern_chrome() and 'side' in scene.rect)
+            images = [i for i in scene.c.find_all() if scene.c.type(i) == 'image']
+            wide = [i for i in images if (lambda b: b and b[2] - b[0] >= 100 and b[3] - b[1] >= 100)(scene.c.bbox(i))]
+            check(f'{look} {size}: the page, sidebar and cards carry the pumice (large tiled images)', len(wide) >= 6, len(wide))
             side = scene.rect['side']
             actions = [h_[4] for h_ in scene.hot if h_[2] <= side[2] + 1]
             wanted = [a for a, *_ in WORKSPACES] + [a for a, *_ in EXTRAS]

@@ -182,9 +182,12 @@ def apply(root):
     import oracle_home_focus
     oracle_home_focus.FOCUS_COLOUR = p['accent']
     oracle_home_focus.HOVER_COLOUR = p['faint']
-    # 2. No film grain: textured frames become flat ones.
+    # 2. A faint pumice instead of Classic's film grain (0.5.2), on the new surface colours.
     import oracle_ogg_texture
-    oracle_ogg_texture.ENABLED = False
+    roles = ember_roles(p)
+    oracle_ogg_texture.use_pumice({'page': p['bg'], 'card': p['card'], 'side': p['side'], 'sunken': roles['sunken'],
+                                   'sunken_alt': roles['sunken_alt'], 'control': p['field'],
+                                   'accent_soft': p['select']})
     # 3. The interface font. HOME's statue keeps Uberata Clear (it is ASCII art and needs its metrics).
     import marble_uberata
     marble_uberata.ART_FAMILY = marble_uberata.FAMILY
@@ -343,6 +346,33 @@ def _flatten_oggcultist_artwork(p):
         return
     original_rgb = tx._rgb
     tx._rgb = lambda colour: original_rgb(translate_ember(colour, p, strict=True) if isinstance(colour, str) else colour)
-    tx._finish = lambda body, seed=0, amount=0.0, mottle=True: body          # no film grain
+    tx._finish = _pumice_finish                                              # pumice, not film grain (0.5.2)
     tx.bevel = lambda image, radius=0, strength=0, inset=0.0: image          # no bevel shading
     tx._marble_flat = True
+
+
+_PUMICE_OFFSET = {}
+
+
+def _pumice_finish(body, seed=0, amount=0.0, mottle=True):
+    """Oggcultist's _finish for Dark / Light: the faint pumice relief over a Pillow image, instead of film grain.
+    Surfaces with no grain asked for (amount 0) stay flat."""
+    if not amount:
+        return body
+    try:
+        import io
+        from PIL import Image, ImageChops
+        import oracle_pumice
+        tile = _PUMICE_OFFSET.get('tile')
+        if tile is None:
+            tile = _PUMICE_OFFSET['tile'] = Image.open(io.BytesIO(oracle_pumice.offset_png())).convert('RGB')
+        w, h = body.size
+        offset = Image.new('RGB', (w, h))
+        for y in range(0, h, tile.height):
+            for x in range(0, w, tile.width):
+                offset.paste(tile, (x, y))
+        mode = body.mode
+        out = ImageChops.add(body.convert('RGB'), offset, 1.0, -128)
+        return out.convert(mode) if mode != 'RGB' else out
+    except Exception:
+        return body

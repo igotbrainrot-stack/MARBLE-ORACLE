@@ -48,6 +48,7 @@ FONT_PREFERENCE = ('SF Pro Text', 'SF Pro Display', 'Inter', 'Inter Variable', '
 MONO_PREFERENCE = ('SF Mono', 'JetBrains Mono', 'Cascadia Mono', 'Consolas', 'Noto Sans Mono',
                    'DejaVu Sans Mono')
 SURFACES = ('bg', 'card', 'side')
+_KEPT_IMAGES = []
 
 
 def hex_rgb(c):
@@ -302,6 +303,9 @@ class Theme:
             img = tk.PhotoImage(master=root, width=len(rows[0]), height=len(rows))
             img.put(to_photo_data(rows), to=(0, 0))
             self.images[key] = img
+            # Kept for the life of the process: if a destroyed panel's images were freed by garbage collection
+            # running on a worker thread, Tk would refuse ("main thread is not in main loop").
+            _KEPT_IMAGES.append(img)
         return self.images[key]
 
     def _element(self, style, name, *args, **kw):
