@@ -109,7 +109,7 @@ def gui_checks(look):
                   all(a in actions for a in wanted), actions)
             rows = [h_ for h_ in scene.hot if h_[4] in wanted]
             check(f'{look} {size}: every row is inside the sidebar and the window',
-                  all(side[0] <= r[0] and r[2] <= side[2] and 0 <= r[1] and r[3] <= h for r in rows), rows)
+                  all(side[0] <= r[0] and r[2] <= side[2] and 0 <= r[1] and r[3] <= scene.H for r in rows), rows)
             overlap = [(a[4], b[4]) for i, a in enumerate(rows) for b in rows[i + 1:] if a[1] < b[3] and b[1] < a[3]]
             check(f'{look} {size}: no two rows overlap', not overlap, overlap)
             rail = getattr(scene, '_side_rail', False)
@@ -122,14 +122,15 @@ def gui_checks(look):
             check(f'{look} {size}: no sidebar name is cut off', not cut, cut)
             panels = [scene.rect[n] for n in ('arch', 'lex', 'trans', 'cards', 'aug') if n in scene.rect]
             check(f'{look} {size}: HOME\'s panels sit right of the sidebar, inside the window',
-                  all(r[0] > side[2] and r[2] <= w and r[3] <= h for r in panels), panels)
+                  all(r[0] > side[2] and r[2] <= scene.W and r[3] <= scene.H for r in panels), panels)
             for action, name, _blurb, _icon in WORKSPACES[1:]:
                 scene.act(action)
                 pump(10)
                 box = scene.overlay_box()
                 session = getattr(scene, scene._which_overlay() or '', None)
                 frame = getattr(session, 'frame', None)
-                ok = (box == (side[2] + 1, scene.rect['menu'][3], w, h) and frame is not None
+                # The window may be smaller than asked (Windows keeps it within the screen): use the real size.
+                ok = (box == (side[2] + 1, scene.rect['menu'][3], scene.W, scene.H) and frame is not None
                       and abs(frame.winfo_width() - (box[2] - box[0])) <= 2)
                 check(f'{look} {size}: {name} fills the box right of the sidebar', ok,
                       (box, frame and (frame.winfo_width(), frame.winfo_height())))

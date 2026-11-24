@@ -300,6 +300,7 @@ class EidolithPanel(tk.Frame):
     def _section_files(self, parent):
         outer, box = self._section_frame(parent, 'SOURCE FILES', 'Choose the video to preview or inspect.')
         outer.pack(fill='both', expand=True)
+        self._files_outer = outer
         # 0.5.1: the five file tools in one wrapping row, never squeezed at small sizes.
         tools = tk.Frame(box, bg=C['raised'])
         tools.pack(fill='x', padx=8, pady=8)
@@ -371,7 +372,10 @@ class EidolithPanel(tk.Frame):
 
     def _section_probe(self, parent):
         outer, box = self._section_frame(parent, 'MEDIA PROBE', 'Streams and metadata.')
-        outer.pack(fill='both', expand=True)
+        # Packed ahead of SOURCE FILES (whose list can shrink), so in a short window the probe keeps its lines
+        # even when the file tools take three rows (wider fonts, Windows).
+        files = getattr(self, '_files_outer', None)
+        outer.pack(fill='both', expand=True, side='bottom', **({'before': files} if files is not None else {}))
         body = ogl_frame(box, bg=C['raised'])
         body.pack(fill='both', expand=True, padx=10, pady=10)
         self.probe_text = self._text(body, height=2)
