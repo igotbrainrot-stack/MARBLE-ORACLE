@@ -8,6 +8,8 @@ and the caption band swallowed the column. This reproduces the condition on
 any system by reporting a taller line height, as Windows does. It is a
 simulation: the real proof is test_rune_click_and_art.py passing on Windows.
 """
+import os
+os.environ.setdefault('MARBLE_ORACLE_APPEARANCE', 'classic')   # 0.5.1: this test checks Classic's labels and surfaces
 from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'Runtime' / 'Marble_Oracle_App'))

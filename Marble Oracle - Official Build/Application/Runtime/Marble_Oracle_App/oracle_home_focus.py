@@ -46,7 +46,7 @@ HOVER_MAX_SHARE = 0.18
 # Friendly names for the status line when focus arrives on a control.
 NAMES = {
     'tab_home': 'HOME', 'tab_oggcultist': 'OGGCULTIST', 'tab_eidolith': 'EIDOLITH',
-    'tab_augurspex': 'AUGURSPEX', 'tab_overcast': 'OVERCAST', 'tab_passphrase': 'PASSPHRASE', 'tab_touch_type': 'TOUCH TYPE',
+    'tab_augurspex': 'AUGURSPEX', 'tab_overcast': 'OVERCAST', 'appearance': 'APPEARANCE', 'tab_passphrase': 'PASSPHRASE', 'tab_touch_type': 'TOUCH TYPE',
     'mode_tarot': 'TAROT', 'mode_runes': 'RUNES', 'rune_draw': 'DRAW THE RUNES',
     'rune_select0': 'RUNE · PAST', 'rune_select1': 'RUNE · PRESENT', 'rune_select2': 'RUNE · POSSIBLE FUTURE',
     'card0': 'TAROT CARD 1', 'card1': 'TAROT CARD 2', 'card2': 'TAROT CARD 3',

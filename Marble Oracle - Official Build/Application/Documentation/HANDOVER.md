@@ -1,4 +1,4 @@
-# Handover: Marble Oracle 0.5.0
+# Handover: Marble Oracle 0.5.1
 
 22 November 2026 (0.4.9.7: 16 November). For whoever picks this up next, human or AI. Earlier handovers (0.4.9.3 to 0.4.9.5) are in `History/HANDOVER_0.4.9.3-0.4.9.5.md`; this file replaces them.
 
@@ -17,7 +17,8 @@
 | #10 | `claude/marble-oracle-0497-polish` | 0.4.9.7 | HOME keyboard and hover, fit fixes at 900x580, Windows CI required, this handover |
 | #11 | `claude/marble-oracle-0498-ogg-rail` | 0.4.9.8 | OGGCULTIST rail: Settings always reachable, icons fit at 900x580 |
 | #12 | `claude/marble-oracle-0499-professional` | 0.4.9.9 | Welcome guide, slim scrollbars and dropdowns, install for every Linux family, dead files removed |
-| **#13** | **`claude/marble-oracle-0500-overcast`** | **0.5.0** | **OVERCAST 1.1.2 as the seventh workspace** |
+| #13 | `claude/marble-oracle-0500-overcast` | 0.5.0 | OVERCAST 1.1.2 as the seventh workspace |
+| **#14** | **`claude/marble-oracle-0510-design`** | **0.5.1** | **Dark / Light (OVERCAST's design, default) and Classic; left sidebar** |
 
 - **The branch is the whole application:** every asset archive, font and texture is in Git. Only the two third-party research PDFs are left out (`.gitignore`); they are in the release ZIP under `Documentation/Research/`.
 - **Read next:** `README.md`, `ARCHITECTURE.md`, `DEVELOPMENT.md`, `CHANGELOG.md`, `TESTING_REPORT.md`.
@@ -25,6 +26,14 @@
 ## State in one paragraph
 
 All six workspaces work, share one page shell and one interaction look (hover, a cream keyboard-focus ring, an amber "current" fill), and HOME can now be used from the keyboard. The whole regression suite passes on GitHub's Linux runner (Tk under Xvfb) and on its Windows runner (native Tk), and since 0.4.9.7 the Windows job is required. **Nothing has been run on a physical PC, and none of the market sources added in 0.4.9.4 has been seen answering live.**
+
+## What 0.5.1 changed
+
+- **Appearance is applied once, at start-up.** `oracle_appearance.apply(root)` runs in `WindowApp.__init__` before anything is drawn. It retints the shared token dicts (`oggcultist_design_system.COLOR`, HOME's `THEMES['EMBER']` and `EMBER_SURFACES`), turns grain off (`oracle_ogg_texture.ENABLED`) and swaps `marble_uberata.FAMILY`.
+  - **New code:** read colours from the tokens at build time, never copy them into module constants at import, or Dark/Light will miss them. Pass visible capitals through `oracle_shell.shown()` / `oracle_appearance.display()`.
+- **Chrome:** `oracle_sidebar.SidebarMixin` draws the Dark/Light chrome. `Scene.modern_chrome()` decides between it and the tab strip (the CRT housing always keeps the strip). `overlay_box()` is the area right of the sidebar.
+- **Oggcultist:** `oracle_appearance.retint_oggcultist()` is called by `oracle_ogg_tab` before Oggcultist is imported.
+- **Tests:** older tests that check Classic's exact labels set `MARBLE_ORACLE_APPEARANCE=classic`. `test_appearance_0510.py` covers Dark and Light.
 
 ## What 0.5.0 changed
 

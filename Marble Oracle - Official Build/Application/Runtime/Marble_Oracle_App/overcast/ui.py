@@ -109,12 +109,15 @@ def spans_to_markdown(spans):
 
 
 class NewsOraclePanel(tk.Frame):
-    def __init__(self, parent, *, state_dir=None, on_event=None, standalone=False):
+    def __init__(self, parent, *, state_dir=None, on_event=None, standalone=False, appearance=None, accent=None):
         self.engine=NewsOracleEngine(state_dir=state_dir)
         self._settings_path=Path(self.engine.store.state_dir)/'overcast_settings.json'
         early=self._load_settings()
-        self.theme=theme_mod.Theme(early.get('appearance',theme_mod.DEFAULT_APPEARANCE),
-                                   early.get('accent',theme_mod.DEFAULT_ACCENT))
+        # 1.1.2: a host (Marble Oracle) may set the look; OVERCAST's own saved choice is then kept, not used.
+        self._host_look=appearance in theme_mod.APPEARANCES
+        self.theme=theme_mod.Theme(appearance if self._host_look else early.get('appearance',theme_mod.DEFAULT_APPEARANCE),
+                                   accent if (self._host_look and accent in theme_mod.ACCENTS)
+                                   else early.get('accent',theme_mod.DEFAULT_ACCENT))
         _set_palette(self.theme.p)
         super().__init__(parent,bg=BG)
         self.state_dir=state_dir
@@ -1050,9 +1053,16 @@ class NewsOraclePanel(tk.Frame):
             'Estimates when the event would happen if it does (one extra call).')
 
         look=group(right,'Appearance')
-        row(look,'Mode',self._chips(look,self.appearance,(('dark','Dark'),('light','Light')),command=self._apply_appearance))
-        row(look,'Accent',self._chips(look,self.accent,[(a,a) for a in theme_mod.ACCENTS],command=self._apply_appearance),
+        mode_chips=self._chips(look,self.appearance,(('dark','Dark'),('light','Light')),command=self._apply_appearance)
+        accent_chips=self._chips(look,self.accent,[(a,a) for a in theme_mod.ACCENTS],command=self._apply_appearance)
+        row(look,'Mode',mode_chips)
+        row(look,'Accent',accent_chips,
+            'Follows Marble Oracle (its sidebar › Appearance).' if self._host_look else
             'Applies the next time OVERCAST opens.')
+        if self._host_look:
+            for chips in (mode_chips,accent_chips):
+                for chip in chips.winfo_children():
+                    chip.state(['disabled'])
 
         feeds=group(right,'News feeds')
         row(feeds,'Auto-refresh',self._chips(feeds,self.auto_refresh,(('0','Off'),('3','3 h'),('6','6 h'),('12','12 h')),

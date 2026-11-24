@@ -2,6 +2,8 @@
 
 This test lives with application sources, but is invoked under a virtual Tk display.
 """
+import os
+os.environ.setdefault('MARBLE_ORACLE_APPEARANCE', 'classic')   # 0.5.1: this test checks Classic's labels and surfaces
 from pathlib import Path
 import sys, json, hashlib, importlib.util
 from PIL import Image

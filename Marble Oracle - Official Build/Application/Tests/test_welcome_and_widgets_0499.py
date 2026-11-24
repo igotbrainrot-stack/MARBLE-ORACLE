@@ -5,6 +5,7 @@
 from pathlib import Path
 import json
 import os
+os.environ.setdefault('MARBLE_ORACLE_APPEARANCE', 'classic')   # 0.5.1: this test checks Classic's labels and surfaces
 import sys
 import tempfile
 import time

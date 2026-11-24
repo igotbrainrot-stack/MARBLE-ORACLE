@@ -357,6 +357,16 @@ class SkinMixin:
         x0, y0, x1, y1 = box
         clean = getattr(self, "clean", lambda: False)()
         look = getattr(self, "look", lambda: None)()
+        import oracle_appearance
+        if oracle_appearance.modern():                                      # 0.5.1 Dark / Light: OVERCAST's flat rounded card
+            p = oracle_appearance.palette()
+            art = self.skin_card(box, fill=p['card'], border=hexmix(p['line'], p['card'], 0.55), radius=12, reach=0,
+                                 drop=0, shade=0.0)
+            tid = self.T(x0 + px(16, k), y0 + hh // 2 + px(2, k), oracle_appearance.display(title), 13, p['ink'], "w",
+                         bold=True, mono=False)
+            rid = (self.T(x1 - px(16, k), y0 + hh // 2 + px(2, k), oracle_appearance.display(right), 11, p['dim'], "e",
+                          mono=False) if right else None)
+            return tid, rid
         if look in ("PANES", "GLASS", "OLED"):                               # Flat Oggcultist-style inset cards.
             # HOME panel bodies share Oggcultist's actual sidebar surface.
             # Previously only the gutter was this dark; panels stayed raised.
@@ -404,8 +414,9 @@ class SkinMixin:
         art = bar(self.k, y1 - y0, base, base, radius, edge, glow, glow_a * 0.6 if glow else 0.0, 0.0, 6, 0.0,
                   self.skin_fill() if under is None else (under or None))
         ids = self.put_three(art, x0, y0, x1, tags)
-        # Same actual Oggcultist dark table-field tile beneath content.
-        if x1-x0 > 8 and y1-y0 > 8:
+        # Same actual Oggcultist dark table-field tile beneath content (Classic only).
+        import oracle_ogg_texture
+        if x1-x0 > 8 and y1-y0 > 8 and oracle_ogg_texture.ENABLED:
             from oracle_ogg_texture import png_bytes
             self.put(png_bytes('sunken'), x0+3, y0+3, tags,
                      w=max(1, x1-x0-6), h=max(1, y1-y0-6))

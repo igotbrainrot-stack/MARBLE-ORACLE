@@ -1,6 +1,6 @@
 # Marble Oracle
 
-**Version 0.5.0 · 24 November 2026 · Windows 10/11 and Linux (Mint, Ubuntu, Fedora, Arch, openSUSE)**
+**Version 0.5.1 · 24 November 2026 · Windows 10/11 and Linux (Mint, Ubuntu, Fedora, Arch, openSUSE)**
 
 A dark, local-first desktop suite: an oracle dashboard, a music player, a video converter, a market observatory, a news forecasting desk, a passphrase generator and a typing trainer in one window. Python and Tk; no account or sign-in. It goes online only for public market history in AUGURSPEX, public news feeds in OVERCAST when you refresh them, album lookups in OGGCULTIST when you ask for them, and (on Windows) to download FFmpeg if you choose to install it. OVERCAST's forecasts come from a model running on your own computer (LM Studio), never from a cloud service.
 
@@ -15,6 +15,20 @@ A dark, local-first desktop suite: an oracle dashboard, a music player, a video 
 
 After the first run, starting it checks quickly and goes straight to the suite.
 
+## Appearance
+
+Marble Oracle comes in three appearances:
+
+- **Dark** (the default): flat surfaces, rounded cards, a sans-serif face and a sidebar. This is OVERCAST's design, applied to the whole suite.
+- **Light**: the same design on light surfaces.
+- **Classic**: the original look, with Oggcultist's Ember colours, film grain, the serif face and the tab strip along the top.
+
+Dark and Light also offer an accent colour: Amber, Blue, Green or Graphite.
+
+To change it, choose **Appearance** at the foot of the sidebar or press **A** on HOME. **Restart now** applies it; otherwise it applies the next time Marble Oracle starts.
+
+Below 1100 px wide, the sidebar shrinks to an icon rail and the header names the open workspace. Inside the suite, OVERCAST follows the suite's appearance.
+
 ## The seven workspaces
 
 | Tab | What it is for |
@@ -27,7 +41,7 @@ After the first run, starting it checks quickly and goes straight to the suite.
 | **PASSPHRASE** | Three words, a number and a symbol drawn from the operating system's secure random source. Nothing is saved; a copied phrase is cleared from the clipboard after 60 seconds. |
 | **TOUCH TYPE** | Four typing games with finger guidance and saved best scores. |
 
-Press **F1** (or **?** beside the tabs) for the welcome guide. Every workspace has a **HOME** button, and the tab strip is always visible. On HOME, **Tab** and **Shift+Tab** step through the controls, **Enter** or **Space** presses the one with the cream ring, and **Escape** puts the ring away. Escape never closes the suite; use the window's close button.
+Press **F1** (or **Welcome guide** in the sidebar, or **?** beside the tabs in Classic) for the welcome guide. Every workspace has a **HOME** button, and the sidebar (or, in Classic, the tab strip) is always visible. On HOME, **Tab** and **Shift+Tab** step through the controls, **Enter** or **Space** presses the one with the cream ring, and **Escape** puts the ring away. Escape never closes the suite; use the window's close button.
 
 ## Market data in one paragraph
 

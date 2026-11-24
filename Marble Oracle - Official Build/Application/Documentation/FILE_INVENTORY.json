@@ -1,14 +1,14 @@
 {
- "release": "Marble Oracle 0.4.9.9",
- "generated_utc": "2026-11-21T15:23:56+00:00",
+ "release": "Marble Oracle 0.5.1",
+ "generated_utc": "2026-11-24T01:29:14+00:00",
  "schema": "sha256-inventory-v2",
  "excluded_from_hashes": [
   "Application/Documentation/BUILD_MANIFEST.json",
   "Application/Documentation/FILE_INVENTORY.json"
  ],
  "optional_note": "Entries marked optional are in the portable ZIP but not in Git; verify_release.py checks them when present.",
- "inventory_file_count": 455,
- "inventory_total_bytes": 110245775,
+ "inventory_file_count": 511,
+ "inventory_total_bytes": 111102677,
  "files": [
   {
    "path": "Application/.gitignore",
@@ -22,8 +22,8 @@
   },
   {
    "path": "Application/Documentation/CHANGELOG.md",
-   "bytes": 24096,
-   "sha256": "8c75f3dec0a64ed4c5dc24f99ea0238a8417848adb7015b00554a8e90199cdb8"
+   "bytes": 29316,
+   "sha256": "b61f7652534015d51d92b09d1e9071942b5d8c1ec550c791994c404a28beb296"
   },
   {
    "path": "Application/Documentation/DEVELOPMENT.md",
@@ -37,8 +37,8 @@
   },
   {
    "path": "Application/Documentation/HANDOVER.md",
-   "bytes": 10847,
-   "sha256": "e093f28b4498d67a8416063df6c8a6c46fdcf6b6889020d8e2537845b5c70fbd"
+   "bytes": 12794,
+   "sha256": "e5b09860e011ef3b9c0f8ea7d891d6f58951d3edb75f22dcaff59331db9e27ac"
   },
   {
    "path": "Application/Documentation/History/ALL_SECTIONS_TEXTURE_UPDATE.md",
@@ -431,6 +431,31 @@
    "sha256": "b1cd7d79920f41e098187831b75c53ecafe8d371b5182a2c76cb6b86456315d8"
   },
   {
+   "path": "Application/Documentation/Overcast/CHANGELOG.md",
+   "bytes": 19682,
+   "sha256": "30b233e6580440a75e9eae544c63f61ed6e9c3b758cd75f7061bb10d629d21d3"
+  },
+  {
+   "path": "Application/Documentation/Overcast/MARBLE_ORACLE_INTEGRATION.md",
+   "bytes": 23335,
+   "sha256": "08e1f6b2561640cf4b9bfcb2225414edac375d48cac0b3ca31ea3d1762d35a3b"
+  },
+  {
+   "path": "Application/Documentation/Overcast/README.md",
+   "bytes": 9355,
+   "sha256": "e7a186642111bba434e9abe47947bb3c658782e63c9108379c933b3f84b6e9ac"
+  },
+  {
+   "path": "Application/Documentation/Overcast/RESEARCH_METHODS.md",
+   "bytes": 25166,
+   "sha256": "5f5064e810d48aec5e34fd9fc699e6faf5976104ddc127386b5ca151a5b15f9d"
+  },
+  {
+   "path": "Application/Documentation/Overcast/overcast.svg",
+   "bytes": 1056,
+   "sha256": "17bcc0d313293327cc0ae9976476020de78307ae9824af3a6e8229e3b724a682"
+  },
+  {
    "path": "Application/Documentation/PROVIDER_PROBE.md",
    "bytes": 3905,
    "sha256": "3828a4d09e263f3ac563c21829d38d8eb998cf76bc73d3b4dbaf61b7d681e69f"
@@ -454,8 +479,8 @@
   },
   {
    "path": "Application/Documentation/TESTING_REPORT.md",
-   "bytes": 13040,
-   "sha256": "727d434c43c8c4f2246de37f706a50ad500ffce601e06b24e294a9e9a1686a0a"
+   "bytes": 15325,
+   "sha256": "6c989be164107da0d739f53754137e4355c1931acab3e84d8d4eb189b092a88a"
   },
   {
    "path": "Application/Documentation/TROUBLESHOOTING.md",
@@ -539,8 +564,8 @@
   },
   {
    "path": "Application/README.md",
-   "bytes": 6228,
-   "sha256": "4d572fadcdc2d02268d359ada40d50468ee29f45c2722e0178aa06c8e6b825b5"
+   "bytes": 7788,
+   "sha256": "b99ef6e0d7ce3ca4e7cadb02c99ee69ab32f3e9ee041d1c76f0490211dc32658"
   },
   {
    "path": "Application/Runtime/Marble_Oracle.pyw",
@@ -889,13 +914,13 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/collection_pages.py",
-   "bytes": 12931,
-   "sha256": "e746a02885a2e8af2992c4e859228946e1bb30e07f9c16c958c8b51e65d0108f"
+   "bytes": 13758,
+   "sha256": "f37c281737ea1638c77e69b5d48c8bd5c1104d5dc75d61446fa6821cfcc63742"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/converter_view.py",
-   "bytes": 31592,
-   "sha256": "886f91bf5b9695fc5169f09e3701947cd1950065ec4038707fbc41d10a53fcc9"
+   "bytes": 31732,
+   "sha256": "bd9f373faab27789e97135a5365826a78c12419e53d7617ddd7b0adb35723bde"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/Oggcultist/oggcultist/gui/design_system.py",
@@ -1614,8 +1639,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/marble_oracle.py",
-   "bytes": 196402,
-   "sha256": "364001cf182e0f2aa9a25e7cf43cec52cb1438add156d419b2ad89002622694d"
+   "bytes": 200739,
+   "sha256": "477e8489a8d1624aa66b4eeef2ea58d1854e2ce558671b07e2ced53e8001cbe3"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/marble_oracle_window.ico",
@@ -1629,13 +1654,28 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/marble_uberata.py",
-   "bytes": 1940,
-   "sha256": "0ded232df1033e5b2900309e41dcfeaef4e3d73a523a54a627894121abd132ba"
+   "bytes": 2070,
+   "sha256": "fd97c79b8f7473f355e9e3d90b106c70bf6316040695240163439a0e625529d5"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/news_oracle/__init__.py",
+   "bytes": 2115,
+   "sha256": "6f41874e628adeee3c73fbfb46b571817a86b65d1e8f87f8d0a84ba941a1dd23"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oggcultist_design_system.py",
    "bytes": 5606,
    "sha256": "205a7136e267285ec843fe5c38f1aa4db5d7d07a16ce805a02d37fe5ccf9569d"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_appearance.py",
+   "bytes": 15784,
+   "sha256": "f9e01ab0a2f303b9271b43764db06bbc98d1e4065d0d0e8408a1c262622eac28"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_appearance_window.py",
+   "bytes": 7376,
+   "sha256": "26ad9746d6834d7fb0c273721c1cb03566dc38678c22c5356a03445a09359b28"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_ascii.py",
@@ -1689,8 +1729,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_augurspex_tab.py",
-   "bytes": 95076,
-   "sha256": "74763c083dec3d3f21fa2094a947fe981c9a9cfe288ecd4b4fba2a3549bd8ea3"
+   "bytes": 95227,
+   "sha256": "9fca44124d19f1d864453850fe4e4646cf118bb842a49720813d828decf1fa93"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_bootstrap.py",
@@ -1699,8 +1739,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_chrome.py",
-   "bytes": 58446,
-   "sha256": "766f62a069083163ff045c6746b66573e3c6d75e4e581e35b23b1ca4cd6c9e58"
+   "bytes": 58901,
+   "sha256": "43770e0460d269541241e394540d9e10f11923ef2821b67d4784245a0249b213"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_crt_v2.py",
@@ -1719,8 +1759,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith.py",
-   "bytes": 67638,
-   "sha256": "05cc67569cab7965af67e3517a787049dfea20ae4d957409276fbe6a2c27a132"
+   "bytes": 68094,
+   "sha256": "72ea44b9cb0888fb2d8b0ff2ad7e8d9e6ecd6d95216c11959ab41e2a4a7c6b00"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_core.py",
@@ -1734,8 +1774,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_eidolith_player.py",
-   "bytes": 19575,
-   "sha256": "0ed02db80aa66bc870a1e4e2162f4884132d6ff7fb23c769960a716a730e6a75"
+   "bytes": 19534,
+   "sha256": "487a8621c1c1f5002c7bd85fdef345cd43edccfa3f706b2917a6bddc688614b5"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_glass.py",
@@ -1744,8 +1784,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_home_focus.py",
-   "bytes": 9062,
-   "sha256": "4f0e314629578901b786ae58aca4bbd4a1da4a7cdc65aa090cb29b5acfed18af"
+   "bytes": 9118,
+   "sha256": "5dcba23aacd1feed9b643df2bd8d7e68e91e967ef12397245908ee9b91743c08"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_latin.py",
@@ -1769,13 +1809,18 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_ogg_tab.py",
-   "bytes": 9908,
-   "sha256": "c87407c5b11dc6e0d7d3d43ce1269f32bd39b9da1eb6019aa387a2fb02ec8549"
+   "bytes": 10123,
+   "sha256": "8ca2eea1ed9c8b6973ca30b98e478fac7cf4dcac48ec079c1a2f9132fae27629"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_ogg_texture.py",
-   "bytes": 3618,
-   "sha256": "b5376a33bc4fdf5ee18d134d3c43680a8f70d8c373b56b5f08795938ae8f378c"
+   "bytes": 4714,
+   "sha256": "741f92749f9b3e1195e23669d6861dd6814a8261b7e03919c2cc16783a79d421"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_overcast_tab.py",
+   "bytes": 4389,
+   "sha256": "eecc4de2518b9fd5ed2e5732611cb992535d7c53eecc3f21a2a890195de7e687"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_photo_bezel.py",
@@ -1799,18 +1844,23 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_shell.py",
-   "bytes": 15298,
-   "sha256": "8d8a874664c997c7bdba9f02f55cd3ad39da03a3e465436176ebc2581d51deaa"
+   "bytes": 16444,
+   "sha256": "10ad591b2500ae637dc237f5098dcee1859b3daaad647aa64ddd2d35636ca5c9"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_sidebar.py",
+   "bytes": 11863,
+   "sha256": "fb2b01fa3c29b1237dae3992391786d560cb9af1d18b2b3819de15b544638bf1"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_skin.py",
-   "bytes": 21737,
-   "sha256": "2eed8156675ed5dae77ade94dfe2b7e40ac135d384eb307201b6a57abf45a025"
+   "bytes": 22563,
+   "sha256": "ad6404865bb466c0743d29910e3615580e906a52ee0b0b456e82431e43f02bee"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_suite_guide.py",
-   "bytes": 13844,
-   "sha256": "700a36a3d9885d41b0e09a1b6036989cd350a1dd4f65998da9a1b43edecfe526"
+   "bytes": 14290,
+   "sha256": "952a3a5661d09d201098ba4b0543cf0f805a55e552d9da5760841b49ab917331"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_sysmetrics.py",
@@ -1819,8 +1869,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_touch_type.py",
-   "bytes": 27375,
-   "sha256": "60e5efa890f6da0b982c3b3d340320e565a0ecc706dc92e9acf80a49885f4934"
+   "bytes": 27418,
+   "sha256": "b53f653803e8d57515d2e902f9c61869178cc1ec76a092073931931d8c3ad2da"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_train.py",
@@ -1829,8 +1879,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_version.py",
-   "bytes": 546,
-   "sha256": "52b7a09c3afdb2451e91c2b39f003569ecfd1db47a40069411f66e4a080bc470"
+   "bytes": 544,
+   "sha256": "ce81038cb63b43100a9ebf63898c79f278cfeb4f419690239d04b646fda26fcd"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_vhs.py",
@@ -1853,6 +1903,151 @@
    "sha256": "4faf4e4d36941be37b7d29cda2890efee3e844a36d95d493dbacf3dc0f7cd8e3"
   },
   {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/__init__.py",
+   "bytes": 1470,
+   "sha256": "a5527e4243bc1c006aeb881f1b5842faa622c4bf6ed8b6796736cfb58e6ed239"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/__main__.py",
+   "bytes": 155,
+   "sha256": "a32c975184ee593a189ca69f83cb6afbe7fdac06988d469aaa1217f56bca0e49"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/app.py",
+   "bytes": 2415,
+   "sha256": "8602498ba40002d1d9e294e00a001ead3f2775b69ae1608470771cb8fa58df1b"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/assets/card.png",
+   "bytes": 40290,
+   "sha256": "536f5ed0ba96323295f1df16bd4365176e11259e5e1eb48d103203093ad5f773"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/assets/control.png",
+   "bytes": 40273,
+   "sha256": "ec5fc1240f2117ec9b4e8f4f56d29cbe58ad6dacbcbbbf9ad638bcee2d189804"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/assets/overcast.png",
+   "bytes": 9368,
+   "sha256": "9aeab022f6c1d0d854c1bc89f99c72fc7ef4f3f4747e433fac07f967f3452e26"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/assets/overcast_64.png",
+   "bytes": 3585,
+   "sha256": "860bbc418ab615fbea0bb37ed01ed3e1af71a5df11c96882271b6a67dc52018b"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/assets/page.png",
+   "bytes": 40274,
+   "sha256": "037d1d67af476ed88e36d020d87ba9f0c86443dd6f6ccd0b451e6f3157fc6566"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/assets/side.png",
+   "bytes": 40070,
+   "sha256": "8b6315bcda86a8889d37ff1aca4a69dd546a7e40d19aa1542e938ee3687738f6"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/assets/sunken.png",
+   "bytes": 40195,
+   "sha256": "9a1224e35c59fa423515feec11a6b09dc4b37d98d43c2c8fed3c69f345df9a72"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/calendar.py",
+   "bytes": 7701,
+   "sha256": "507fad0652750e1fae0d09f2d743406b2393a2644df305934175701bfd7e90e9"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/calibration.py",
+   "bytes": 3822,
+   "sha256": "62d65e37d3ade8229e75c0a0433a3cf10c6d6a2d0185b006c0ef38db5f164f81"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/cli.py",
+   "bytes": 11765,
+   "sha256": "830b40c15ce42b850e6497f5791c624cf315dba1a9d1793b602ba8ef129ddf27"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/ember_theme.py",
+   "bytes": 2835,
+   "sha256": "9a23b37f61c4d1c3e43bc146a716fa30db9ef318dae73f682652c29cf7a079a6"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/engine.py",
+   "bytes": 48053,
+   "sha256": "9dbc709caa163c89b1809c543db94f75fd922db34164969e4110fec381627892"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/event_graph.py",
+   "bytes": 5562,
+   "sha256": "0f88dff394b4d10af999dc53cc191edcca005dd6144ac8d6bd7458d8c38cead6"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/feeds.py",
+   "bytes": 7348,
+   "sha256": "cd9db1c7ed49a4b4dad62ee6f3c708fe8289022b46942eb0000d277e89c2a95f"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/forecasting.py",
+   "bytes": 9716,
+   "sha256": "6bb461f8e3ece365f953e65b1861001a84064d1727be271767f9a5ea00aac1e1"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/gap_research.py",
+   "bytes": 3157,
+   "sha256": "b6b2e1a5232157aff149cbf9a372a958c1ac8ccb62ef9394be78a420823197ed"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/lmstudio.py",
+   "bytes": 13388,
+   "sha256": "3463c8e48613a728e0ddc396cb3323f4bc00f1c930ca3648b54f7fdc07e611ad"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/marble_adapter.py",
+   "bytes": 1501,
+   "sha256": "6efa034cab40dd614f9f15fea912fcab9ff8a76290bde0f3b251a99b29aa6100"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/outlook.py",
+   "bytes": 26646,
+   "sha256": "c45eb8f5281c834e5c4280c4c08c111f538da51c1c89976d416ddb28e16f9ea0"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/research.py",
+   "bytes": 10885,
+   "sha256": "c8d19f33140995f3de41bb574f369b9761b5f5effee05c06afc71813a7be22ff"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/risk.py",
+   "bytes": 7276,
+   "sha256": "6233e740f22de4a885961f126cfcc6efce008cc4046d5936e5a3584fd86d3e7c"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/scopes.py",
+   "bytes": 4326,
+   "sha256": "306c79998bcd31357657470bf7b91dbc7eba461227e950f9bd79a46b8557ea6d"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/store.py",
+   "bytes": 40416,
+   "sha256": "0e9e65c495326802de3e18fb954b8df09aa6bebaf3915a853a5480669fce2007"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/theme.py",
+   "bytes": 26640,
+   "sha256": "d9b4f0ea1b62c7ebf9e7a7929b73cbec47bc110145b6122e0d3253840268aa06"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/timing.py",
+   "bytes": 4026,
+   "sha256": "f06c7f0402dec76512a2bbaf458ef1a91c68cbced079cba8ca39c27f7d073812"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/overcast/ui.py",
+   "bytes": 131477,
+   "sha256": "80120125c75f6a775cc4accc65f01f40dc9ed89595001df5e1fac0fb199863d7"
+  },
+  {
    "path": "Application/Runtime/Marble_Oracle_App/quotes.txt",
    "bytes": 27166,
    "sha256": "bd0d96c10967f152b13362eda086a6e0a28d2fa8b6c6ddc9c6b07b840be28455"
@@ -1873,9 +2068,84 @@
    "sha256": "f68068b5fac33a9f21aeae505d8cdbe94abc1f15289a626b44d607e1acf3e5b6"
   },
   {
+   "path": "Application/Tests/overcast/test_research_forecasting.py",
+   "bytes": 9934,
+   "sha256": "9351dfe33d33d196b55689631b064845fd2522d71e81a4d3841787fc0772fbf3"
+  },
+  {
+   "path": "Application/Tests/overcast/test_risk_calendar.py",
+   "bytes": 10168,
+   "sha256": "1ee118996d5f94b3ed314005bcfa073d6fd5d7d3766464a52dd12978afd4a360"
+  },
+  {
+   "path": "Application/Tests/overcast/test_signal.py",
+   "bytes": 7559,
+   "sha256": "df94f5c2ca6b8fa94797919ed629127420f412cb97dd83e6e8a9f400edd1b349"
+  },
+  {
+   "path": "Application/Tests/overcast/test_ui_smoke.py",
+   "bytes": 2396,
+   "sha256": "76dbbdb3060b7e717b014025d0a4ba6571ae8ac1f4467cfa629321f151888294"
+  },
+  {
+   "path": "Application/Tests/overcast/test_v04_intelligence.py",
+   "bytes": 10508,
+   "sha256": "f9fe74a235ac20472b85525e543dff0a6dd99b11d028578bea416369bf706502"
+  },
+  {
+   "path": "Application/Tests/overcast/test_v051_vulkan_recovery.py",
+   "bytes": 5307,
+   "sha256": "a671766fae303d46ebfe302e93b931b9599180d47bdc43d371b4062e4406c284"
+  },
+  {
+   "path": "Application/Tests/overcast/test_v052_refinements.py",
+   "bytes": 14743,
+   "sha256": "c9f899d1be0ed0bba5040df00f319c1952efa07bd18c494db106f86eacba4a43"
+  },
+  {
+   "path": "Application/Tests/overcast/test_v052_ui.py",
+   "bytes": 3527,
+   "sha256": "104e59306f218c3cb8c74937eec80307cd4656f5b72dba34e4263f93fd1b68d1"
+  },
+  {
+   "path": "Application/Tests/overcast/test_v05_overviews.py",
+   "bytes": 4903,
+   "sha256": "207318c50e0c997e06f784d6f37b6efc06c8bd7967ed2fca848f41d92c4b8a80"
+  },
+  {
+   "path": "Application/Tests/overcast/test_v06_broad_outlook.py",
+   "bytes": 14954,
+   "sha256": "79ebb8f589feed37f410642e1250af6b4dd4bcc3513b6a192e212f9264ce3fc7"
+  },
+  {
+   "path": "Application/Tests/overcast/test_v06_ui.py",
+   "bytes": 2493,
+   "sha256": "556d8c15789b6c1c32b7d1771d2a42631b5578626653dc9983ac2a6a1e1a8933"
+  },
+  {
+   "path": "Application/Tests/overcast/test_v11_theme.py",
+   "bytes": 5645,
+   "sha256": "e974d243973210e53d1a0ad3eb67adeebc5c0d7fb211c2fae05a73d3ebca7e5c"
+  },
+  {
+   "path": "Application/Tests/overcast/test_v1_gloom.py",
+   "bytes": 10019,
+   "sha256": "97d0bce368d7e1759353d71cf594f85325d6e50391d0c2ec0a09fb04257f81d1"
+  },
+  {
+   "path": "Application/Tests/overcast/test_v1_ui.py",
+   "bytes": 6356,
+   "sha256": "891763f033fc3aeab8011e058db27a8129c2f3a18bf4e0f425c43b5c4afde53b"
+  },
+  {
    "path": "Application/Tests/test_actual_mode.py",
    "bytes": 1837,
-   "sha256": "7ae74453a00777ea1121102424f91d6e56d2a4b76360860a00c39f18cd69db9a"
+   "sha256": "36ec742f06b5bd6c01ac8d258865ce284ae83268bae5ec848717fdfaf7ee9513"
+  },
+  {
+   "path": "Application/Tests/test_appearance_0510.py",
+   "bytes": 13155,
+   "sha256": "549c8efa38bbf2abe7d73dfbd26c6f9f23ec0885be63c95e66385eb8b27982d0"
   },
   {
    "path": "Application/Tests/test_ascii_visibility.py",
@@ -1914,8 +2184,8 @@
   },
   {
    "path": "Application/Tests/test_augurspex_charts_layout_0485.py",
-   "bytes": 22925,
-   "sha256": "62e80bdcc6019cf350a669b6a7b38318ce04268bf7100eb557da30c4ce5dcfcc"
+   "bytes": 23054,
+   "sha256": "cc91bbc34545a10e8e590cd687c22b82cf0956c39f41cb9cec51dbaf6468f683"
   },
   {
    "path": "Application/Tests/test_augurspex_grid_contrast_0480.py",
@@ -2024,8 +2294,8 @@
   },
   {
    "path": "Application/Tests/test_augurspex_stock_gui_0491.py",
-   "bytes": 3125,
-   "sha256": "3c40a96dc03b29411e9d3f80fb4826059386d2f6d72c875a951950819f1b60b8"
+   "bytes": 3244,
+   "sha256": "b6907c1a5f41daf379d728f8acf0c026240a3594e706e716512b048cdcb378e6"
   },
   {
    "path": "Application/Tests/test_augurspex_stock_history_0491.py",
@@ -2054,8 +2324,8 @@
   },
   {
    "path": "Application/Tests/test_eidolith_layout_0493.py",
-   "bytes": 10265,
-   "sha256": "0c5d33f273440290ba9690798e0e2fe4dc9b6d0406c5bb4444622b6f037d3825"
+   "bytes": 10384,
+   "sha256": "7e36e42e8f35816fcc3367c0306fbc707204ec5f5b9c7b0bdbeef9691af7f39c"
   },
   {
    "path": "Application/Tests/test_eidolith_naming_regression.py",
@@ -2094,13 +2364,13 @@
   },
   {
    "path": "Application/Tests/test_home_keyboard_0497.py",
-   "bytes": 6091,
-   "sha256": "33e3b72d05258e865fefd3dedf722d44bfef9f6511f214ce19f513a99af06842"
+   "bytes": 6220,
+   "sha256": "8a284ec97a6743ccac8d5e1f70303294f8cf16d943f2e08bc398085caf423a60"
   },
   {
    "path": "Application/Tests/test_home_sidebar_and_muted_ascii.py",
-   "bytes": 2209,
-   "sha256": "55b61f7fba416559b829c3e7c156e1db65e37641326b5d349be2c498a6f3d0ef"
+   "bytes": 2338,
+   "sha256": "5eab8f230853a4a39fad7e394b0a9414aa7e7185ac32c3f43087ec96b89a4f5c"
   },
   {
    "path": "Application/Tests/test_install_0499.py",
@@ -2141,6 +2411,16 @@
    "path": "Application/Tests/test_ogg_rail_0498.py",
    "bytes": 3215,
    "sha256": "a46039894fa09fbca37ffbc9e94924b719ef6527bc6e24bc67e22dea9b1c9ea8"
+  },
+  {
+   "path": "Application/Tests/test_overcast_package.py",
+   "bytes": 1001,
+   "sha256": "c140bd412ca12435d25fc824bef976511f7541a8689267e98307a3be92da99e1"
+  },
+  {
+   "path": "Application/Tests/test_overcast_workspace_0500.py",
+   "bytes": 6852,
+   "sha256": "dfe4dd51c8f5aea24d5c4ee0c889158a2af55aa4f4543c430ccfef65cbf41557"
   },
   {
    "path": "Application/Tests/test_passphrase_security_0493.py",
@@ -2184,38 +2464,38 @@
   },
   {
    "path": "Application/Tests/test_rune_panel_scale.py",
-   "bytes": 2692,
-   "sha256": "99b45c3921a0f929ce85896d3dfcad37eaf4e3cfe0328e9be4c025517ec46b1d"
+   "bytes": 2821,
+   "sha256": "2bcd0a52a1fe3cd74bc81a4283c11b9bbb0a38b07e91a1abdb5826f1791b00a0"
   },
   {
    "path": "Application/Tests/test_rune_tall_fonts_0494.py",
-   "bytes": 3857,
-   "sha256": "aacc61cc54fd8eefd0ae6f95d16fbb29b5f9b952afaebc6e372283fddb719941"
+   "bytes": 3986,
+   "sha256": "e3f9fa0bf9bb0f51c84b819fe7f32aa6182193f6add758008707def4c81f0519"
   },
   {
    "path": "Application/Tests/test_source_ogg_texture.py",
-   "bytes": 2984,
-   "sha256": "d9bb16d474707dc9ba485811a9d1d7c47a79360a26821ce814c514fc800dccf6"
+   "bytes": 3113,
+   "sha256": "4334b9b3e7d829bd2dbc8557af8a06d044bb754ab0fc9e8d3a01a84e5abf9e10"
   },
   {
    "path": "Application/Tests/test_tab_layout.py",
-   "bytes": 5059,
-   "sha256": "5330a9ab9ebd407e70462a3a5a00008b3df70bd44281808bff64f226b592a812"
+   "bytes": 5114,
+   "sha256": "456c01f0345650b8537989eb22518462b18058ce4fc78aea335fbba434490f85"
   },
   {
    "path": "Application/Tests/test_touch_type.py",
    "bytes": 6036,
-   "sha256": "ccfa0eade07997b7085c9d2241a23b845bd448ee2fa0df248c84aaa37bb7d0a7"
+   "sha256": "56879af41ac3238d3bb25a8c50ca5b85b5e831c99af7a9fc2e6f86c30551717c"
   },
   {
    "path": "Application/Tests/test_unified_shell_0495.py",
-   "bytes": 9507,
-   "sha256": "7cea76afe1599f140ecf4558ba4cd94b734d22bd3fc5174e4885cd201043ed80"
+   "bytes": 9636,
+   "sha256": "7d091a85e2a02c157e2b4ce74e2d8df2fc40594915fe75c66346616a538f4f7a"
   },
   {
    "path": "Application/Tests/test_welcome_and_widgets_0499.py",
-   "bytes": 7267,
-   "sha256": "930ff328f6277a91be4ffbbdb532aea63f44f47812ac6dd7055f96dc459d8e6d"
+   "bytes": 7388,
+   "sha256": "aa5f6d9419752c467a0051201f566cedb73d3ad61ee78b990415544230394cf0"
   },
   {
    "path": "Application/Tools/Rune-24-New-Stones.png",
@@ -2234,8 +2514,8 @@
   },
   {
    "path": "Application/Tools/capture_screens.py",
-   "bytes": 8161,
-   "sha256": "876fc5daa88d6b9ed203bdd6d5835707338132bbec5b409d3095446eb73d3ac8"
+   "bytes": 8177,
+   "sha256": "8ee1015da689a6168a7adb33a30da6c9de63d28e46643d2f6f4bace1d6d5c8fc"
   },
   {
    "path": "Application/Tools/crt_barrel_filter.py",

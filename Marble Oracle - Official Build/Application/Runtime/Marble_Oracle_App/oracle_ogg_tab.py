@@ -43,6 +43,8 @@ class OggcultistPanel(tk.Frame):
                 raise FileNotFoundError('Oggcultist 2.0.6 program files are missing.')
             if str(OGG_ROOT) not in sys.path:
                 sys.path.insert(0, str(OGG_ROOT))
+            import oracle_appearance                    # 0.5.1: Dark / Light retint its own tokens first
+            oracle_appearance.retint_oggcultist()
             from oggcultist.gui.app import OggcultistEmbeddedApp
             self.ogg_app = OggcultistEmbeddedApp(self)
             self.ogg_app.pack(fill='both', expand=True)
@@ -70,13 +72,13 @@ class OggcultistPanel(tk.Frame):
         first = getattr(app, 'brand_label', None)
         if sidebar is None or anchor is None:
             return
-        self.home_button = shell.button(sidebar, HOME_LABEL, on_home)
+        self.home_button = shell.button(sidebar, HOME_LABEL, on_home, padx=4)   # whole in the 64 px icon rail
         if first is not None:
             # Packed ahead of the rail's top items, so in a short window the
             # version line and HOME keep their place and the items above give
             # way (Tk's packer serves widgets in packing order).
             anchor.pack_configure(before=first)
-        self.home_button.pack(side='bottom', fill='x', padx=shell.RAIL_PADX, pady=(8, 0), after=anchor)
+        self.home_button.pack(side='bottom', fill='x', padx=3, pady=(8, 0), after=anchor)   # whole even in the icon rail
         # 0.4.9.8: Settings sits at the foot of the rail too, so it is served
         # with HOME and the version line, ahead of the items above. Before, it
         # was packed last: at 1280x720 HOME covered half of it, and at 900x580

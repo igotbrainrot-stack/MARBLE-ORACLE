@@ -17,6 +17,8 @@ a different corner on each tab. This checks, in the real suite window, that:
 * AUGURSPEX uses the same surface colours as the others;
 * PASSPHRASE never cuts a word off, from the 640x460 minimum upwards.
 """
+import os
+os.environ.setdefault('MARBLE_ORACLE_APPEARANCE', 'classic')   # 0.5.1: this test checks Classic's labels and surfaces
 from pathlib import Path
 import sys
 import time

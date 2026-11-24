@@ -79,13 +79,37 @@ def font(role):
     return (FAMILY, size, weight)
 
 
+def shown(text):
+    """Capitals in Classic; sentence case in Dark and Light (oracle_appearance)."""
+    import oracle_appearance
+    return oracle_appearance.display(text)
+
+
+def _modern():
+    import oracle_appearance
+    return oracle_appearance.modern()
+
+
 def label(parent, text='', role='body', colour='text', **kwargs):
     """A textured label in the shell's type scale and colour roles."""
-    return ogl_label(parent, text=text, fg=C[colour], font=font(role), **kwargs)
+    return ogl_label(parent, text=shown(text), fg=C[colour], font=font(role), **kwargs)
 
 
 def button(parent, text, command, *, primary=False, width=None, padx=None, pady=None):
-    """The suite's push button: one bright primary, quiet boxed secondaries."""
+    """The suite's push button: one bright primary, quiet boxed secondaries (Dark / Light: no box, just the fill)."""
+    if _modern():
+        try:
+            ground = parent.cget('bg')
+        except tk.TclError:
+            ground = C['canvas']
+        return tk.Button(parent, text=shown(text), command=command, cursor='hand2', relief='flat', bd=0,
+                         padx=BUTTON_PAD[0] if padx is None else padx,
+                         pady=BUTTON_PAD[1] if pady is None else pady, width=width, font=font('button'),
+                         bg=C['accent'] if primary else C['control'],
+                         fg=C['text_on_accent'] if primary else C['text'],
+                         activebackground=C['accent_deep'] if primary else C['hover'],
+                         activeforeground=C['text_on_accent'] if primary else C['text'],
+                         highlightthickness=2, highlightbackground=ground, highlightcolor=C['focus'])
     return tk.Button(parent, text=text, command=command, cursor='hand2', relief='flat', bd=0,
                      padx=BUTTON_PAD[0] if padx is None else padx,
                      pady=BUTTON_PAD[1] if pady is None else pady, width=width,
@@ -101,7 +125,7 @@ def button(parent, text, command, *, primary=False, width=None, padx=None, pady=
 
 def nav_button(parent, text, command):
     """A rail item: flat on the rail, outlined in the accent when it is the current page."""
-    btn = tk.Button(parent, text=text, command=command, cursor='hand2', relief='flat', bd=0,
+    btn = tk.Button(parent, text=shown(text), command=command, cursor='hand2', relief='flat', bd=0,
                     padx=12, pady=NAV_PADY, anchor='w', justify='left', font=font('nav'),
                     bg=C['sidebar'], fg=C['text'], activebackground=C['hover'],
                     activeforeground=C['text_bright'], highlightthickness=2,

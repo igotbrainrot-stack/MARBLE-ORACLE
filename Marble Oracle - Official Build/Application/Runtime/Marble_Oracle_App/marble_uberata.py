@@ -6,6 +6,8 @@ import sys
 from pathlib import Path
 
 FAMILY = "Uberata Clear"
+# HOME's ASCII statue and other art keep this face in every appearance (oracle_appearance may change FAMILY).
+ART_FAMILY = FAMILY
 _FILE = Path(__file__).resolve().parent / "fonts" / "Uberata-Clear.ttf"
 _registered = False
 

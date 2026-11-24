@@ -2,6 +2,8 @@
 
 Run with a display: xvfb-run -a python3 test_home_sidebar_and_muted_ascii.py
 """
+import os
+os.environ.setdefault('MARBLE_ORACLE_APPEARANCE', 'classic')   # 0.5.1: this test checks Classic's labels and surfaces
 import sys
 from pathlib import Path
 from io import BytesIO
