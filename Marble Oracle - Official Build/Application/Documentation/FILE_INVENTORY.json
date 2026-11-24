@@ -1,14 +1,14 @@
 {
- "release": "Marble Oracle 0.5.2",
- "generated_utc": "2026-11-24T01:53:16+00:00",
+ "release": "Marble Oracle 0.5.3",
+ "generated_utc": "2026-11-24T04:23:26+00:00",
  "schema": "sha256-inventory-v2",
  "excluded_from_hashes": [
   "Application/Documentation/BUILD_MANIFEST.json",
   "Application/Documentation/FILE_INVENTORY.json"
  ],
  "optional_note": "Entries marked optional are in the portable ZIP but not in Git; verify_release.py checks them when present.",
- "inventory_file_count": 512,
- "inventory_total_bytes": 111118309,
+ "inventory_file_count": 519,
+ "inventory_total_bytes": 113593672,
  "files": [
   {
    "path": "Application/.gitignore",
@@ -22,8 +22,8 @@
   },
   {
    "path": "Application/Documentation/CHANGELOG.md",
-   "bytes": 31080,
-   "sha256": "7a8096eb82892ccc4f6bc3547fa7f43c3e2cd8d615a4496443f2c1a12721c706"
+   "bytes": 34419,
+   "sha256": "622705cb896a3048c6a146e74d976ef03b55c0c9095821ea50eb5d6c9cfcb23f"
   },
   {
    "path": "Application/Documentation/DEVELOPMENT.md",
@@ -37,8 +37,8 @@
   },
   {
    "path": "Application/Documentation/HANDOVER.md",
-   "bytes": 12794,
-   "sha256": "e5b09860e011ef3b9c0f8ea7d891d6f58951d3edb75f22dcaff59331db9e27ac"
+   "bytes": 14149,
+   "sha256": "f67c14c557ea7886f45dabc516fe301e585eef0985672c2cbbfceb2ac7b83beb"
   },
   {
    "path": "Application/Documentation/History/ALL_SECTIONS_TEXTURE_UPDATE.md",
@@ -564,8 +564,8 @@
   },
   {
    "path": "Application/README.md",
-   "bytes": 7805,
-   "sha256": "8ca9314958df8a22ab024c9b7f8937255af4dbf6786d03371b6a9c05791e5a29"
+   "bytes": 7927,
+   "sha256": "50066b0b5301cafa215d429c4d984294f56b0887434863b73aa2ae3fc4f490dd"
   },
   {
    "path": "Application/Runtime/Marble_Oracle.pyw",
@@ -1608,6 +1608,31 @@
    "sha256": "a086f1a7bd6f638284e0e36fe345c8b1a67d3ea6791d8dce6823f8258cbcb50d"
   },
   {
+   "path": "Application/Runtime/Marble_Oracle_App/fonts/Inter-Bold.otf",
+   "bytes": 626056,
+   "sha256": "00fd6f4691ee8884a33b46bf45851b341927c37c30064f558e1befb242971c49"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/fonts/Inter-BoldItalic.otf",
+   "bytes": 604316,
+   "sha256": "0c9f737ae44cc19dd2962733f6e1a00aa4a53768efc7dd98cd29d3609db311dd"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/fonts/Inter-Italic.otf",
+   "bytes": 586752,
+   "sha256": "f065eb148431a276995ba88b79e9225e4aa05f05b3bfeb857cf0457dcc1064a9"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/fonts/Inter-OFL.txt",
+   "bytes": 4487,
+   "sha256": "d985b78d3c566edb687e6309abc7392bbe127bd76e3a7dcc8fe4509be1b751fa"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/fonts/Inter-Regular.otf",
+   "bytes": 605092,
+   "sha256": "be6d709dcb730ddaf050cbdae6fe89bd56d5d14dc66885639bbf6f06bd03521b"
+  },
+  {
    "path": "Application/Runtime/Marble_Oracle_App/fonts/NOTO_SOURCE_NOTICE.md",
    "bytes": 578,
    "sha256": "38d9ee9909a274d971b1b839738688befed83e13e987a4f935c2af707acb0801"
@@ -1639,8 +1664,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/marble_oracle.py",
-   "bytes": 200797,
-   "sha256": "dea9fb854aafd64e54a19319d53b244afa28a0455527b15fd45e71beb6bc5340"
+   "bytes": 201611,
+   "sha256": "56f09cd8f06b408433ccd82c2bb4fb9a18ba862251fcb3ff82b970752ec1ee72"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/marble_oracle_window.ico",
@@ -1649,13 +1674,13 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/marble_passphrase_tab.py",
-   "bytes": 11867,
-   "sha256": "9373e7414fd67fc01c755bd73676349b364010daf05ca6a0d36617024a211e58"
+   "bytes": 12401,
+   "sha256": "ccdf375a24e18f2002383b631c6c4365b6c5d013ddc0e1765ec36dda3024b1cb"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/marble_uberata.py",
-   "bytes": 2070,
-   "sha256": "fd97c79b8f7473f355e9e3d90b106c70bf6316040695240163439a0e625529d5"
+   "bytes": 2781,
+   "sha256": "fea937797ba24bf886c137b61b3c61e1c3f82bdd184fb64ab565767277f576fd"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/news_oracle/__init__.py",
@@ -1669,8 +1694,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_appearance.py",
-   "bytes": 17065,
-   "sha256": "403bccd8dbe353412e82ef86f31e52ab570a5b3823d294f6154f2c441688a499"
+   "bytes": 17559,
+   "sha256": "8cec1889b1018d5d79a6865a3be051cb68dc70569ddbc1bfd8744727d327e937"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_appearance_window.py",
@@ -1784,8 +1809,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_home_focus.py",
-   "bytes": 9118,
-   "sha256": "5dcba23aacd1feed9b643df2bd8d7e68e91e967ef12397245908ee9b91743c08"
+   "bytes": 9392,
+   "sha256": "627f25ae84961f7df272834c2a781aadc6effa746e097d7eecc17bf0a8d0a8ae"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_latin.py",
@@ -1809,18 +1834,18 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_ogg_tab.py",
-   "bytes": 10123,
-   "sha256": "8ca2eea1ed9c8b6973ca30b98e478fac7cf4dcac48ec079c1a2f9132fae27629"
+   "bytes": 10229,
+   "sha256": "bb20fd62435456734babb30365a8fb1e1158559e2c25d9a9b2e407bcb8ad186b"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_ogg_texture.py",
-   "bytes": 6340,
-   "sha256": "f4dbd8699762ae2163cd25bed70d5bd4f99da32f1aee7b4c54ddaa0dbde93741"
+   "bytes": 8785,
+   "sha256": "f5f44fa477cd0ffeb9b1141bc63f9d774357aa38d2156360ced1ffa55d5ed930"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_overcast_tab.py",
-   "bytes": 4389,
-   "sha256": "eecc4de2518b9fd5ed2e5732611cb992535d7c53eecc3f21a2a890195de7e687"
+   "bytes": 4577,
+   "sha256": "e80642738a98bae34f1338272acac1b696b45db646cb124daac0b9d86eef7512"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_photo_bezel.py",
@@ -1834,8 +1859,13 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_pumice.py",
-   "bytes": 7213,
-   "sha256": "d3919c81aabd17ec894e1a4043a1b3fa034ed2a41e382d775dbd323dd27a2e01"
+   "bytes": 9019,
+   "sha256": "75962f01a7943d4da55dcf8251e923878e11b97138864f343029b9e6026ee337"
+  },
+  {
+   "path": "Application/Runtime/Marble_Oracle_App/oracle_round.py",
+   "bytes": 8666,
+   "sha256": "b53dea561d6e00998946c4d2fcc976ac8dd3ec0c0aecc1a11eb2e95af36c3c9d"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_runes.py",
@@ -1849,13 +1879,13 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_shell.py",
-   "bytes": 16444,
-   "sha256": "10ad591b2500ae637dc237f5098dcee1859b3daaad647aa64ddd2d35636ca5c9"
+   "bytes": 17266,
+   "sha256": "b00ae2c76e41336c76f17af0ab758c36ade7561d598144fa82116a2ff1265052"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_sidebar.py",
-   "bytes": 12329,
-   "sha256": "5a445399fe363917b7f1c18f3115c31d8ebbb937b9ff46fd2b6e7ca5d7beb43e"
+   "bytes": 12665,
+   "sha256": "16c00ed97439dd001efde7b98c7b9e19e28f023f789e1289b1473731ae4fe79e"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_skin.py",
@@ -1874,8 +1904,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_touch_type.py",
-   "bytes": 27418,
-   "sha256": "b53f653803e8d57515d2e902f9c61869178cc1ec76a092073931931d8c3ad2da"
+   "bytes": 27754,
+   "sha256": "3f61ed52b328efdb3192d2e222a1dee931e4439ab0b115fbe34284f259efe4fb"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_train.py",
@@ -1885,7 +1915,7 @@
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_version.py",
    "bytes": 544,
-   "sha256": "760fa5c541e1736de39f2f9f63b85db85266adefb4243c635068e9812d09bd93"
+   "sha256": "3badd6f9326032fb5aab0542875bc5c71918fa9d0d3ae9b738cd82f7010bb83d"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_vhs.py",
@@ -1894,8 +1924,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_widgets.py",
-   "bytes": 19200,
-   "sha256": "994b6fb93b162fb8ed429513224b7d23e86caa7f97762fc964fe3d4b97007002"
+   "bytes": 29827,
+   "sha256": "14013eb2c48a03b5e3359705fa973c46325ddaeb240564504d9db7b366da8c8b"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/oracle_window_shape.py",
@@ -1909,8 +1939,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/overcast/__init__.py",
-   "bytes": 1470,
-   "sha256": "a5527e4243bc1c006aeb881f1b5842faa622c4bf6ed8b6796736cfb58e6ed239"
+   "bytes": 1611,
+   "sha256": "f04ed2a26bddbdb8a410689deff6f672f0ede68cf8e07e23eeda4e2999bed71b"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/overcast/__main__.py",
@@ -2039,8 +2069,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/overcast/theme.py",
-   "bytes": 26901,
-   "sha256": "43734a58db4c7255c1883429b1f6f792da8fdabb54dd9a882381926e73872a58"
+   "bytes": 27104,
+   "sha256": "1ebaa545030f95786d22d1b72012393bede6a30ea5dc0fa540c50d2daaa59dae"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/overcast/timing.py",
@@ -2049,8 +2079,8 @@
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/overcast/ui.py",
-   "bytes": 131477,
-   "sha256": "80120125c75f6a775cc4accc65f01f40dc9ed89595001df5e1fac0fb199863d7"
+   "bytes": 131553,
+   "sha256": "34c8794433159eb00e629d2eb1d6e98651546278d9f86f4bf1680c72bb9e3808"
   },
   {
    "path": "Application/Runtime/Marble_Oracle_App/quotes.txt",
@@ -2064,8 +2094,8 @@
   },
   {
    "path": "Application/Runtime/launch_suite.pyw",
-   "bytes": 46794,
-   "sha256": "84e2d36caf2fd460b7b4b29b27b74c72971346ce748a8f0f4970d33f9c641fb4"
+   "bytes": 49315,
+   "sha256": "a5c1b8ba496baac7f78ba28a917d67673ed6ac4c7fade015e5c3b945e0655a70"
   },
   {
    "path": "Application/Tests/README.md",
@@ -2379,8 +2409,8 @@
   },
   {
    "path": "Application/Tests/test_install_0499.py",
-   "bytes": 9432,
-   "sha256": "6a0e3bf525a6a94cadba9326d85de64e1a1db421a48d496538d7566810f4a35e"
+   "bytes": 9690,
+   "sha256": "2c7bd5f97ab37a47eac5e63af117ddcecb7e9af25c56eade3b47c4499fa28648"
   },
   {
    "path": "Application/Tests/test_interaction_0493.py",
@@ -2441,6 +2471,11 @@
    "path": "Application/Tests/test_refinement.py",
    "bytes": 1942,
    "sha256": "41273b342d90f6e13ce714bfd58d937c32df687892d5de79d8c39dea6b8fddf1"
+  },
+  {
+   "path": "Application/Tests/test_rounded_0530.py",
+   "bytes": 12486,
+   "sha256": "3d9e625a8acb00f447116fc4007017a302a128b01043fbd203e529652740dd48"
   },
   {
    "path": "Application/Tests/test_rune_border_fit.py",
