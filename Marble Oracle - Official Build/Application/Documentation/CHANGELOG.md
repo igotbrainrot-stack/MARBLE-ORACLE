@@ -2,6 +2,26 @@
 
 Newest first. Releases before 0.4.9.3 have their original notes in `History/ReleaseNotes/`.
 
+## 0.5.3 · 24 November 2026 · Rounded corners and the Inter typeface
+
+Built on 0.5.2. No saved setting changes format. Classic is unchanged.
+
+- **Rounded corners everywhere in Dark and Light.**
+  - **Buttons** are `oracle_widgets.RoundButton`: a `tk.Button` whose face is an anti-aliased rounded picture, with Tk drawing the text on top. It keeps the whole Button interface (command, invoke, state, keyboard, textvariable), and `bg`/`fg` still mean what they did. Its face follows hover, press, focus and disabled, and stretches to fill a grid cell. `oracle_shell.button()` and `nav_button()` return it, so every workspace and the setup window get it.
+  - **Textured cards** (the pumice frames and panels) use a rounded nine-slice image (`oracle_pumice.rounded_tile_png`): one whole tile in the middle, the texture wrapped round it, transparent anti-aliased corners.
+  - **Fields, lists, text boxes, dropdowns, bordered panels and badges** get four small corner pieces laid over their corners (`oracle_round.py`). Each piece is the surface outside the curve, the widget's border on it and its fill inside. Widgets made later are picked up as they appear, and a light check redraws pieces whose colours change (focus, toggles).
+  - **Canvas shapes:** HOME's section buttons, TAROT/RUNES toggle, rune boxes and focus ring, and Touch Type's keyboard are drawn rounded. `oracle_sidebar.round_rect` now pins each straight edge, so a corner curves over its whole radius (before, Tk's spline cut it to half).
+  - **Oggcultist** draws its own rounded artwork. Its corner radius is raised to match.
+- **Inter, a modern sans-serif designed for screens, is the interface face** in Dark and Light, on every system. Its four styles ship in `fonts/` with the SIL Open Font License 1.1 (`fonts/Inter-OFL.txt`) and are registered at start-up for this process only, like Uberata in Classic. Nothing is installed into the system. OVERCAST inside the suite uses it too; `MARBLE_ORACLE_FONT` still overrides it.
+- **The setup window follows the chosen appearance:** OVERCAST's palette, Inter, sentence case and rounded buttons in Dark and Light; Classic as before.
+- **Passphrase:** in a narrow rail the key meanings and the dice-code option wrap instead of being cut off.
+- **Performance:** rounded faces and card images are worked out from a small corner table rather than pixel by pixel. They are identical to the per-pixel result and about eight times faster: 40 button faces take about 0.06 s.
+- **Fixed during the work:**
+  - A rounded button stretched across shared grid columns kept resizing its neighbours. A button now always asks for its natural size; only its face stretches.
+  - A rounded button asking for 2 px more on every redraw (Tk's own image inset).
+  - Corner pieces sat inside a widget's border and covered left-anchored text.
+- **Tests:** new `test_rounded_0530.py` (24 checks): Inter and its licence ship; card images (transparent corners, opaque body, wrapped texture); rounded faces match a pixel-by-pixel reference and are fast; RoundButton keeps the Button interface and settles in shared columns; in Dark the suite uses Inter, its buttons are RoundButtons, fields and lists are rounded, and nothing is freed from a worker thread. `test_install_0499.py` checks the setup window's bright button against the chosen look's accent.
+
 ## 0.5.2 · 24 November 2026 · A faint pumice surface for Dark and Light
 
 Built on 0.5.1. No saved setting changes format.

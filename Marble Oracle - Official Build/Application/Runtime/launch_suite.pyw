@@ -21,6 +21,7 @@ import time
 import traceback
 import tkinter as tk
 from tkinter import ttk, messagebox
+from tkinter import font as tkfont
 
 # The graphical setup follows the suite's custom Uberata typeface.
 sys.path.insert(0, str(Path(__file__).resolve().parent / 'Marble_Oracle_App'))
@@ -389,8 +390,9 @@ class Setup(tk.Tk):
         self.title('Marble Oracle — Requirements and Startup')
         self.geometry('780x720')
         self.minsize(760,640)   # every button and status badge fits at this width
-        self.configure(bg='#1D1714')
         apply_tk_fonts(self)
+        self._modern=self._apply_look()
+        self.configure(bg=self.BG)
         self._queue=queue.Queue()
         self.running=False
         self.launching=False
@@ -436,7 +438,38 @@ class Setup(tk.Tk):
     ACCENT = OGG_EMBER['accent']
     GOOD = '#8FC98A'
 
+    def _apply_look(self):
+        """0.5.3: the setup window wears the chosen appearance too (Dark / Light: OVERCAST's colours, Inter,
+        rounded buttons). Classic, or anything missing, keeps the original look."""
+        global FAMILY
+        try:
+            import oracle_appearance
+            look,tint=oracle_appearance.chosen()
+            if look=='classic':
+                return False
+            from overcast.theme import palette
+            import oggcultist_design_system as ds
+            oracle_appearance.retint_design_system(ds,palette(look,tint))
+            for name,key in (('BG','canvas'),('CARD','raised'),('LINE','control_line'),('TEXT','text'),
+                             ('MUTED','text_3'),('ACCENT','accent')):
+                setattr(self,name,ds.COLOR[key])
+            import marble_uberata
+            if marble_uberata.register_inter():
+                FAMILY=marble_uberata.INTER_FAMILY
+                for named in ('TkDefaultFont','TkTextFont','TkMenuFont','TkHeadingFont','TkCaptionFont'):
+                    try:
+                        tkfont.nametofont(named,root=self).configure(family=FAMILY)
+                    except tk.TclError:
+                        pass
+            import oracle_round
+            oracle_round.install(self)            # rounded cards and fields, as in the suite
+            self._shown=oracle_appearance.display
+            return True
+        except Exception:
+            return False
+
     def _label(self,parent,text,size=11,fg=None,bold=False,bg=None,**kwargs):
+        text=getattr(self,'_shown',str)(text)
         return tk.Label(parent,text=text,font=(FAMILY,size,'bold' if bold else 'normal'),
                         bg=bg or self.BG,fg=fg or self.TEXT,**kwargs)
 
@@ -446,6 +479,16 @@ class Setup(tk.Tk):
         label.bind('<Configure>',lambda event:label.configure(wraplength=max(200,event.width-4)),add='+')
 
     def _button(self,parent,text,command,primary=False):
+        if getattr(self,'_modern',False):
+            from oracle_widgets import RoundButton
+            return RoundButton(parent,radius=9,ground=parent.cget('bg'),text=self._shown(text),command=command,
+                               cursor='hand2',
+                               font=(FAMILY,11,'bold'),padx=16,pady=8,
+                               bg=self.ACCENT if primary else OGG_EMBER['control'],
+                               fg=OGG_EMBER['text_on_accent'] if primary else self.TEXT,
+                               activebackground=OGG_EMBER['accent_deep'] if primary else OGG_EMBER['hover'],
+                               activeforeground=OGG_EMBER['text_on_accent'] if primary else self.TEXT,
+                               disabledforeground=self.MUTED,highlightthickness=2,highlightcolor=OGG_EMBER['focus'])
         return tk.Button(parent,text=text,command=command,cursor='hand2',relief='flat',bd=0,
                          font=(FAMILY,11,'bold'),padx=16,pady=8,
                          bg=self.ACCENT if primary else OGG_EMBER['control'],
@@ -493,7 +536,7 @@ class Setup(tk.Tk):
             self.menu_btn.configure(font=(FAMILY,9,'bold'),padx=10,pady=4)
             self.menu_btn.pack(side='right',pady=(6,0))
             if MENU_ENTRY.is_file():
-                self.menu_btn.configure(text='IN APP MENU ✓')
+                self.menu_btn.configure(text=getattr(self,'_shown',str)('IN APP MENU ✓'))
         intro=self._label(pad,'Marble Oracle checks its parts each time it starts. Nothing is installed '
                     'without your approval: Python libraries go into a private folder for this app '
                     'only, and system packages ask for your password first.',10,fg=OGG_EMBER['text_2'],
@@ -574,7 +617,7 @@ class Setup(tk.Tk):
             return
         self._write('Marble Oracle is now in your applications menu. Search for "Marble Oracle".')
         try:
-            self.menu_btn.configure(text='IN APP MENU ✓')
+            self.menu_btn.configure(text=getattr(self,'_shown',str)('IN APP MENU ✓'))
         except (tk.TclError,AttributeError):
             pass
 
@@ -629,7 +672,7 @@ class Setup(tk.Tk):
         # Don't reset the user's media-install selection during a failed or
         # partial install. A new setup window defaults to selecting missing tools.
         self.status.set('Marble Oracle ready to start' if self.ready else 'Essential Python libraries missing')
-        self.start_btn.configure(text='START MARBLE ORACLE', state='normal' if self.ready and not self.running else 'disabled')
+        self.start_btn.configure(text=getattr(self,'_shown',str)('START MARBLE ORACLE'), state='normal' if self.ready and not self.running else 'disabled')
         # The bright button is the next useful step: START when ready, INSTALL when not.
         primary_install = not self.ready
         for button, primary in ((self.install_btn, primary_install), (self.start_btn, not primary_install)):
@@ -641,7 +684,7 @@ class Setup(tk.Tk):
                                  highlightbackground=self.ACCENT if primary else self.LINE)
             except tk.TclError:
                 pass
-        self.install_btn.configure(text='INSTALL REQUIREMENTS' if not self.ready else 'INSTALL SELECTED')
+        self.install_btn.configure(text=getattr(self,'_shown',str)('INSTALL REQUIREMENTS' if not self.ready else 'INSTALL SELECTED'))
         return self.ready
 
     def _report_setup_error(self, context, exc):

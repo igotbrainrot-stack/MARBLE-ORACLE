@@ -205,6 +205,10 @@ class HomeFocusMixin:
             if box is None:
                 continue
             tag = RING_TOP_TAG if self._chrome_box(box) else RING_TAG
-            c.create_rectangle(box[0] - pad, box[1] - pad, box[2] + pad, box[3] + pad,
-                               outline=colour, width=width, tags=tag)
+            if hasattr(self, 'ui_rect'):         # rounded in Dark and Light (0.5.3)
+                self.ui_rect(box[0] - pad, box[1] - pad, box[2] + pad, box[3] + pad, radius=9,
+                             outline=colour, width=width, tags=tag)
+            else:
+                c.create_rectangle(box[0] - pad, box[1] - pad, box[2] + pad, box[3] + pad,
+                                   outline=colour, width=width, tags=tag)
         c.tag_raise(RING_TOP_TAG)

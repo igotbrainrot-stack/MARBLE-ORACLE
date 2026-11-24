@@ -495,14 +495,13 @@ class TouchTypePanel(tk.Frame):
                 home = ch in 'asdfjkl;'
                 bg = C['accent'] if active else C['control'] if home else C['raised']
                 fg = C['text_on_accent'] if active else C['text_bright'] if home else C['text_2']
-                c.create_rectangle(x,y0,x+kw,y0+33,fill=bg,
-                                   outline=C['accent'] if active else C['control_line'],width=1)
+                key_shape(c,x,y0,x+kw,y0+33,fill=bg,outline=C['accent'] if active else C['control_line'])
                 c.create_text(x+kw/2,y0+17,text=ch.upper(),font=(FAMILY,11,'bold'),fill=fg)
         space_on = e.expected == ' '
         ww = min(w*0.4, 250)
         x = (w-ww)/2
-        c.create_rectangle(x,122,x+ww,145,fill=C['accent'] if space_on else C['control'],
-                           outline=C['accent'] if space_on else C['control_line'])
+        key_shape(c,x,122,x+ww,145,fill=C['accent'] if space_on else C['control'],
+                  outline=C['accent'] if space_on else C['control_line'])
         c.create_text(w/2,133,text='SPACE · THUMBS',font=(FAMILY,10,'bold'),
                       fill=C['text_on_accent'] if space_on else C['text_2'])
 
@@ -618,3 +617,12 @@ class EmbeddedTouchType:
         if keysym.lower() in ('escape','esc'):
             return 'close'
         return None
+
+
+def key_shape(c, x0, y0, x1, y1, *, fill, outline):
+    """A key: rounded in Dark and Light (0.5.3), square in Classic."""
+    import oracle_appearance
+    if oracle_appearance.modern():
+        from oracle_sidebar import round_rect
+        return round_rect(c, x0, y0, x1, y1, 6, fill=fill, outline=outline, width=1)
+    return c.create_rectangle(x0, y0, x1, y1, fill=fill, outline=outline, width=1)

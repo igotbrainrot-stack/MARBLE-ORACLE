@@ -1,4 +1,4 @@
-# Handover: Marble Oracle 0.5.1
+# Handover: Marble Oracle 0.5.3
 
 22 November 2026 (0.4.9.7: 16 November). For whoever picks this up next, human or AI. Earlier handovers (0.4.9.3 to 0.4.9.5) are in `History/HANDOVER_0.4.9.3-0.4.9.5.md`; this file replaces them.
 
@@ -18,7 +18,9 @@
 | #11 | `claude/marble-oracle-0498-ogg-rail` | 0.4.9.8 | OGGCULTIST rail: Settings always reachable, icons fit at 900x580 |
 | #12 | `claude/marble-oracle-0499-professional` | 0.4.9.9 | Welcome guide, slim scrollbars and dropdowns, install for every Linux family, dead files removed |
 | #13 | `claude/marble-oracle-0500-overcast` | 0.5.0 | OVERCAST 1.1.2 as the seventh workspace |
-| **#14** | **`claude/marble-oracle-0510-design`** | **0.5.1** | **Dark / Light (OVERCAST's design, default) and Classic; left sidebar** |
+| #14 | `claude/marble-oracle-0510-design` | 0.5.1 | Dark / Light (OVERCAST's design, default) and Classic; left sidebar |
+| #15 | `claude/marble-oracle-0520-pumice` | 0.5.2 | A faint pumice surface for Dark and Light |
+| **#16** | **`claude/marble-oracle-0530-rounded`** | **0.5.3** | **Rounded corners throughout and the bundled Inter typeface** |
 
 - **The branch is the whole application:** every asset archive, font and texture is in Git. Only the two third-party research PDFs are left out (`.gitignore`); they are in the release ZIP under `Documentation/Research/`.
 - **Read next:** `README.md`, `ARCHITECTURE.md`, `DEVELOPMENT.md`, `CHANGELOG.md`, `TESTING_REPORT.md`.
@@ -26,6 +28,18 @@
 ## State in one paragraph
 
 All six workspaces work, share one page shell and one interaction look (hover, a cream keyboard-focus ring, an amber "current" fill), and HOME can now be used from the keyboard. The whole regression suite passes on GitHub's Linux runner (Tk under Xvfb) and on its Windows runner (native Tk), and since 0.4.9.7 the Windows job is required. **Nothing has been run on a physical PC, and none of the market sources added in 0.4.9.4 has been seen answering live.**
+
+## What 0.5.3 changed (and 0.5.2)
+
+- **0.5.2:** Dark and Light surfaces carry a faint pumice texture (`oracle_pumice.py`, pure Python, cached per colour). `oracle_ogg_texture.use_pumice()` swaps it in where Classic uses film grain.
+- **Rounding (0.5.3), by kind of widget:**
+  - buttons are `oracle_widgets.RoundButton` (via `oracle_shell.button`/`nav_button`);
+  - textured cards use rounded ttk image elements (`oracle_ogg_texture.frame(..., rounded=True)`, styles `MarbleOgg.<role>.on<GROUND>.TFrame`);
+  - other widgets with a visible edge get corner pieces from `oracle_round.install(root)`;
+  - canvas shapes use `oracle_sidebar.round_rect` or `Scene.ui_rect`.
+  - Mark a subtree `_marble_no_round = True` if it draws its own rounded artwork (OVERCAST and Oggcultist are marked).
+- **RoundButton rule:** it always requests its natural size and only its face stretches. Do not set its Tk `width`/`height` to the face size, or shared grid columns resize each other for ever.
+- **Font:** `marble_uberata.register_inter()` registers the bundled Inter for this process. `oracle_appearance.choose_family()` puts Inter first in Dark and Light.
 
 ## What 0.5.1 changed
 

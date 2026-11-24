@@ -37,10 +37,15 @@ def sidebar_width(width):
 
 
 def round_rect(canvas, x0, y0, x1, y1, r, **kw):
-    """A rounded rectangle as a smoothed polygon (Tk's canvas has none)."""
+    """A rounded rectangle as a smoothed polygon (Tk's canvas has none).
+
+    Each straight edge's end points are given twice, which pins the spline to them, so the corner curve runs
+    the whole `r` (with each given once Tk's spline cuts the corner at r/2 and corners look half as round)."""
     r = max(0, min(r, (x1 - x0) / 2, (y1 - y0) / 2))
-    pts = (x0 + r, y0, x1 - r, y0, x1, y0, x1, y0 + r, x1, y1 - r, x1, y1, x1 - r, y1, x0 + r, y1, x0, y1,
-           x0, y1 - r, x0, y0 + r, x0, y0)
+    pts = (x0 + r, y0, x0 + r, y0, x1 - r, y0, x1 - r, y0, x1, y0,
+           x1, y0 + r, x1, y0 + r, x1, y1 - r, x1, y1 - r, x1, y1,
+           x1 - r, y1, x1 - r, y1, x0 + r, y1, x0 + r, y1, x0, y1,
+           x0, y1 - r, x0, y1 - r, x0, y0 + r, x0, y0 + r, x0, y0)
     return canvas.create_polygon(pts, smooth=True, splinesteps=12, **kw)
 
 
