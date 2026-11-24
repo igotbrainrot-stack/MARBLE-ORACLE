@@ -162,7 +162,9 @@ def gui_checks():
         W.RoundButton._render = original
         check('buttons stretched across shared columns settle (no endless resizing)', not renders, len(renders))
         faces = [b._image.width() for b in buttons]
-        check('a stretched button\'s face fills its cell', all(abs(f - (b.winfo_width() - 2)) <= 1 for f, b in zip(faces, buttons)),
+        # Tk draws an image button with a small inset on X11 (1 px a side) and none on Windows: allow for it.
+        check('a stretched button\'s face fills its cell',
+              all(abs(f - (b.winfo_width() - b._inset()[0])) <= 1 for f, b in zip(faces, buttons)),
               list(zip(faces, [b.winfo_width() for b in buttons])))
         root.geometry('360x200')
         for _ in range(10):
