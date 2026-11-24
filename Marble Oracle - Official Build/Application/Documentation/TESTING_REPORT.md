@@ -1,4 +1,40 @@
-# Testing report: Marble Oracle 0.4.9.9
+# Testing report: Marble Oracle 0.5.1
+
+## 0.5.0 and 0.5.1 addendum (24 November 2026)
+
+Same development machine as 0.4.9.9 (Ubuntu 24.04, Python 3.12, Tk 8.6.14 under Xvfb). It is still a virtual display, not a physical PC.
+
+| Check | Development machine (Xvfb) | GitHub Linux (Xvfb) | GitHub Windows (native Tk) |
+|---|---|---|---|
+| Regression scripts, 0.5.0 (PR #13, commit 67aafd9) | 71 passed | **71 passed** (run 45298123831) | **71 passed** (same run) |
+| Regression scripts, 0.5.1 (PR #14, commit 2832f72) | **72 passed, 0 failed, 0 skipped** | **72 passed** (run 45303183699) | **72 passed** (same run) |
+| OVERCAST's own tests against the suite copy (`test_overcast_package.py`) | 97/97 | pass | pass |
+| `test_overcast_workspace_0500.py` | 45/45 | pass | pass |
+| `test_appearance_0510.py` (Dark and Light, four sizes) | 260/260; also 260/260 with the interface font forced to DejaVu Sans | pass | pass |
+| `--selftest` from a fresh extraction of the ZIP | pass | | |
+| `verify_release.py` | pass on the tree and on the extraction | | |
+
+**OVERCAST 1.1.1 as delivered did not open on real Tk.** Its panel failed while being built (`can't pack … inside …`); its own 9 graphical tests failed on Tk 8.6.14. Installing the delivered wheel in a clean environment and running `overcast` reproduced the crash. The 1.1.2 wheel built from the suite's copy installs with the delivered Linux installer and stays running. All 105 of its tests pass on real Tk, packaging tests included.
+
+**Found by CI and fixed in this round:**
+- OVERCAST's sidebar lost "Methods" with the runner's fonts. It now measures itself and compacts.
+- A few buttons squeezed with a wider fallback font. Dark/Light now use OVERCAST's type sizes.
+- On Windows, the EIDOLITH media probe was squeezed by wrapped tools.
+- A test assumed a 1920x1080 window on a smaller screen.
+
+**Not verified:**
+- A real LM Studio model and live RSS feeds.
+- Anything on a physical PC.
+- The real system fonts on Fedora (Adwaita Sans or Cantarell) and Windows (Segoe UI).
+- Sound.
+
+**Known cosmetic gaps:**
+- AUGURSPEX keeps some of its own styling.
+- Labels whose text is set while running stay in capitals.
+- In Light, OGGCULTIST's cream logo is faint.
+- In Classic, OGGCULTIST's HOME button is 4 px narrower than it asks for at 900x580 (this predates 0.5.0).
+
+---
 
 ## 0.4.9.9 addendum (22 November 2026)
 
