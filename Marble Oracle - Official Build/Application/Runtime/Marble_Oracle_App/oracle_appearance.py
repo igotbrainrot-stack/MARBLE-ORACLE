@@ -289,13 +289,36 @@ _EMBER_ORIGINAL = {
 }
 
 
-def translate_ember(colour, p):
-    """An Ember-family colour (Oggcultist's warm browns, ambers and creams) as the matching OVERCAST colour."""
+_EMBER_LITERALS = set()      # the hex colours written in Oggcultist's theme and its original gradients (filled lazily)
+
+
+def _ember_literals():
+    if not _EMBER_LITERALS:
+        import re
+        from pathlib import Path
+        _EMBER_LITERALS.update(_EMBER_ORIGINAL)
+        _EMBER_LITERALS.update(('#FED154', '#FDA629', '#EC4406', '#FFDB6E', '#FFB441', '#F45616', '#F0BC45', '#EE931F',
+                                '#D63B05', '#5E4A39', '#56402F', '#4C3426'))
+        gui = Path(__file__).resolve().parent / 'Oggcultist' / 'oggcultist' / 'gui'
+        for name in ('theme.py', 'textures.py', 'design_system.py'):
+            try:
+                _EMBER_LITERALS.update(c.upper() for c in re.findall(r"#[0-9A-Fa-f]{6}", (gui / name).read_text()))
+            except OSError:
+                pass
+    return _EMBER_LITERALS
+
+
+def translate_ember(colour, p, strict=False):
+    """An Ember-family colour (Oggcultist's warm browns, ambers and creams) as the matching OVERCAST colour.
+    strict: only colours Oggcultist itself writes (its tokens, gradients and theme literals) are translated, so
+    tints computed from the new palette are left alone."""
     import colorsys
     from overcast.theme import hex_rgb, luminance, mix
     key = str(colour).upper()
     if key in _EMBER_ORIGINAL:
         return ember_roles(p)[_EMBER_ORIGINAL[key]]
+    if strict and key not in _ember_literals():
+        return colour
     try:
         r, g, b = (v / 255.0 for v in hex_rgb(key))
     except (ValueError, IndexError):
@@ -319,7 +342,7 @@ def _flatten_oggcultist_artwork(p):
     if getattr(tx, '_marble_flat', False):
         return
     original_rgb = tx._rgb
-    tx._rgb = lambda colour: original_rgb(translate_ember(colour, p) if isinstance(colour, str) else colour)
+    tx._rgb = lambda colour: original_rgb(translate_ember(colour, p, strict=True) if isinstance(colour, str) else colour)
     tx._finish = lambda body, seed=0, amount=0.0, mottle=True: body          # no film grain
     tx.bevel = lambda image, radius=0, strength=0, inset=0.0: image          # no bevel shading
     tx._marble_flat = True
