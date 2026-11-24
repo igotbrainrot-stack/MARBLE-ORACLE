@@ -121,7 +121,7 @@ check('never during the self-test or tests', guide.maybe_show_welcome(scene) is 
 check('the ? button is in the tab strip', any(h[4] == 'guide' for h in scene.hot))
 tabs = [h for h in scene.hot if str(h[4]).startswith('tab_')]
 qbox = next(h for h in scene.hot if h[4] == 'guide')
-check('the ? button sits after the six tabs', len(tabs) == 6 and qbox[0] > max(t[2] for t in tabs), (qbox, tabs))
+check('the ? button sits after the seven tabs', len(tabs) == 7 and qbox[0] > max(t[2] for t in tabs), (qbox, tabs))
 check('the ? button does not run into the window buttons',
       all(qbox[2] <= h[0] for h in scene.hot if h[4] in ('min', 'max', 'quit', 'full') and h[1] < qbox[3]))
 if os.name != 'nt':

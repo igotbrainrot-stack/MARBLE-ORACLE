@@ -784,7 +784,7 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
     # passes sit over ordinary content, but the ASCII statue is a protected
     # foreground ink layer.  Popup, chrome and bezel still render above it.
     # Both fringing glyphs and marble ramp ink share the "statue" canvas tag.
-    LAYERS = ("content", "fx", "kbring", "crt", "pixel-crt", "glare", "statue", "rune-art", "overlaywin", "dkwin", "oggwin", "touchwin", "augwin", "chrome", "popup", "bezel", "kbring-top")
+    LAYERS = ("content", "fx", "kbring", "crt", "pixel-crt", "glare", "statue", "rune-art", "overlaywin", "dkwin", "oggwin", "touchwin", "augwin", "ovcwin", "chrome", "popup", "bezel", "kbring-top")
 
     def __init__(self, root, canvas, opts, host=None):
         import tkinter as tkmod
@@ -863,6 +863,8 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
         self._eido_cached = None  # preserve source list / queue when switching tabs
         self.aug = None
         self._aug_cached = None  # preserve AUGURSPEX workspace across tab switches
+        self.ovc = None
+        self._ovc_cached = None  # OVERCAST keeps its pages and any running forecast across tab switches (0.5.0)
         self._load_dicekey()
 
     # ------------------------------------------------------------------ plumbing
@@ -2155,6 +2157,8 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
             pass  # Touch Type is a native Tk frame with its own lightweight timer.
         elif self.aug:
             pass  # AUGURSPEX owns its Tk charts and async market-data polling.
+        elif self.ovc:
+            pass  # OVERCAST polls its own job queue.
         else:
             self._dyn(now, dt)
         self._fx(now, dt)
@@ -2297,7 +2301,8 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
                 max(r[2] for r in panels), max(self.rect["status"][3], max(r[3] for r in panels)))   # 0.4.9.6: workspaces also cover the GRADE footer, which acts only on HOME
 
     # 1058: one overlay is left, PASSPHRASE (--retro and --flat); the dashboard is visible exactly when it is None
-    OVERLAY_NAMES = {"dk": "PASSPHRASE", "ogg": "OGGCULTIST", "touch": "TOUCH TYPE", "eido": "EIDOLITH", "aug": "AUGURSPEX"}
+    OVERLAY_NAMES = {"dk": "PASSPHRASE", "ogg": "OGGCULTIST", "touch": "TOUCH TYPE", "eido": "EIDOLITH", "aug": "AUGURSPEX",
+                     "ovc": "OVERCAST"}
 
     def _which_overlay(self):
         if getattr(self, "dk", None):
@@ -2308,6 +2313,8 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
             return "touch"
         if getattr(self, "eido", None):
             return "eido"
+        if getattr(self, "ovc", None):
+            return "ovc"
         return "aug" if getattr(self, "aug", None) else None
 
     def close_overlays(self, msg="", keep=None):
@@ -2318,7 +2325,8 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
                                        ("ogg", "ogg", "oggwin", self._after_close_ogg),
                                        ("touch", "touch", "touchwin", self._after_close_touch),
                                        ("eido", "eido", "eidowin", self._after_close_eido),
-                                       ("aug", "aug", "augwin", self._after_close_aug)):
+                                       ("aug", "aug", "augwin", self._after_close_aug),
+                                       ("ovc", "ovc", "ovcwin", self._after_close_aug)):
             if name == keep:
                 continue
             sess = getattr(self, attr, None)
@@ -2333,6 +2341,8 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
                 self._eido_cached = sess
             elif name == 'aug':
                 self._aug_cached = sess
+            elif name == 'ovc':
+                self._ovc_cached = sess
             setattr(self, attr, None)
             try:
                 sess.clear()
@@ -2388,7 +2398,8 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
                    "ogg": (True, "OGGCULTIST IS NOT AVAILABLE"),
                    "touch": (True, "TOUCH TYPE IS NOT AVAILABLE"),
                    "eido": (True, "EIDOLITH IS NOT AVAILABLE"),
-                   "aug": (True, "AUGURSPEX IS NOT AVAILABLE")}[name]
+                   "aug": (True, "AUGURSPEX IS NOT AVAILABLE"),
+                   "ovc": (True, "OVERCAST IS NOT AVAILABLE")}[name]
         if not missing[0]:
             return self.say(missing[1])
         self.close_overlays()
@@ -2455,6 +2466,16 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
                 self.aug.layout(box)
                 self._hide_rune_art_widgets()
                 self._update_primary_tab_state()
+            elif name == "ovc":
+                from oracle_overcast_tab import EmbeddedOvercast
+                if self._ovc_cached is not None and self._ovc_cached.frame.winfo_exists():
+                    self.ovc = self._ovc_cached
+                else:
+                    self.ovc = EmbeddedOvercast(self.c, on_home=self.go_home, on_status=lambda m: self.say(m, 6))
+                    self._ovc_cached = self.ovc
+                self.ovc.layout(box)
+                self._hide_rune_art_widgets()
+                self._update_primary_tab_state()
         except Exception as e:
             try:                                          # a Session that died half-built leaves nothing behind
                 self.c.delete("dkwin")
@@ -2462,6 +2483,7 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
                 self.c.delete("touchwin")
                 self.c.delete("eidowin")
                 self.c.delete("augwin")
+                self.c.delete("ovcwin")
             except Exception:
                 pass
             self.close_overlays("%s FAILED: %s" % (self.OVERLAY_NAMES[name], e))
@@ -2556,6 +2578,11 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
             # Never open a browser or start the former localhost companion server.
             if self._which_overlay() != "aug":
                 self.toggle_overlay("aug")
+            self._update_primary_tab_state()
+            return
+        if name == "tab_overcast":
+            if self._which_overlay() != "ovc":
+                self.toggle_overlay("ovc")
             self._update_primary_tab_state()
             return
         if name == "tab_eidolith":
@@ -2851,6 +2878,11 @@ class Scene(HomeFocusMixin, ChromeMixin, SkinMixin):
                 self.aug.layout(self.overlay_box())
             except Exception as e:
                 self._overlay_crashed("AUGURSPEX", e)
+        if self.ovc:
+            try:
+                self.ovc.layout(self.overlay_box())
+            except Exception as e:
+                self._overlay_crashed("OVERCAST", e)
 
 
 # --------------------------------------------------------------------------- window icon
@@ -3347,6 +3379,9 @@ class WindowApp:
             cached_aug = getattr(self.scene, '_aug_cached', None)
             if cached_aug is not None:
                 cached_aug.shutdown()
+            cached_ovc = getattr(self.scene, '_ovc_cached', None)
+            if cached_ovc is not None:
+                cached_ovc.shutdown()
             cached_eido = getattr(self.scene, '_eido_cached', None)
             if cached_eido is not None and not cached_eido.shutdown():
                 return   # protect an ongoing video conversion from accidental interruption

@@ -2,6 +2,25 @@
 
 Newest first. Releases before 0.4.9.3 have their original notes in `History/ReleaseNotes/`.
 
+## 0.5.0 · 24 November 2026 · OVERCAST joins the suite
+
+Built on 0.4.9.9. No saved setting changes format.
+
+- **New seventh workspace, OVERCAST** (*Mostly cloudy, with a chance of being right.*). It is the pessimism-first news forecasting desk, version 1.1.2, and its tab sits between AUGURSPEX and PASSPHRASE.
+  - Broad outlooks with scenarios and a gloom index, yes/no forecasts in a permanent ledger, a calendar, research pages and an honest track record.
+  - It uses public RSS feeds (fetched only when you refresh) and a model in LM Studio on your own computer.
+  - The panel is built on first open and kept while other tabs are shown, so a running forecast carries on. Finished jobs are announced in the status line.
+  - Its ledger is in the suite's state folder (`news_oracle/`), the same folder a standalone OVERCAST install uses.
+  - Escape returns HOME, and the welcome guide describes it. Code: `oracle_overcast_tab.py`; package: `overcast/` (plus the `news_oracle` alias).
+- **OVERCAST 1.1.2** (fixes to the delivered 1.1.1; full list in `Documentation/Overcast/CHANGELOG.md`):
+  - **Window:** 1.1.1's window failed to build on real Tk; it opens now.
+  - **Controls:** buttons, dropdown arrows and the page border are drawn as designed.
+  - **Small windows:** the layout fits down to the suite's 900x580 and the CRT housing. The command bar wraps, split views stack, Settings scrolls in one column, and the sidebar narrows and compacts.
+- **Tests:**
+  - `test_overcast_package.py` runs OVERCAST's own 97 tests against the suite's copy. The standalone packaging test is not included, because the suite has no `pyproject.toml`.
+  - `test_overcast_workspace_0500.py` (44 checks) covers the fit at the five sizes, no network on open, the ledger location, switching tabs and closing during a refresh, and no Tk calls from worker threads.
+  - Tab-count tests updated for seven tabs. The screenshot tool captures OVERCAST.
+
 ## 0.4.9.9 · 22 November 2026 · Welcome, install, clean-up
 
 Built on 0.4.9.8. No saved setting changes format; every workspace keeps its features.

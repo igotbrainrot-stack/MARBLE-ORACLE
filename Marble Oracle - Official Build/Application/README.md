@@ -1,8 +1,8 @@
 # Marble Oracle
 
-**Version 0.4.9.9 · 22 November 2026 · Windows 10/11 and Linux (Mint, Ubuntu, Fedora, Arch, openSUSE)**
+**Version 0.5.0 · 24 November 2026 · Windows 10/11 and Linux (Mint, Ubuntu, Fedora, Arch, openSUSE)**
 
-A dark, local-first desktop suite: an oracle dashboard, a music player, a video converter, a market observatory, a passphrase generator and a typing trainer in one window. Python and Tk; no account or sign-in. It goes online only for public market history in AUGURSPEX, album lookups in OGGCULTIST when you ask for them, and (on Windows) to download FFmpeg if you choose to install it.
+A dark, local-first desktop suite: an oracle dashboard, a music player, a video converter, a market observatory, a news forecasting desk, a passphrase generator and a typing trainer in one window. Python and Tk; no account or sign-in. It goes online only for public market history in AUGURSPEX, public news feeds in OVERCAST when you refresh them, album lookups in OGGCULTIST when you ask for them, and (on Windows) to download FFmpeg if you choose to install it. OVERCAST's forecasts come from a model running on your own computer (LM Studio), never from a cloud service.
 
 ## Start it
 
@@ -11,11 +11,11 @@ A dark, local-first desktop suite: an oracle dashboard, a music player, a video 
    If Windows blocks VBScript, use `START MARBLE ORACLE - WINDOWS (if the VBS launcher is blocked).bat`.
 3. **Linux:** double-click or run `START MARBLE ORACLE - LINUX.sh` (`chmod +x` it first if extraction dropped the executable flag). If Python's Tk package is missing, it offers to install it with your distribution's package manager (apt, dnf, pacman or zypper) after your desktop asks for your password.
 4. The **setup window** checks each part (Pillow, Mutagen, FFmpeg) and shows what is ready. Nothing installs until you press INSTALL; Python libraries go into a private folder for this app only. Press **START MARBLE ORACLE**. On Linux, **ADD TO APP MENU** puts it in your applications menu.
-5. On the first start a **welcome guide** introduces the six workspaces. Open it again any time with **F1** or the **?** beside the tabs.
+5. On the first start a **welcome guide** introduces the seven workspaces. Open it again any time with **F1** or the **?** beside the tabs.
 
 After the first run, starting it checks quickly and goes straight to the suite.
 
-## The six workspaces
+## The seven workspaces
 
 | Tab | What it is for |
 |---|---|
@@ -23,6 +23,7 @@ After the first run, starting it checks quickly and goes straight to the suite.
 | **OGGCULTIST** | Music player, library and audio converter (embedded Oggcultist 2.0.6). |
 | **EIDOLITH** | Video player and converter: AV1/HEVC/H.264 profiles, a queue that carries on past a failed job, per-job logs, tidy TV and film filenames. Originals are never deleted or overwritten. |
 | **AUGURSPEX** | Market history for stocks, currencies and crypto: 1 to 9 charts, line or candles, source details, signals, an observation table and CSV import/export. History, not live quotes. |
+| **OVERCAST** | *Mostly cloudy, with a chance of being right.* A pessimism-first news forecasting desk: broad outlooks with scenarios and a gloom index, yes/no forecasts in a permanent ledger, a calendar of deadlines, and an honest track record (Brier score, gloom bias). Uses public RSS feeds and a model in [LM Studio](https://lmstudio.ai) on your own computer. Details: [`Documentation/Overcast/README.md`](Documentation/Overcast/README.md). |
 | **PASSPHRASE** | Three words, a number and a symbol drawn from the operating system's secure random source. Nothing is saved; a copied phrase is cleared from the clipboard after 60 seconds. |
 | **TOUCH TYPE** | Four typing games with finger guidance and saved best scores. |
 
@@ -36,7 +37,7 @@ AUGURSPEX shows what public sources return and says where each chart came from. 
 
 Settings, scores, queues, watchlists and caches are outside the program folder, so replacing the folder with a newer release keeps them:
 
-- Linux: `~/.local/state/Marble_Oracle/`, `~/.local/share/MarbleOracleSuite/`, `~/.config/augurspex/`, `~/.cache/augurspex/`
+- Linux: `~/.local/state/Marble_Oracle/` (OVERCAST's forecast ledger is in `news_oracle/` inside it), `~/.local/share/MarbleOracleSuite/`, `~/.config/augurspex/`, `~/.cache/augurspex/`
 - Windows: `%LOCALAPPDATA%\Marble_Oracle\`, `%LOCALAPPDATA%\MarbleOracleSuite\`, and `.config\augurspex` / `.cache\augurspex` in your user folder
 
 Do not delete these to update.

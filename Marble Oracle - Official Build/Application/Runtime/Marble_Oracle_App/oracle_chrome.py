@@ -699,7 +699,7 @@ class ChromeMixin(PhotoBezelMixin):
         self.tick_n, self.tick_full = 0, ""
 
     def _primary_tabs(self, x):
-        """Six persistent workspace tabs in the header, including CRT modes.
+        """Seven persistent workspace tabs in the header, including CRT modes.
 
         Keep all navigation within the previous menu row. Layout presets and
         the independent panels do not move when switching tabs.
@@ -707,7 +707,7 @@ class ChromeMixin(PhotoBezelMixin):
         c = self.c
         _, y0, x1, y1 = self.rect["menu"]
         tabs = (("HOME", "tab_home"), ("OGGCULTIST", "tab_oggcultist"),
-                ("EIDOLITH", "tab_eidolith"), ("AUGURSPEX", "tab_augurspex"),
+                ("EIDOLITH", "tab_eidolith"), ("AUGURSPEX", "tab_augurspex"), ("OVERCAST", "tab_overcast"),
                 ("PASSPHRASE", "tab_passphrase"), ("TOUCH TYPE", "tab_touch_type"))
         if self.case_on():
             # The physical CRT's nixie module protrudes over the inner glass
@@ -733,7 +733,8 @@ class ChromeMixin(PhotoBezelMixin):
             # A smaller font is chosen for tight CRT aperture scales.
             fs = min(12, max(8, round(12 * scale)))
             if font.measure(label) * fs / 12.0 > w - 8:
-                label = {"PASSPHRASE": "PASS", "OGGCULTIST": "OGG", "TOUCH TYPE": "TYPE", "EIDOLITH": "EIDO", "AUGURSPEX": "AUGUR"}.get(label, label)
+                label = {"PASSPHRASE": "PASS", "OGGCULTIST": "OGG", "TOUCH TYPE": "TYPE", "EIDOLITH": "EIDO", "AUGURSPEX": "AUGUR",
+                         "OVERCAST": "CAST"}.get(label, label)
             tid = self.T((x0+x2)/2, y + h/2, label, fs, "txt", "center", "chrome", True, False)
             self.hot.append((x0, y0, x2, y1, action))
             self.nav_tabs[action] = (panel, tid)
@@ -753,7 +754,8 @@ class ChromeMixin(PhotoBezelMixin):
             "tab_oggcultist" if getattr(self, "ogg", None) is not None else (
             "tab_touch_type" if getattr(self, "touch", None) is not None else (
             "tab_eidolith" if getattr(self, "eido", None) is not None else (
-            "tab_augurspex" if getattr(self, "aug", None) is not None else "tab_home"))))
+            "tab_overcast" if getattr(self, "ovc", None) is not None else (
+            "tab_augurspex" if getattr(self, "aug", None) is not None else "tab_home")))))
         for action, pair in getattr(self, "nav_tabs", {}).items():
             on = action == active
             try:

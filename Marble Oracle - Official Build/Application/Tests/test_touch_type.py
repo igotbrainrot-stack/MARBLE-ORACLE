@@ -78,7 +78,7 @@ def gui_tests():
         root.update()
         scene.resized(1216,848)
         root.update()
-        assert len(scene.nav_tabs)==6
+        assert len(scene.nav_tabs)==7
         assert 'tab_touch_type' in scene.nav_tabs
         scene.act('tab_touch_type')
         root.update()

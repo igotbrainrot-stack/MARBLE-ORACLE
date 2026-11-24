@@ -25,7 +25,7 @@ from pathlib import Path
 
 APP = Path(__file__).resolve().parents[1] / 'Runtime' / 'Marble_Oracle_App'
 DEFAULT_SIZES = ('900x580', '1000x650', '1216x848', '1280x720', '1920x1080')   # 1216x848 is the default window
-TABS = ('tab_home', 'tab_oggcultist', 'tab_eidolith', 'tab_augurspex', 'tab_passphrase', 'tab_touch_type')
+TABS = ('tab_home', 'tab_oggcultist', 'tab_eidolith', 'tab_augurspex', 'tab_overcast', 'tab_passphrase', 'tab_touch_type')
 
 
 def isolate_state():
