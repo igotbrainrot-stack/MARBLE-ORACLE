@@ -78,7 +78,7 @@ class OggcultistPanel(tk.Frame):
             # version line and HOME keep their place and the items above give
             # way (Tk's packer serves widgets in packing order).
             anchor.pack_configure(before=first)
-        self.home_button.pack(side='bottom', fill='x', padx=6, pady=(8, 0), after=anchor)   # whole even in the icon rail
+        self.home_button.pack(side='bottom', fill='x', padx=3, pady=(8, 0), after=anchor)   # whole even in the icon rail
         # 0.4.9.8: Settings sits at the foot of the rail too, so it is served
         # with HOME and the version line, ahead of the items above. Before, it
         # was packed last: at 1280x720 HOME covered half of it, and at 900x580

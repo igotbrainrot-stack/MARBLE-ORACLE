@@ -150,8 +150,11 @@ def retint_design_system(ds, p):
 
 
 def choose_family(root):
-    from overcast.theme import choose_font
-    return choose_font(root)
+    """The system's best sans-serif (OVERCAST's order). MARBLE_ORACLE_FONT forces one (tests use it to try the
+    wider faces other machines fall back to)."""
+    from overcast.theme import choose_font, FONT_PREFERENCE
+    forced = os.environ.get('MARBLE_ORACLE_FONT')
+    return choose_font(root, (forced,) + FONT_PREFERENCE if forced else FONT_PREFERENCE)
 
 
 def apply(root):
@@ -188,6 +191,10 @@ def apply(root):
     face = choose_family(root)
     _state['family'] = face
     marble_uberata.FAMILY = face
+    # OVERCAST's type sizes: the shell's sizes were set for the narrower serif face.
+    import oracle_shell
+    oracle_shell.TYPE.update(nav=(12, 'normal'), button=(10, 'bold'), group=(9, 'bold'))
+    oracle_shell.BUTTON_PAD = (12, 6)
     for module in list(sys.modules.values()):
         if getattr(module, 'FAMILY', None) == marble_uberata.ART_FAMILY and getattr(module, '__name__', '') in (
                 'oracle_shell', 'oracle_augurspex_tab', 'oracle_touch_type', 'oracle_augurspex_insights', 'oracle_ogg_tab',
@@ -205,6 +212,7 @@ def retint_oggcultist():
     try:
         from oggcultist.gui import design_system as ogg_ds
         retint_design_system(ogg_ds, p)
+        ogg_ds.BODY_POINTS = 11          # the sans face reads larger than Uberata Clear at the same size
     except Exception:
         pass
     try:
@@ -266,7 +274,8 @@ def display(text):
         else:
             new = core.lower()
         out.append(token.replace(core, new, 1))
-        start = token.endswith(('.', ':', '?', '!')) or token.endswith('·')
+        if any(ch.isalpha() for ch in core):      # numbers and symbols (01, ▣) do not start the sentence
+            start = token.endswith(('.', ':', '?', '!')) or token.endswith('·')
     return ' '.join(out)
 
 

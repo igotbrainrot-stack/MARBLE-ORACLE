@@ -83,6 +83,7 @@ def gui_checks(look):
         root, scene = app.root, app.scene
         p = oracle_appearance.palette()
         check(f'{look}: the appearance is applied', oracle_appearance.appearance() == look and p is not None)
+        print(f'INFO {look}: interface font {oracle_appearance.family()}')
         check(f'{look}: no film grain', oracle_ogg_texture.ENABLED is False)
         check(f'{look}: HOME uses the palette', scene.th['bg'] == p['bg'] and scene.th['panel'] == p['card'])
 
@@ -135,16 +136,23 @@ def gui_checks(look):
                 if frame is not None:
                     import tkinter as tk
                     from tkinter import ttk
-                    fx0, fx1 = frame.winfo_rootx(), frame.winfo_rootx() + frame.winfo_width()
-                    squeezed = []
-                    for widget in _walk(frame):
-                        if not isinstance(widget, (tk.Button, ttk.Button)) or not widget.winfo_ismapped():
-                            continue
-                        if not widget.winfo_viewable():
-                            continue
-                        bx0, bx1 = widget.winfo_rootx(), widget.winfo_rootx() + widget.winfo_width()
-                        if widget.winfo_width() + 2 < widget.winfo_reqwidth() or bx1 > fx1 + 1 or bx0 < fx0 - 1:
-                            squeezed.append((str(widget.cget('text'))[:24], widget.winfo_width(), widget.winfo_reqwidth()))
+
+                    def squeezed_buttons():
+                        fx0, fx1 = frame.winfo_rootx(), frame.winfo_rootx() + frame.winfo_width()
+                        found = []
+                        for widget in _walk(frame):
+                            if not isinstance(widget, (tk.Button, ttk.Button)) or not widget.winfo_viewable():
+                                continue
+                            bx0, bx1 = widget.winfo_rootx(), widget.winfo_rootx() + widget.winfo_width()
+                            if widget.winfo_width() + 2 < widget.winfo_reqwidth() or bx1 > fx1 + 1 or bx0 < fx0 - 1:
+                                found.append((str(widget.cget('text'))[:24], widget.winfo_width(), widget.winfo_reqwidth()))
+                        return found
+                    # Workspaces compact themselves on <Configure>; on a slow machine that can take a moment.
+                    squeezed = squeezed_buttons()
+                    deadline = time.time() + 1.5
+                    while squeezed and time.time() < deadline:
+                        pump(3)
+                        squeezed = squeezed_buttons()
                     check(f'{look} {size}: no button in {name} is squeezed or cut off', not squeezed, squeezed)
                 pill = scene._side_rows[action][0]
                 check(f'{look} {size}: {name} is marked in the sidebar and named in the header',
