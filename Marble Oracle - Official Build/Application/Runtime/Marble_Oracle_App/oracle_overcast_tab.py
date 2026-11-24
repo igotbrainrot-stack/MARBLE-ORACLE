@@ -48,7 +48,9 @@ class EmbeddedOvercast:
         # kept for when it runs on its own). In Classic it keeps its own.
         look = oracle_appearance.appearance() if oracle_appearance.modern() else None
         self.frame = create_panel(canvas, state_dir=str(overcast_state_dir()), on_event=self._event,
-                                  appearance=look, accent=oracle_appearance.accent() if look else None)
+                                  appearance=look, accent=oracle_appearance.accent() if look else None,
+                                  font=oracle_appearance.family() if look else None)
+        self.frame._marble_no_round = True     # OVERCAST draws its own rounded artwork (oracle_round)
         self.window = canvas.create_window(0, 0, anchor='nw', window=self.frame, tags=(self.TAG,))
         self._box = None
 

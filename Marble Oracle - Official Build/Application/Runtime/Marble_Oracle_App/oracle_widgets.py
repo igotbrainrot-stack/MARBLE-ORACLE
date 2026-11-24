@@ -462,3 +462,239 @@ def style_dropdown(menu_button, *, bg=None, fg=None, hover=None, line=None, font
     menu_button.bind('<Enter>', lambda _e: shade(True), add='+')
     menu_button.bind('<Leave>', lambda _e: shade(False), add='+')
     return menu_button
+
+
+# ---- rounded controls (0.5.3, Dark / Light) ------------------------------------------------------
+_ROUND_IMAGES = {}       # (interp, w, h, r, fill, ground, ring, ring_w) -> PhotoImage, kept for the process
+
+
+def _hex(colour, widget=None):
+    """(r, g, b) 0..255 for '#rrggbb', '#rgb' or, given a widget, any colour name Tk knows."""
+    text = str(colour).strip()
+    digits = text.lstrip('#')
+    try:
+        if text.startswith('#') and len(digits) == 6:
+            return tuple(int(digits[i:i + 2], 16) for i in (0, 2, 4))
+        if text.startswith('#') and len(digits) == 3:
+            return tuple(int(c * 2, 16) for c in digits)
+    except ValueError:
+        pass
+    if widget is not None:
+        return tuple(v // 257 for v in widget.winfo_rgb(text))
+    raise ValueError(f'not a colour: {colour!r}')
+
+
+def rounded_photo(widget, w, h, radius, fill, ground, ring=None, ring_width=2):
+    """An anti-aliased rounded rectangle, `fill` on `ground`, with an optional inner `ring` (the focus ring)."""
+    w, h = max(2, int(w)), max(2, int(h))
+    r = max(0, min(int(radius), w // 2, h // 2))
+    key = (widget.tk.interpaddr(), w, h, r, str(fill).upper(), str(ground).upper(), ring and str(ring).upper(),
+           ring_width)
+    image = _ROUND_IMAGES.get(key)
+    if image is not None:
+        return image
+    fc, gc = _hex(fill, widget), _hex(ground, widget)
+    rc = _hex(ring, widget) if ring else None
+
+    def coverage(x, y, inset):
+        """Share (0..1) of pixel (x, y) inside the rounded rectangle inset by `inset` px (4 samples)."""
+        rr = max(0.0, r - inset)
+        x0, y0, x1, y1 = inset, inset, w - inset, h - inset
+        inside = 0
+        for sx, sy in ((0.25, 0.25), (0.75, 0.25), (0.25, 0.75), (0.75, 0.75)):
+            px, py = x + sx, y + sy
+            if not (x0 <= px <= x1 and y0 <= py <= y1):
+                continue
+            cx = min(max(px, x0 + rr), x1 - rr)
+            cy = min(max(py, y0 + rr), y1 - rr)
+            if (px - cx) ** 2 + (py - cy) ** 2 <= rr * rr:
+                inside += 1
+        return inside / 4.0
+
+    def blend(a, b, t):
+        return tuple(round(a[i] * (1 - t) + b[i] * t) for i in range(3))
+
+    # The shape is mirror-symmetric and straight between the corners, so a pixel's colour depends only on
+    # its distance from the nearest edge on each axis (or "in the middle"): work out that small table once.
+    corner = min(max(r + 2, ring_width + 2), w // 2, h // 2)
+
+    def colour_at(x, y):
+        outer = coverage(x, y, 0)
+        colour = blend(gc, fc, outer)
+        if rc is not None:
+            colour = blend(colour, rc, max(0.0, outer - coverage(x, y, ring_width)))
+        return '#%02x%02x%02x' % colour
+
+    # Index `corner` on either axis stands for every pixel between the two corner bands.
+    table = [[colour_at(fx, fy) for fx in range(corner + 1)] for fy in range(corner + 1)]
+
+    def row_for(fy):
+        cells = table[fy]
+        left = cells[:corner]
+        middle = max(0, w - 2 * corner)
+        return '{' + ' '.join(left + [cells[corner]] * middle + left[::-1]) + '}'
+
+    band = [row_for(fy) for fy in range(corner)]
+    rows = band + [row_for(corner)] * (h - 2 * corner) + band[::-1]
+    image = tk.PhotoImage(master=widget, width=w, height=h)
+    image.put(' '.join(rows), to=(0, 0))
+    _ROUND_IMAGES[key] = image
+    return image
+
+
+class RoundButton(tk.Button):
+    """A tk.Button with rounded corners: its face is an anti-aliased rounded image, its text drawn by Tk on top.
+
+    It keeps the whole Button interface (command, invoke, state, keyboard, textvariable), and the colour
+    options mean what they always did: configure(bg=...) recolours the face, cget('bg') returns it. The face
+    redraws on hover (the suite's shared hover sets bg), press, focus and when disabled, and stretches when a
+    geometry manager gives the button more room than it asks for. Text anchored left ('w') stays left.
+    """
+
+    _OWN = ('bg', 'background', 'fg', 'foreground', 'activebackground', 'activeforeground', 'text', 'font',
+            'width', 'padx', 'pady', 'state', 'anchor', 'highlightbackground', 'highlightcolor',
+            'highlightthickness', 'disabledforeground', 'radius', 'ground')
+
+    def __init__(self, master=None, radius=8, ground=None, **kw):
+        try:
+            parent_bg = master.cget('bg')
+        except (tk.TclError, AttributeError):
+            parent_bg = COLOR['canvas']
+        self._o = {'bg': kw.pop('bg', kw.pop('background', COLOR['control'])),
+                   'fg': kw.pop('fg', kw.pop('foreground', COLOR['text'])),
+                   'activebackground': kw.pop('activebackground', None),
+                   'activeforeground': kw.pop('activeforeground', None),
+                   'text': kw.pop('text', ''), 'font': kw.pop('font', 'TkDefaultFont'),
+                   'width': kw.pop('width', 0) or 0, 'padx': kw.pop('padx', 12), 'pady': kw.pop('pady', 6),
+                   'state': kw.pop('state', 'normal'), 'anchor': kw.pop('anchor', 'center'),
+                   'highlightbackground': kw.pop('highlightbackground', parent_bg),
+                   'highlightcolor': kw.pop('highlightcolor', COLOR['focus']),
+                   'highlightthickness': kw.pop('highlightthickness', 2),
+                   'disabledforeground': kw.pop('disabledforeground', COLOR['text_3']),
+                   'radius': radius, 'ground': ground or parent_bg}
+        kw.pop('relief', None)
+        kw.pop('bd', None)
+        kw.pop('borderwidth', None)
+        kw.pop('justify', None)
+        super().__init__(master, relief='flat', bd=0, highlightthickness=0, compound='center', padx=0, pady=0,
+                         **kw)
+        self._pressed = self._focused = False
+        self._size = None
+        self.bind('<ButtonPress-1>', lambda _e: self._press(True), add='+')
+        self.bind('<ButtonRelease-1>', lambda _e: self._press(False), add='+')
+        self.bind('<FocusIn>', lambda _e: self._focus(True), add='+')
+        self.bind('<FocusOut>', lambda _e: self._focus(False), add='+')
+        self.bind('<Configure>', self._resized, add='+')
+        self._render()
+
+    # -- options
+    def configure(self, cnf=None, **kw):
+        if cnf:
+            kw = {**cnf, **kw}
+        if not kw:
+            return super().configure()
+        mine = {k: kw.pop(k) for k in list(kw) if k in self._OWN}
+        if 'background' in mine:
+            mine['bg'] = mine.pop('background')
+        if 'foreground' in mine:
+            mine['fg'] = mine.pop('foreground')
+        self._o.update(mine)
+        result = super().configure(**kw) if kw else None
+        if mine:
+            self._render()
+        return result
+
+    config = configure
+
+    def cget(self, key):
+        key = {'background': 'bg', 'foreground': 'fg'}.get(key, key)
+        if key in self._o:
+            return self._o[key]
+        return super().cget(key)
+
+    __getitem__ = cget
+
+    def __setitem__(self, key, value):
+        self.configure(**{key: value})
+
+    # -- states
+    def _press(self, down):
+        if str(self._o['state']) != 'disabled':
+            self._pressed = down
+            self._render()
+
+    def _focus(self, on):
+        self._focused = on
+        self._render()
+
+    def _resized(self, event):
+        ex, ey = self._inset()
+        face = (event.width - ex, event.height - ey)     # the room given, less Tk's own inset
+        natural = self._natural()
+        if (max(natural[0], face[0]), max(natural[1], face[1])) != self._size:
+            self._render(stretch=face)
+
+    # -- drawing
+    def _font(self):
+        from tkinter import font as tkfont
+        try:
+            return tkfont.Font(root=self, font=self._o['font'])
+        except tk.TclError:
+            return tkfont.nametofont('TkDefaultFont')
+
+    def _natural(self):
+        font = self._font()
+        lines = str(self._o['text']).split('\n') or ['']
+        text_w = max(font.measure(line) for line in lines)
+        if self._o['width']:
+            text_w = max(text_w, int(self._o['width']) * font.measure('0'))
+        return (text_w + 2 * int(self._o['padx']) + 2, font.metrics('linespace') * len(lines) + 2 * int(self._o['pady']))
+
+    def _render(self, stretch=None):
+        o = self._o
+        disabled = str(o['state']) == 'disabled'
+        natural = w, h = self._natural()
+        if stretch is None and self._size is not None:
+            stretch = self._size
+        if stretch:
+            w, h = max(w, stretch[0]), max(h, stretch[1])
+        fill = o['bg']
+        if disabled:
+            fill = _mix(o['bg'], o['ground'], 0.45, self)
+        elif self._pressed:
+            fill = _mix(o['activebackground'] or o['bg'], '#000000', 0.12, self)
+        ring = o['highlightcolor'] if (self._focused and int(o['highlightthickness'] or 0) > 0) else None
+        image = rounded_photo(self, w, h, o['radius'], fill, o['ground'], ring=ring)
+        fg = o['disabledforeground'] if disabled else o['fg']
+        text = str(o['text'])
+        if o['anchor'] in ('w', 'nw', 'sw') and '\n' not in text:
+            # Text is centred on the face; trailing spaces move it to the left edge (less padx).
+            font = self._font()
+            room = w - 2 * int(o['padx'])
+            space = max(1, font.measure(' '))
+            text = text + ' ' * max(0, int((room - font.measure(text)) / space))
+        self._size = (w, h)
+        super().configure(image=image, text=text, fg=fg, font=o['font'], bg=o['ground'],
+                          activebackground=o['ground'], activeforeground=o['activeforeground'] or fg,
+                          disabledforeground=o['disabledforeground'], state=o['state'],
+                          width=natural[0], height=natural[1])
+        # The button asks for its natural size whatever its face's size, so a face stretched to fill a grid
+        # cell never feeds back into the layout (shared columns would otherwise keep resizing each other).
+        self._image = image
+
+    def _inset(self):
+        """Pixels Tk adds round an image button's face (measured once: 1 px a side on X11)."""
+        inset = getattr(self, '_inset_px', None)
+        if inset is None:
+            try:
+                inset = (max(0, self.winfo_reqwidth() - int(super().cget('width'))),
+                         max(0, self.winfo_reqheight() - int(super().cget('height'))))
+            except (tk.TclError, ValueError):
+                inset = (0, 0)
+            self._inset_px = inset
+        return inset
+
+
+def _mix(a, b, t, widget=None):
+    ca, cb = _hex(a, widget), _hex(b, widget)
+    return '#%02X%02X%02X' % tuple(round(ca[i] * (1 - t) + cb[i] * t) for i in range(3))

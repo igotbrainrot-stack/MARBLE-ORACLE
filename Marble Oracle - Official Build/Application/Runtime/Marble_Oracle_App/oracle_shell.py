@@ -98,18 +98,18 @@ def label(parent, text='', role='body', colour='text', **kwargs):
 def button(parent, text, command, *, primary=False, width=None, padx=None, pady=None):
     """The suite's push button: one bright primary, quiet boxed secondaries (Dark / Light: no box, just the fill)."""
     if _modern():
-        try:
-            ground = parent.cget('bg')
-        except tk.TclError:
-            ground = C['canvas']
-        return tk.Button(parent, text=shown(text), command=command, cursor='hand2', relief='flat', bd=0,
-                         padx=BUTTON_PAD[0] if padx is None else padx,
-                         pady=BUTTON_PAD[1] if pady is None else pady, width=width, font=font('button'),
-                         bg=C['accent'] if primary else C['control'],
-                         fg=C['text_on_accent'] if primary else C['text'],
-                         activebackground=C['accent_deep'] if primary else C['hover'],
-                         activeforeground=C['text_on_accent'] if primary else C['text'],
-                         highlightthickness=2, highlightbackground=ground, highlightcolor=C['focus'])
+        # 0.5.3: rounded (oracle_widgets.RoundButton), its corners filled with the surface it sits on.
+        from oracle_ogg_texture import surface_colour
+        from oracle_widgets import RoundButton
+        return RoundButton(parent, radius=8, ground=surface_colour(parent, C['canvas']),
+                           text=shown(text), command=command, cursor='hand2',
+                           padx=BUTTON_PAD[0] if padx is None else padx,
+                           pady=BUTTON_PAD[1] if pady is None else pady, width=width, font=font('button'),
+                           bg=C['accent'] if primary else C['control'],
+                           fg=C['text_on_accent'] if primary else C['text'],
+                           activebackground=C['accent_deep'] if primary else C['hover'],
+                           activeforeground=C['text_on_accent'] if primary else C['text'],
+                           highlightthickness=2, highlightcolor=C['focus'])
     return tk.Button(parent, text=text, command=command, cursor='hand2', relief='flat', bd=0,
                      padx=BUTTON_PAD[0] if padx is None else padx,
                      pady=BUTTON_PAD[1] if pady is None else pady, width=width,
@@ -125,6 +125,16 @@ def button(parent, text, command, *, primary=False, width=None, padx=None, pady=
 
 def nav_button(parent, text, command):
     """A rail item: flat on the rail, outlined in the accent when it is the current page."""
+    if _modern():               # 0.5.3: a rounded pill, like the suite's sidebar
+        from oracle_ogg_texture import surface_colour
+        from oracle_widgets import RoundButton
+        btn = RoundButton(parent, radius=7, ground=surface_colour(parent, C['sidebar']), text=shown(text),
+                          command=command, cursor='hand2', padx=12, pady=NAV_PADY, anchor='w', font=font('nav'),
+                          bg=C['sidebar'], fg=C['text'], activebackground=C['hover'],
+                          activeforeground=C['text_bright'], highlightthickness=2, highlightcolor=C['focus'])
+        btn._shell_nav = True
+        btn.pack(fill='x', pady=2)
+        return btn
     btn = tk.Button(parent, text=shown(text), command=command, cursor='hand2', relief='flat', bd=0,
                     padx=12, pady=NAV_PADY, anchor='w', justify='left', font=font('nav'),
                     bg=C['sidebar'], fg=C['text'], activebackground=C['hover'],

@@ -27,6 +27,21 @@ _PUMICE = {}
 _KEPT = []      # texture PhotoImages live as long as the process
 
 
+# 0.5.3: card-like surfaces are rounded in Dark / Light (pages and sidebars, which meet the window edge, are not).
+ROUND_ROLES = ('card', 'sunken', 'sunken_alt', 'control', 'accent_soft')
+ROUND_RADIUS = 10
+_PUMICE_COLOURS = {}
+
+
+def known_elements(style):
+    return set(style.element_names())
+
+
+def _round_style(style, name, role, ground):
+    style.layout(name, [(f'Marble.Ogg.Round.{role}', {'sticky': 'nswe'})])
+    style.configure(name, background=ground)
+
+
 def use_pumice(role_colours):
     """Texture with pumice tiles on these surface colours: {'page': '#1C1C1E', 'card': ..., ...}."""
     global MODE, ROLE_COLOURS
@@ -36,6 +51,7 @@ def use_pumice(role_colours):
     for role in FILES:
         colour = role_colours.get(role, role_colours.get('page'))
         _PUMICE[role] = oracle_pumice.tile_png(colour)
+        _PUMICE_COLOURS[role] = colour
         ROLE_COLOURS.setdefault(colour.lower(), role)
 
 def _parent_bg(parent):
@@ -95,9 +111,23 @@ def install(root):
         state = {'photos': {role: tile_photo(root, role) for role in FILES}, 'themes': set()}
         _KEPT.append(state['photos'])   # never freed by a worker thread's garbage collection (see oracle_widgets)
         root._marble_ogg_texture_styles = state
+    if MODE == 'pumice' and 'round' not in state:
+        import base64
+        import oracle_pumice
+        state['round'] = {role: tk.PhotoImage(master=root, data=base64.b64encode(
+            oracle_pumice.rounded_tile_png(_PUMICE_COLOURS[role], ROUND_RADIUS))) for role in ROUND_ROLES}
+        state['round_styles'] = {}
+        _KEPT.append(state['round'])
     if theme in state['themes']:
         return state['photos']
-    known = set(style.element_names())
+    if MODE == 'pumice':
+        for role, image in state['round'].items():
+            element = f'Marble.Ogg.Round.{role}'
+            if element not in known_elements(style):
+                style.element_create(element, 'image', image, border=ROUND_RADIUS, sticky='nswe')
+        for name, (role, ground) in state['round_styles'].items():
+            _round_style(style, name, role, ground)
+    known = known_elements(style)
     for role, photo in state['photos'].items():
         element = f'Marble.Ogg.Grain.{role}'
         if element not in known:
@@ -111,7 +141,7 @@ def install(root):
 
 
 def frame(parent, *, bg=None, padx=0, pady=0, highlightthickness=0,
-          highlightbackground=None, **opts):
+          highlightbackground=None, rounded=True, **opts):
     """Ttk frame whose body uses Oggcultist's same tiled PNG surface (a flat frame when ENABLED is off)."""
     if not ENABLED:
         widget = tk.Frame(parent, bg=bg or _parent_bg(parent), padx=padx, pady=pady,
@@ -123,9 +153,18 @@ def frame(parent, *, bg=None, padx=0, pady=0, highlightthickness=0,
     role = role_of(bg, getattr(parent,'_marble_ogg_role','page'))
     if padx or pady:
         opts['padding'] = (padx, pady)
+    style_name = f'MarbleOgg.{role}.TFrame'
+    if MODE == 'pumice' and role in ROUND_ROLES and rounded:
+        # 0.5.3: a rounded card; its corners show the surface it sits on.
+        ground = surface_colour(parent, _PUMICE_COLOURS.get('page'))
+        style_name = f'MarbleOgg.{role}.on{str(ground).lstrip("#").upper()}.TFrame'
+        state = parent.winfo_toplevel()._marble_ogg_texture_styles
+        if style_name not in state['round_styles']:
+            state['round_styles'][style_name] = (role, ground)
+            _round_style(ttk.Style(parent), style_name, role, ground)
     # ttk image backgrounds are their own drawing elements. A 1px original
     # border is left to its surrounding parent rather than covered by grain.
-    widget = ttk.Frame(parent, style=f'MarbleOgg.{role}.TFrame', **opts)
+    widget = ttk.Frame(parent, style=style_name, **opts)
     widget._marble_ogg_role = role
     return widget
 
@@ -150,3 +189,21 @@ def label(parent, *, bg=None, fg=None, padx=0, pady=0, **opts):
     widget = ttk.Label(parent, style=f'MarbleOgg.{role}.TLabel', **opts)
     widget._marble_ogg_role = role
     return widget
+
+
+def surface_colour(widget, default=None):
+    """The colour a widget shows behind its children: its bg, or for a textured frame the base colour of its
+    texture (0.5.3: rounded controls fill their corners with it)."""
+    try:
+        return widget.cget('bg')
+    except (tk.TclError, AttributeError):
+        pass
+    role = getattr(widget, '_marble_ogg_role', None)
+    if role:
+        for colour, owner in ROLE_COLOURS.items():
+            if owner == role:
+                return colour
+    try:
+        return surface_colour(widget.master, default)
+    except AttributeError:
+        return default

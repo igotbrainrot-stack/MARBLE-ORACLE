@@ -47,6 +47,7 @@ class OggcultistPanel(tk.Frame):
             oracle_appearance.retint_oggcultist()
             from oggcultist.gui.app import OggcultistEmbeddedApp
             self.ogg_app = OggcultistEmbeddedApp(self)
+            self.ogg_app._marble_no_round = True        # Oggcultist draws its own artwork (oracle_round)
             self.ogg_app.pack(fill='both', expand=True)
             self._add_home(on_home)
             self.status.set('Oggcultist is running inside Marble Oracle.')

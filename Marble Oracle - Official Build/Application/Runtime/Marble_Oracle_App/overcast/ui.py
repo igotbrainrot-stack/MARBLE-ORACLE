@@ -109,7 +109,8 @@ def spans_to_markdown(spans):
 
 
 class NewsOraclePanel(tk.Frame):
-    def __init__(self, parent, *, state_dir=None, on_event=None, standalone=False, appearance=None, accent=None):
+    def __init__(self, parent, *, state_dir=None, on_event=None, standalone=False, appearance=None, accent=None,
+                 font=None):
         self.engine=NewsOracleEngine(state_dir=state_dir)
         self._settings_path=Path(self.engine.store.state_dir)/'overcast_settings.json'
         early=self._load_settings()
@@ -117,7 +118,8 @@ class NewsOraclePanel(tk.Frame):
         self._host_look=appearance in theme_mod.APPEARANCES
         self.theme=theme_mod.Theme(appearance if self._host_look else early.get('appearance',theme_mod.DEFAULT_APPEARANCE),
                                    accent if (self._host_look and accent in theme_mod.ACCENTS)
-                                   else early.get('accent',theme_mod.DEFAULT_ACCENT))
+                                   else early.get('accent',theme_mod.DEFAULT_ACCENT),
+                                   family=font)
         _set_palette(self.theme.p)
         super().__init__(parent,bg=BG)
         self.state_dir=state_dir

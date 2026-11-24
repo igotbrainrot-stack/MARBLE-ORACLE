@@ -907,7 +907,9 @@ class Scene(SidebarMixin, HomeFocusMixin, ChromeMixin, SkinMixin):
                 have = set(self.tkfont.families())
             except Exception:
                 pass
-            fam = next((n for n in self.IPA_FACES if n in have), self.family)
+            import oracle_appearance             # 0.5.3: Inter in Dark / Light (Tk finds the few letters it lacks)
+            faces = (oracle_appearance.family(),) + self.IPA_FACES if oracle_appearance.modern() else self.IPA_FACES
+            fam = next((n for n in faces if n in have), self.family)
             f = self.tkfont.Font(family=fam, size=-max(10, int(round(px * self.k * 1.15))))
             self.fonts[key] = f
         return f
@@ -1201,7 +1203,7 @@ class Scene(SidebarMixin, HomeFocusMixin, ChromeMixin, SkinMixin):
             if modern:
                 from oracle_sidebar import round_rect
                 p = oracle_appearance.palette()
-                round_rect(c, left, top, right, bottom, max(5, int(7 * self.k)), fill=p['field'], outline='',
+                round_rect(c, left, top, right, bottom, min(max(7, int(9 * self.k)), (bottom - top) // 2), fill=p['field'], outline='',
                            tags=("chrome", "section-actions"))
                 self.T((left+right)/2, (top+bottom)/2, label, 10, p['ink'], "center", ("chrome", "section-actions"),
                        True, False)
@@ -1824,7 +1826,7 @@ class Scene(SidebarMixin, HomeFocusMixin, ChromeMixin, SkinMixin):
             xa = cx + n * w
             ya, yb = cy - bh / 2, cy + bh / 2
             active = mode == self.divination_mode
-            self.c.create_rectangle(xa, ya, xa + w - 2, yb,
+            self.ui_rect(xa, ya, xa + w - 2, yb,
                 fill="#FB8E22" if active and self.clean() else self.col("edge2") if active else self.col("panel"),
                 outline="#FB8E22" if active and self.clean() else self.col("gold") if active else self.col("edge"),
                 tags=("content", "cards"))
@@ -2013,8 +2015,8 @@ class Scene(SidebarMixin, HomeFocusMixin, ChromeMixin, SkinMixin):
                 self.hot.append((select_left, py, select_right, select_bottom,
                                  "rune_select" + str(n)))
         top = y1 - bottom_space + 4
-        c.create_rectangle(x0+7, top, x1-7, y1-7, fill=self.col("panel"),
-                           outline=self.col("edge"), tags=("content", "reading"))
+        self.ui_rect(x0+7, top, x1-7, y1-7, fill=self.col("panel"),
+                     outline=self.col("edge"), tags=("content", "reading"))
         if self.rune_state == "idle":
             details = "Three stones. Past / Present / Possible Future. Draw to begin."
         elif self.rune_state != "complete":
@@ -2030,8 +2032,8 @@ class Scene(SidebarMixin, HomeFocusMixin, ChromeMixin, SkinMixin):
         bw = min(max(90, int(140*self.k)), cw * 1.5)
         by = py - max(31, int(36 * self.k))
         bx = x0 + gap + cw/2
-        c.create_rectangle(bx-bw/2, by, bx+bw/2, by+max(17,int(21*self.k)),
-                           fill=self.col("edge2"), outline=self.col("gold"), tags=("content", "cards"))
+        self.ui_rect(bx-bw/2, by, bx+bw/2, by+max(17,int(21*self.k)),
+                     fill=self.col("edge2"), outline=self.col("gold"), tags=("content", "cards"))
         action = ("DRAW THREE" if self.rune_state == "idle" else
                   "RESTART DRAW" if self.rune_state != "complete" else "NEW READING")
         self.T(bx, by+max(17,int(21*self.k))/2, action, 9, "gold", "center", ("content", "cards"), True)
@@ -2324,6 +2326,14 @@ class Scene(SidebarMixin, HomeFocusMixin, ChromeMixin, SkinMixin):
 
 
     # ------------------------------------------------------------------ overlay glue
+    def ui_rect(self, x0, y0, x1, y1, radius=7, **kw):
+        """A UI box on HOME's canvas (a toggle, a text box, a button): rounded in Dark and Light (0.5.3)."""
+        if self.modern_chrome():
+            from oracle_sidebar import round_rect
+            kw.setdefault('fill', '')
+            return round_rect(self.c, x0, y0, x1, y1, max(3, int(radius * min(1.0, self.k + 0.2))), **kw)
+        return self.c.create_rectangle(x0, y0, x1, y1, **kw)
+
     def overlay_box(self):
         if self.modern_chrome() and 'side' in self.rect:     # 0.5.1: everything right of the sidebar, under the header
             return (self.rect['side'][2] + 1, self.rect['menu'][3], self.W, self.H)
@@ -2991,6 +3001,8 @@ class WindowApp:
         # 0.5.1: Dark, Light or Classic. Must run before anything is drawn or any workspace module is imported.
         import oracle_appearance
         oracle_appearance.apply(root)
+        import oracle_round                       # 0.5.3: rounded corners for plain Tk widgets (Dark / Light)
+        oracle_round.install(root)
         root.title(suite_title())
         apply_window_icon(root)
         from oracle_widgets import install_interaction_defaults

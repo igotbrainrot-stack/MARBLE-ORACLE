@@ -150,11 +150,15 @@ def retint_design_system(ds, p):
 
 
 def choose_family(root):
-    """The system's best sans-serif (OVERCAST's order). MARBLE_ORACLE_FONT forces one (tests use it to try the
+    """Inter, bundled with the suite (0.5.3), so every machine reads the same; the system's best sans-serif
+    (OVERCAST's order) if it could not be loaded. MARBLE_ORACLE_FONT forces another (tests use it to try the
     wider faces other machines fall back to)."""
     from overcast.theme import choose_font, FONT_PREFERENCE
+    import marble_uberata
+    marble_uberata.register_inter()
+    order = (marble_uberata.INTER_FAMILY,) + tuple(f for f in FONT_PREFERENCE if f != marble_uberata.INTER_FAMILY)
     forced = os.environ.get('MARBLE_ORACLE_FONT')
-    return choose_font(root, (forced,) + FONT_PREFERENCE if forced else FONT_PREFERENCE)
+    return choose_font(root, (forced,) + order if forced else order)
 
 
 def apply(root):
@@ -216,6 +220,9 @@ def retint_oggcultist():
         from oggcultist.gui import design_system as ogg_ds
         retint_design_system(ogg_ds, p)
         ogg_ds.BODY_POINTS = 11          # the sans face reads larger than Uberata Clear at the same size
+        # 0.5.3: rounder corners (its theme draws buttons, fields and cards at RADIUS['s'] - 2; its nine-slice
+        # borders are 7-10 px, so up to 7 px stays undistorted).
+        ogg_ds.RADIUS = dict(ogg_ds.RADIUS, s=9, m=10)
     except Exception:
         pass
     try:

@@ -158,7 +158,9 @@ if os.environ.get('DISPLAY') or os.name == 'nt':
 
     window = make(True)
     fits_at_minimum(window, 'ready')
-    check('ready: START is the bright button', str(window.start_btn.cget('bg')).lower() == accent)
+    check('ready: START is the bright button', str(window.start_btn.cget('bg')).lower() == window.ACCENT.lower())
+    # 0.5.3: the window follows the chosen look (Ember in Classic, the OVERCAST accent in Dark/Light).
+    check('the bright button uses the look\'s accent', window.ACCENT.lower() == accent or getattr(window, '_modern', False))
     check('ready: INSTALL is quiet', str(window.install_btn.cget('bg')).lower() != accent)
     check('idle: no progress bar is shown', not window.progress.winfo_manager())
     check('installed FFmpeg: its install option is hidden', not window.media_opt.winfo_manager())
@@ -171,7 +173,7 @@ if os.environ.get('DISPLAY') or os.name == 'nt':
     window.destroy()
     window = make(False)
     fits_at_minimum(window, 'not ready')
-    check('not ready: INSTALL is the bright button', str(window.install_btn.cget('bg')).lower() == accent)
+    check('not ready: INSTALL is the bright button', str(window.install_btn.cget('bg')).lower() == window.ACCENT.lower())
     check('not ready: START is disabled', str(window.start_btn.cget('state')) == 'disabled')
     window.destroy()
 

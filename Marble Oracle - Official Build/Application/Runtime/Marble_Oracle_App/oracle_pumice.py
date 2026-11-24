@@ -160,3 +160,45 @@ def corner_png(radius, outside, corner):
             row += bytes((col[0], col[1], col[2], round(255 * cover)))
         rows.append(bytes(row))
     return rgba_png(r, r, rows)
+
+
+@lru_cache(maxsize=32)
+def rounded_tile_png(colour, radius=10, strength=None, size=SIZE):
+    """A nine-slice card image (0.5.3): one whole tile in the middle, `radius` px of the same texture round it
+    (wrapped, so ttk's repeating of the middle and the edges stays seamless), and rounded, anti-aliased corners
+    left transparent (ttk shows the style's background there: the surface the card sits on)."""
+    from oracle_assets import rgba_png
+    base = _rgb(colour)
+    k = STRENGTH if strength is None else strength
+    if _luminance(base) > 0.6:
+        k *= 1.25
+    levels = _levels(size, round(k, 3))
+    r = max(0, min(int(radius), size))
+    full = size + 2 * r
+    table = {}
+
+    def pixel(v):
+        if v not in table:
+            table[v] = bytes((max(0, min(255, base[0] + v)), max(0, min(255, base[1] + v)),
+                              max(0, min(255, base[2] + v)), 255))
+        return table[v]
+
+    # Alpha of the r x r top-left corner square (mirrored for the other three), 4 samples a pixel.
+    corner = [[sum((x + sx - r) ** 2 + (y + sy - r) ** 2 <= r * r
+                   for sx, sy in ((0.25, 0.25), (0.75, 0.25), (0.25, 0.75), (0.75, 0.75))) * 255 // 4
+               for x in range(r)] for y in range(r)]
+
+    rows = []
+    for y in range(full):
+        ty = (y - r) % size
+        line = levels[ty * size:(ty + 1) * size]
+        wrapped = (line[size - r:] + line + line[:r]) if r else line
+        row = bytearray(b''.join(pixel(v) for v in wrapped))
+        cy = y if y < r else (full - 1 - y if y >= full - r else None)
+        if cy is not None:
+            for x in range(r):
+                a = corner[cy][x]
+                row[x * 4 + 3] = a
+                row[(full - 1 - x) * 4 + 3] = a
+        rows.append(bytes(row))
+    return rgba_png(full, full, rows)

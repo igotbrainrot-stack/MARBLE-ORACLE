@@ -72,20 +72,32 @@ class PassphrasePanel(tk.Frame):
         self.shell.brand("PASSPHRASE", "OFFLINE · NO HISTORY")
 
         self.shell.group("OPTIONS")
-        tk.Checkbutton(rail, text="SHOW DICE CODES", variable=self.show_dice,
+        dice = tk.Checkbutton(rail, text="SHOW DICE CODES", variable=self.show_dice,
                        command=self._refresh, bg=OGG["sidebar"], fg=OGG["text"],
                        activebackground=OGG["sidebar"], activeforeground=OGG["accent"],
                        selectcolor=OGG["sunken"], font=shell.font("body"), anchor="w",
-                       borderwidth=0, highlightthickness=0).pack(fill="x", padx=shell.RAIL_PADX - 2)
+                       borderwidth=0, highlightthickness=0, justify="left")
+        dice.pack(fill="x", padx=shell.RAIL_PADX - 2)
 
         self.shell.group("KEYS")
         keys = ogl_frame(rail, bg=OGG["sidebar"])
         keys.pack(fill="x", padx=shell.RAIL_PADX)
         keys.grid_columnconfigure(0, minsize=64)
+        meanings = []
         for row, (key, meaning) in enumerate((("R", "roll a new phrase"), ("S", "swap words 1, 2"),
                                               ("1 – 5", "reroll one part"), ("CTRL+C", "copy"))):
             shell.label(keys, key, "body_bold", "accent").grid(row=row, column=0, sticky="w", pady=1)
-            shell.label(keys, meaning, "small", "text_2").grid(row=row, column=1, sticky="w", pady=1)
+            meanings.append(shell.label(keys, meaning, "small", "text_2", justify="left"))
+            meanings[-1].grid(row=row, column=1, sticky="w", pady=1)
+
+        def fit_rail(_event=None):
+            # A narrow rail wraps the key meanings and the option instead of cutting them off.
+            room = keys.winfo_width()
+            if room > 1:
+                for meaning in meanings:
+                    meaning.configure(wraplength=max(40, room - 68))
+                dice.configure(wraplength=max(60, room - 28))
+        keys.bind("<Configure>", fit_rail, add="+")
 
         self.shell.group("PRIVACY")
         self.shell.rail_text("Nothing is saved or sent. Copy is explicit, and the clipboard is cleared after 60 seconds.")

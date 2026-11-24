@@ -237,8 +237,9 @@ def choose_font(widget, preference=FONT_PREFERENCE, fallback='TkDefaultFont'):
 class Theme:
     """Resolved palette, fonts and style names for one panel."""
 
-    def __init__(self, appearance=DEFAULT_APPEARANCE, accent=DEFAULT_ACCENT):
+    def __init__(self, appearance=DEFAULT_APPEARANCE, accent=DEFAULT_ACCENT, family=None):
         self.p = palette(appearance, accent)
+        self.host_family = family          # 1.1.2: a host's interface face, used instead of choosing one
         self.appearance = self.p['appearance']
         self.accent = self.p['accent_name']
         self.family = 'TkDefaultFont'
@@ -276,7 +277,7 @@ class Theme:
     # ── install ──
     def install(self, widget, *, standalone=False):
         root = widget.winfo_toplevel()
-        self.family = choose_font(widget)
+        self.family = choose_font(widget, (self.host_family,) + FONT_PREFERENCE) if self.host_family else choose_font(widget)
         self.mono = choose_font(widget, MONO_PREFERENCE, 'TkFixedFont')
         style = ttk.Style(widget)
         if standalone:
