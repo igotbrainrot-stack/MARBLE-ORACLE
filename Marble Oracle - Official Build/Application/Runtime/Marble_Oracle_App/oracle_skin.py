@@ -360,8 +360,21 @@ class SkinMixin:
         import oracle_appearance
         if oracle_appearance.modern():                                      # 0.5.1 Dark / Light: OVERCAST's flat rounded card
             p = oracle_appearance.palette()
-            art = self.skin_card(box, fill=p['card'], border=hexmix(p['line'], p['card'], 0.55), radius=12, reach=0,
-                                 drop=0, shade=0.0)
+            import oracle_ogg_texture
+            if oracle_ogg_texture.MODE == 'pumice' and x1 - x0 > 30 and y1 - y0 > 30:
+                # 0.5.2: the card is the pumice tile; drawn corners (page colour outside the curve) round it and a
+                # hairline edges it.
+                import oracle_pumice
+                from oracle_sidebar import round_rect
+                r = max(6, px(12, k))
+                self.put(oracle_ogg_texture.png_bytes('card'), x0, y0, "content", w=x1 - x0, h=y1 - y0)
+                for corner, cx, cy in (('tl', x0, y0), ('tr', x1 - r, y0), ('bl', x0, y1 - r), ('br', x1 - r, y1 - r)):
+                    self.put(oracle_pumice.corner_png(r, p['bg'], corner), cx, cy, "content")
+                round_rect(c, x0, y0, x1 - 1, y1 - 1, r, fill='', outline=hexmix(p['line'], p['card'], 0.55),
+                           tags="content")
+            else:
+                self.skin_card(box, fill=p['card'], border=hexmix(p['line'], p['card'], 0.55), radius=12, reach=0,
+                               drop=0, shade=0.0)
             tid = self.T(x0 + px(16, k), y0 + hh // 2 + px(2, k), oracle_appearance.display(title), 13, p['ink'], "w",
                          bold=True, mono=False)
             rid = (self.T(x1 - px(16, k), y0 + hh // 2 + px(2, k), oracle_appearance.display(right), 11, p['dim'], "e",

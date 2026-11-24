@@ -16,7 +16,7 @@ import time
 import tkinter as tk
 from tkinter import messagebox, filedialog
 from tkinter import font as tkfont  # noqa: F401  (kept for importers)
-from oracle_ogg_texture import frame as ogg_frame, FILES as OGG_TEXTURE_FILES
+from oracle_ogg_texture import frame as ogg_frame
 from concurrent.futures import ThreadPoolExecutor
 from collections import deque
 from pathlib import Path
@@ -221,7 +221,8 @@ class PriceChart(tk.Frame):
             return
         if self._texture_tile is None:
             try:
-                self._texture_tile=tk.PhotoImage(master=self.canvas,file=str(OGG_TEXTURE_FILES['sunken']))
+                from oracle_ogg_texture import tile_photo as texture_photo
+                self._texture_tile=texture_photo(self.canvas,'sunken')
             except tk.TclError:
                 return
         tile=self._texture_tile

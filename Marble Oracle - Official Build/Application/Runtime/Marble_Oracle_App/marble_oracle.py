@@ -1044,9 +1044,9 @@ class Scene(SidebarMixin, HomeFocusMixin, ChromeMixin, SkinMixin):
         # background between panels matches the darker embedded sections.
         # The source texture is tiled exactly, never stretched.
         import oracle_ogg_texture
-        if self.clean() and oracle_ogg_texture.ENABLED:          # Classic's grain; Dark and Light are flat
+        if self.clean() and oracle_ogg_texture.ENABLED:          # Classic's grain; Dark and Light: pumice (0.5.2)
             from oracle_ogg_texture import png_bytes
-            self.put(png_bytes('side'), 0, 0, 'content', w=W, h=H)
+            self.put(png_bytes('page' if oracle_ogg_texture.MODE == 'pumice' else 'side'), 0, 0, 'content', w=W, h=H)
         self._bezel()
         self._chrome()
         self._arch()
