@@ -110,7 +110,7 @@ def main():
     chart.display('TEST-USD', 'Synthetic fixture', None, 'stooq: HTTP 429; provider rate limit reached', False, '2', True)
     root.update()
     texts = [text for _box, text, _tags in text_boxes(chart.canvas)]
-    check('empty chart shows one status line', len(texts) == 1 and 'LIMITED' in texts[0], texts)
+    check('empty chart shows one status line', len(texts) == 1 and 'LIMITED' in texts[0].upper(), texts)
     check('empty chart lists the source that was tried', 'STOOQ LIMITED' in chart._info_text, chart._info_text)
     chart.display('TEST-USD', 'Synthetic fixture', None,
                   'strasmore: HTTP 401; provider rejected the credentials', False, '2', True)

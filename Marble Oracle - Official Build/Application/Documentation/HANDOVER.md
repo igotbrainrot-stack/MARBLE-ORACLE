@@ -1,4 +1,4 @@
-# Handover: Marble Oracle 0.5.4
+# Handover: Marble Oracle 0.5.5
 
 22 November 2026 (0.4.9.7: 16 November). For whoever picks this up next, human or AI. Earlier handovers (0.4.9.3 to 0.4.9.5) are in `History/HANDOVER_0.4.9.3-0.4.9.5.md`; this file replaces them.
 
@@ -21,7 +21,8 @@
 | #14 | `claude/marble-oracle-0510-design` | 0.5.1 | Dark / Light (OVERCAST's design, default) and Classic; left sidebar |
 | #15 | `claude/marble-oracle-0520-pumice` | 0.5.2 | A faint pumice surface for Dark and Light |
 | #16 | `claude/marble-oracle-0530-rounded` | 0.5.3 | Rounded corners throughout and the bundled Inter typeface |
-| **#17** | **`claude/marble-oracle-0540-final`** | **0.5.4** | **Final design and layout review (contrast, case, duplicates, controls, layout)** |
+| #17 | `claude/marble-oracle-0540-final` | 0.5.4 | Final design and layout review (contrast, case, duplicates, controls, layout) |
+| **#18** | **`claude/marble-oracle-0550-polish`** | **0.5.5** | **The review's last open items: dropdown case, rail titles, chrome type, About, Oggcultist bar** |
 
 - **The branch is the whole application:** every asset archive, font and texture is in Git. Only the two third-party research PDFs are left out (`.gitignore`); they are in the release ZIP under `Documentation/Research/`.
 - **Read next:** `README.md`, `ARCHITECTURE.md`, `DEVELOPMENT.md`, `CHANGELOG.md`, `TESTING_REPORT.md`.
@@ -29,6 +30,12 @@
 ## State in one paragraph
 
 All six workspaces work, share one page shell and one interaction look (hover, a cream keyboard-focus ring, an amber "current" fill), and HOME can now be used from the keyboard. The whole regression suite passes on GitHub's Linux runner (Tk under Xvfb) and on its Windows runner (native Tk), and since 0.4.9.7 the Windows job is required. **Nothing has been run on a physical PC, and none of the market sources added in 0.4.9.4 has been seen answering live.**
+
+## What 0.5.5 changed
+
+- **Workspace rails:** in Dark/Light, `Shell.brand()` builds the wordmark but does not show it. AUGURSPEX does the same with its own. Never pack relative to a rail's brand or HOME; use the first item in `rail.pack_slaves()`.
+- **Dropdown case:** `style_dropdown` calls `_case_options`, which replaces the button's textvariable with a trace. Read the value from the variable, never from the button's text.
+- **Chrome type:** use `chrome_font(px)` for sidebar and top-bar text. It is capped at k = 1 (the 1216×848 reference).
 
 ## What 0.5.4 changed
 

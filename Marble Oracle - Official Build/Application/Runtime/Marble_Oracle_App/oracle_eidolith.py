@@ -677,31 +677,49 @@ class EidolithPanel(tk.Frame):
         outer.pack(fill='both', expand=True)
         about = self._text(box, height=16)
         about.pack(fill='both', expand=True, padx=14, pady=14)
-        about.insert('1.0',
-                     f'EIDOLITH {APP_VERSION} — LOCAL VIDEO WORKSPACE\n\n'
-                     'PLAYER\n'
-                     '• Play video inside the Marble Oracle EIDOLITH tab.\n'
-                     '• Play / Pause / Stop, seek, ±10 seconds, audio volume.\n'
-                     '• FULLSCREEN is optional and only opens when requested.\n'
-                     '• FFmpeg decodes frames into Tk; FFplay supplies audio without a video window.\n'
-                     '• This basic preview backend is not frame-accurate and does not guarantee HDR or A/V sync.\n\n'
-                     'CONVERTER\n'
-                     '• AV1/SVT-AV1, NVIDIA NVENC (when supported), fast CPU AVC, HEVC and remux profiles.\n• Standard file naming: Show - S01E02 - Episode [AV1].mkv or Film (2024) [AV1].mkv.\n'
-                     '• Keep original source files; no automatic deletion.\n'
-                     '• All conversion uses your local FFmpeg tools.\n\n'
-                     'QUEUE\n'
-                     '• Serial jobs in order; a failed job is marked FAILED and the queue continues.\n'
-                     '• CANCEL CURRENT skips one job; STOP QUEUE leaves the remaining jobs queued.\n'
-                     '• Job N of M, progress bar, elapsed time, speed, ETA and last FFmpeg activity.\n'
-                     '• One full log per job (command, FFmpeg output, exit code, checks); OPEN LOG / COPY DIAGNOSTICS.\n'
-                     '• Convert to temporary files; verify tracks, codec, bit depth and duration, then publish without overwriting.\n'
-                     '• Cover art, subtitles and attachments are carried or reported; nothing is dropped silently.\n'
-                     '• The queue is saved: after a restart, interrupted jobs are marked and their own partial files removed.\n'
-                     '• HDR / Dolby Vision re-encoding and resuming a half-finished encode remain future work.\n\n'
-                     'PRIVACY\n'
-                     '• No cloud, accounts or telemetry.\n'
-                     '• FFmpeg/FFprobe/FFplay must be installed and are not bundled here.\n'
-                     '• Full conversion tests on physical Windows/Linux Mint machines are still needed.')
+        # 0.5.5: headings set as headings (bold, spaced) rather than lines of capitals, and in Dark/Light the
+        # button names the text refers to are written as the buttons now show them.
+        sections = (
+            (f'EIDOLITH {APP_VERSION} — LOCAL VIDEO WORKSPACE', ()),
+            ('PLAYER', ('Play video inside the Marble Oracle EIDOLITH tab.',
+                        'Play / Pause / Stop, seek, ±10 seconds, audio volume.',
+                        'FULLSCREEN is optional and only opens when requested.',
+                        'FFmpeg decodes frames into Tk; FFplay supplies audio without a video window.',
+                        'This basic preview backend is not frame-accurate and does not guarantee HDR or A/V sync.')),
+            ('CONVERTER', ('AV1/SVT-AV1, NVIDIA NVENC (when supported), fast CPU AVC, HEVC and remux profiles.',
+                           'Standard file naming: Show - S01E02 - Episode [AV1].mkv or Film (2024) [AV1].mkv.',
+                           'Keep original source files; no automatic deletion.',
+                           'All conversion uses your local FFmpeg tools.')),
+            ('QUEUE', ('Serial jobs in order; a failed job is marked FAILED and the queue continues.',
+                       'CANCEL CURRENT skips one job; STOP QUEUE leaves the remaining jobs queued.',
+                       'Job N of M, progress bar, elapsed time, speed, ETA and last FFmpeg activity.',
+                       'One full log per job (command, FFmpeg output, exit code, checks); OPEN LOG / COPY DIAGNOSTICS.',
+                       'Convert to temporary files; verify tracks, codec, bit depth and duration, then publish '
+                       'without overwriting.',
+                       'Cover art, subtitles and attachments are carried or reported; nothing is dropped silently.',
+                       'The queue is saved: after a restart, interrupted jobs are marked and their own partial files '
+                       'removed.',
+                       'HDR / Dolby Vision re-encoding and resuming a half-finished encode remain future work.')),
+            ('PRIVACY', ('No cloud, accounts or telemetry.',
+                         'FFmpeg/FFprobe/FFplay must be installed and are not bundled here.',
+                         'Full conversion tests on physical Windows/Linux Mint machines are still needed.')),
+        )
+        family, size = shell.font('body')[0], shell.font('body')[1]
+        about.tag_configure('heading', font=(family, size + 1, 'bold'), foreground=C['text_bright'],
+                            spacing1=10, spacing3=4)
+        about.tag_configure('title', font=(family, size + 3, 'bold'), foreground=C['text_bright'], spacing3=2)
+        about.tag_configure('item', lmargin1=4, lmargin2=18, spacing1=2)
+        names = ('FULLSCREEN', 'CANCEL CURRENT', 'STOP QUEUE', 'OPEN LOG', 'COPY DIAGNOSTICS', 'FAILED')
+
+        def words(text):
+            for name in names:
+                text = text.replace(name, shell.shown(name))
+            return text
+        for number, (heading, items) in enumerate(sections):
+            about.insert('end', shell.shown(heading) + '\n', 'title' if number == 0 else 'heading')
+            for item in items:
+                about.insert('end', '•  ' + words(item) + '\n', 'item')
+        about.delete('end-1c', 'end')
         about.config(state='disabled')
 
     # ---------- navigation ----------

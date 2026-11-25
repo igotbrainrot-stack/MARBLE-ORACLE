@@ -269,7 +269,13 @@ class Shell:
     def brand(self, name, tagline='', logo=None):
         """Wordmark and tagline. `logo(canvas)` may draw a mark beside the name."""
         top = ogl_frame(self.rail, bg=C['sidebar'])
-        top.pack(fill='x', padx=RAIL_PADX, pady=(RAIL_TOP, 0))
+        # Dark/Light (0.5.5): the suite's top bar already names the workspace and says what it is for, so the
+        # rail starts with its first section; the wordmark is made (callers keep it) but not shown. Classic,
+        # with no top bar, shows it as before.
+        self._brand_shown = workspace_home_shown()
+        if self._brand_shown:
+            top.pack(fill='x', padx=RAIL_PADX, pady=(RAIL_TOP, 0))
+        self._brand_box = top
         if logo is not None:
             canvas = tk.Canvas(top, width=self.rail_width - 2 * RAIL_PADX, height=40,
                                bg=C['sidebar'], highlightthickness=0, bd=0)
@@ -288,6 +294,10 @@ class Shell:
         return title, sub
 
     def group(self, text, parent=None, top=18):
+        if parent is None and not getattr(self, '_brand_shown', True) and not getattr(self, '_grouped', False):
+            top = RAIL_TOP          # the first section starts the rail when the wordmark is not shown
+        if parent is None:
+            self._grouped = True
         lab = label(parent or self.rail, text, 'group', 'text_3')
         lab.pack(anchor='w', fill='x', padx=RAIL_PADX, pady=(top, 6))
         return lab

@@ -327,7 +327,8 @@ class PriceChart(tk.Frame):
             txt=('NO MARKET SELECTED' if not self.symbol else
                  self._message_for_error(self.error) if self.error else
                  'LOADING' if self.loading else 'AWAITING DATA')
-            c.create_text(width/2,height/2,text=txt,fill=self.p['muted'],font=(FAMILY,12,'bold'))
+            # Canvas text is not cased by the appearance's widget hook: done here (Dark/Light).
+            c.create_text(width/2,height/2,text=shell.shown(txt),fill=self.p['muted'],font=(FAMILY,12,'bold'))
             return
         self._plot_bars=visible
         self._plot_points=points
@@ -486,7 +487,8 @@ class AugurspexPanel(tk.Frame):
         if short:
             self.rail_tagline.pack_forget();self.rail_version.pack_forget()
         else:
-            self.rail_tagline.pack(fill='x',padx=shell.RAIL_PADX,pady=(4,0),after=self._rail_brand)
+            if self._rail_named:
+                self.rail_tagline.pack(fill='x',padx=shell.RAIL_PADX,pady=(4,0),after=self._rail_brand)
             self.rail_version.pack(fill='x',pady=(8,0))
 
     def _watch_tip(self,event):
@@ -544,11 +546,15 @@ class AugurspexPanel(tk.Frame):
         # Brand and group labels in the suite's rail style (oracle_shell).
         pad=shell.RAIL_PADX
         brand=ogg_label(self.rail,bg='#130F0D',fg=C_TEXT_BRIGHT,text='AUGURSPEX',font=shell.font('brand'),anchor='w')
-        brand.pack(fill='x',padx=pad,pady=(shell.RAIL_TOP,0))
         self._rail_brand=brand
         self.rail_tagline=self._rail_label('MARKETS · HISTORY',anchor='w')
-        self.rail_tagline.pack(fill='x',padx=pad,pady=(4,0))
-        self._rail_label('FIND MARKET',anchor='w').pack(fill='x',padx=pad,pady=(14,6))
+        # Dark/Light (0.5.5): the suite's top bar already names the workspace, so the rail starts with its
+        # first section instead of repeating the name. Classic, which has no top bar, keeps it.
+        self._rail_named=shell.workspace_home_shown()
+        if self._rail_named:
+            brand.pack(fill='x',padx=pad,pady=(shell.RAIL_TOP,0))
+            self.rail_tagline.pack(fill='x',padx=pad,pady=(4,0))
+        self._rail_label('FIND MARKET',anchor='w').pack(fill='x',padx=pad,pady=(14 if self._rail_named else shell.RAIL_TOP,6))
         self._entry(self.rail,self.search).pack(fill='x',padx=pad,pady=(0,6))
         filt=ogg_frame(self.rail,bg='#130F0D');filt._oracle_bg=self.p['rail'];filt.pack(fill='x',padx=pad-2,pady=(0,6))
         self.filters={}
@@ -577,7 +583,7 @@ class AugurspexPanel(tk.Frame):
         bottom=ogg_frame(self.rail,bg='#130F0D');bottom._oracle_bg=self.p['rail']
         # Packed ahead of everything else in the rail, so a short window (or
         # Windows' taller text) shrinks the list rather than pushing HOME out.
-        bottom.pack(side='bottom',fill='x',padx=pad,pady=(8,14),before=brand)
+        bottom.pack(side='bottom',fill='x',padx=pad,pady=(8,14),before=self.rail.pack_slaves()[0])
         self._button(bottom,'MANAGE LIST',self._manage_watchlist).pack(fill='x',pady=(0,6))
         self.home_button=shell.button(bottom,HOME_LABEL,self.on_home)
         if shell.workspace_home_shown():  # Dark/Light: the suite's sidebar has Home

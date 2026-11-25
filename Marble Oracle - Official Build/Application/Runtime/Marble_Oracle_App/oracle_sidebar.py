@@ -113,6 +113,19 @@ def draw_icon(canvas, kind, cx, cy, s, colour, tags):
 class SidebarMixin:
     """Mixed into Scene. Needs: c, k, W, H, rect, hot, T(), font(), _win_glyphs(), case_on(), integrated()."""
 
+    def chrome_font(self, px, bold=False, mono=False):
+        """The sidebar's and top bar's type (0.5.5): it shrinks with a small window but does not grow past its
+        size at the reference window, like the workspaces' own type (at 1920x1080 it was a third larger than
+        the text beside it)."""
+        key = ('chrome', px, bold, mono)
+        f = self.fonts.get(key)
+        if f is None:
+            f = self.tkfont.Font(family=self.family if mono else self.ui_family,
+                                 size=-max(10, int(round(px * min(self.k, 1.0) * 1.15))),
+                                 weight='bold' if bold else 'normal')
+            self.fonts[key] = f
+        return f
+
     def modern_chrome(self):
         return (oracle_appearance.modern() and getattr(self, 'integrated', lambda: False)()
                 and not getattr(self, 'case_on', lambda: False)())
@@ -120,7 +133,7 @@ class SidebarMixin:
     def _chrome_modern(self):
         from oracle_skin import px
         p = oracle_appearance.palette()
-        c, k = self.c, self.k
+        c, k = self.c, min(self.k, 1.0)        # chrome spacing grows no further than its type
         sx0, sy0, sx1, sy1 = self.rect['side']
         hx0, hy0, hx1, hy1 = self.rect['menu']
         fx0, fy0, fx1, fy1 = self.rect['status']
@@ -149,7 +162,7 @@ class SidebarMixin:
             mark = round_rect(c, sx0 + 12, y, sx1 - 12, y + (sx1 - sx0 - 24), 9, fill=p['accent'], outline='',
                               tags='chrome')
             bx0, by0, bx1, by1 = c.bbox(mark)
-            c.create_text((bx0 + bx1) / 2.0, (by0 + by1) / 2.0, text='MO', font=self.font(12, True, False),
+            c.create_text((bx0 + bx1) / 2.0, (by0 + by1) / 2.0, text='MO', font=self.chrome_font(12, True, False),
                           fill=p['on_accent'], tags='chrome')
             y = by1 + px(18, k)
         else:
@@ -170,13 +183,13 @@ class SidebarMixin:
 
     def _side_brand(self, c, p, sx0, pad, y, k, px):
         brand = c.create_text(sx0 + pad + px(4, k), y, text='Marble Oracle', anchor='nw',
-                              font=self.font(16, True, False), fill=p['ink'], tags='chrome')
+                              font=self.chrome_font(16, True, False), fill=p['ink'], tags='chrome')
         y = c.bbox(brand)[3] + px(2, k)
         from oracle_version import SUITE_VERSION
         c.create_text(sx0 + pad + px(4, k), y, text=f'Version {SUITE_VERSION}', anchor='nw',
-                      font=self.font(9, False, False), fill=p['dim'], tags='chrome')
+                      font=self.chrome_font(9, False, False), fill=p['dim'], tags='chrome')
         y = c.bbox(c.find_all()[-1])[3] + max(10, px(20, k))
-        c.create_text(sx0 + pad + px(4, k), y, text='Workspaces', anchor='nw', font=self.font(9, True, False),
+        c.create_text(sx0 + pad + px(4, k), y, text='Workspaces', anchor='nw', font=self.chrome_font(9, True, False),
                       fill=p['faint'] if p['appearance'] == 'dark' else p['dim'], tags='chrome')
         y += px(18, k)
         return y
@@ -184,9 +197,9 @@ class SidebarMixin:
     def _chrome_modern_rest(self, c, p, k, px, sx1, hx1, hy0, hy1, fx0, fy0, fx1, fy1):
         # Header: the open workspace's name and what it is for; the window controls.
         self._hdr_title = c.create_text(sx1 + px(20, k), (hy0 + hy1) / 2.0, text='', anchor='w',
-                                        font=self.font(15, True, False), fill=p['ink'], tags='chrome')
+                                        font=self.chrome_font(15, True, False), fill=p['ink'], tags='chrome')
         self._hdr_blurb = c.create_text(sx1 + px(20, k), (hy0 + hy1) / 2.0, text='', anchor='w',
-                                        font=self.font(10, False, False), fill=p['dim'], tags='chrome')
+                                        font=self.chrome_font(10, False, False), fill=p['dim'], tags='chrome')
         if self.host is None or getattr(self.host, 'borderless', True):   # an OS title bar has its own buttons
             self._win_glyphs(hx1 - px(4, k), hy0, hy1, p['dim'])
         # Footer status line (the same item ids the other chromes provide).
@@ -194,15 +207,17 @@ class SidebarMixin:
         x = sx1 + px(20, k)
         self.hold_id = self.T(x, fy, '', 12, p['ink'], 'w', 'chrome', True, False)
         self.stat_id = self.T(x, fy, '', 11, p['dim'], 'w', 'chrome', False, False)
-        self.mono_w = max(1.0, self.font(11, False, False).measure('M'))
+        self.mono_w = max(1.0, self.chrome_font(11, False, False).measure('M'))
         self.tick_n = max(10, int((fx1 - x - px(120, k)) / self.mono_w))
         self.tick_id = self.T(x, fy, '', 11, p['dim'], 'w', 'chrome', False, False)
+        for item, size, bold in ((self.hold_id, 12, True), (self.stat_id, 11, False), (self.tick_id, 11, False)):
+            c.itemconfigure(item, font=self.chrome_font(size, bold, False))
         self.tick_full = ''
         self._update_primary_tab_state()
 
     def _side_row(self, action, name, icon, x0, y0, x1, y1, p, nav=True, rail=False):
         from oracle_skin import px
-        c, k = self.c, self.k
+        c, k = self.c, min(self.k, 1.0)        # chrome spacing grows no further than its type
         pill = round_rect(c, x0, y0, x1, y1, px(7, k), fill='', outline='', tags='chrome')
         size = max(14 if rail else 12, px(17, k))
         icon_x = (x0 + x1) / 2.0 if rail else x0 + px(12, k) + size / 2.0
@@ -211,7 +226,7 @@ class SidebarMixin:
         draw_icon(c, icon, icon_x, cy, size, p['dim'], icon_tag)
         # On the rail the name is not drawn (the header names the open workspace; the hover ring shows where).
         text = c.create_text(icon_x + size / 2.0 + px(10, k), cy, text='' if rail else name, anchor='w',
-                             font=self.font(12, False, False), fill=p['ink'], tags='chrome')
+                             font=self.chrome_font(12, False, False), fill=p['ink'], tags='chrome')
         self.hot.append((x0, y0, x1, y1, action))
         self._side_rows[action] = (pill, text, f'sideicon-{action}')
         if nav:
@@ -224,7 +239,7 @@ class SidebarMixin:
             on = action == active
             try:
                 c.itemconfigure(pill, fill=p['select_side'] if on else '')
-                c.itemconfigure(text, font=self.font(12, on, False))
+                c.itemconfigure(text, font=self.chrome_font(12, on, False))
                 for item in c.find_withtag(icon_tag):
                     kind = c.type(item)
                     colour = p['accent_text'] if on else p['dim']
@@ -241,7 +256,7 @@ class SidebarMixin:
                 try:
                     c.itemconfigure(self._hdr_title, text=name)
                     bbox = c.bbox(self._hdr_title)
-                    c.coords(self._hdr_blurb, bbox[2] + self.font(10, False, False).measure('  '), c.coords(self._hdr_title)[1])
+                    c.coords(self._hdr_blurb, bbox[2] + self.chrome_font(10, False, False).measure('  '), c.coords(self._hdr_title)[1])
                     c.itemconfigure(self._hdr_blurb, text=blurb)
                 except Exception:
                     pass
