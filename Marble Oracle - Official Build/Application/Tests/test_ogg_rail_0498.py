@@ -49,6 +49,12 @@ panel = scene.ogg.frame
 ogg = panel.ogg_app
 sidebar = ogg._sidebar
 home = panel.home_button
+import oracle_shell  # noqa: E402
+if not oracle_shell.workspace_home_shown():
+    # 0.5.4: in Dark/Light the suite's sidebar has Home, so Oggcultist's rail does not repeat it; the
+    # foot of the rail (its version line) takes HOME's place in these checks.
+    check('Dark/Light: the rail does not repeat Home', not home.winfo_manager())
+    home = ogg.version_label
 items = [ogg.nav[k] for k in ('library', 'artists', 'albums', 'playlists', 'converter', 'art', 'settings')
          if k in ogg.nav]
 check('the rail has its seven items', len(items) == 7, list(ogg.nav))

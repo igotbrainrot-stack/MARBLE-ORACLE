@@ -115,7 +115,9 @@ class NewsOraclePanel(tk.Frame):
         self._settings_path=Path(self.engine.store.state_dir)/'overcast_settings.json'
         early=self._load_settings()
         # 1.1.2: a host (Marble Oracle) may set the look; OVERCAST's own saved choice is then kept, not used.
-        self._host_look=appearance in theme_mod.APPEARANCES
+        self._host_look=appearance in theme_mod.APPEARANCES or appearance in theme_mod.HOST_PALETTES
+        # OVERCAST's own choice, written back unchanged while a host sets the look (so standalone OVERCAST keeps it).
+        self._own_look=(early.get('appearance',theme_mod.DEFAULT_APPEARANCE),early.get('accent',theme_mod.DEFAULT_ACCENT))
         self.theme=theme_mod.Theme(appearance if self._host_look else early.get('appearance',theme_mod.DEFAULT_APPEARANCE),
                                    accent if (self._host_look and accent in theme_mod.ACCENTS)
                                    else early.get('accent',theme_mod.DEFAULT_ACCENT),
@@ -365,8 +367,12 @@ class NewsOraclePanel(tk.Frame):
                                  anchor='w',cursor='hand2',justify='left',wraplength=180)
         self.conn_label.pack(fill='x')
         self.conn_label.bind('<Button-1>',lambda e:self._open_page(self.settings_tab))
-        tk.Label(foot,textvariable=self.news_note,font=(self._font,8),fg=DIM,bg=SIDEBAR,anchor='w',
-                 wraplength=180,justify='left').pack(fill='x',pady=(2,0))
+        news=tk.Label(foot,textvariable=self.news_note,font=(self._font,8),fg=DIM,bg=SIDEBAR,anchor='w',
+                      wraplength=180,justify='left')
+        news.pack(fill='x',pady=(2,0))
+        # 1.1.3: wrap to the rail's real width (a fixed 180 px cut "Model not connected" off in a narrow rail).
+        foot.bind('<Configure>',lambda e:[w.configure(wraplength=max(60,e.width-4)) for w in (self.conn_label,news)],
+                  add='+')
         self.rail_footer=foot
         rail.bind('<Configure>',self._fit_rail,add='+')
         # ── Large title + description ──
@@ -815,6 +821,20 @@ class NewsOraclePanel(tk.Frame):
             text=tk.Text(card,wrap='word',relief='flat',bg=PANEL,fg=INK,padx=4,pady=2,height=8,
                          font=(self._font,11),borderwidth=0,highlightthickness=0,cursor='arrow',spacing1=3,spacing3=3,
                          selectbackground=SELECT,inactiveselectbackground=SELECT)
+            # 1.1.3: a slim scroll bar appears when the card's text is taller than the card (in a short
+            # window the last lines were cut off with no way to reach them).
+            bar=ttk.Scrollbar(card,orient='vertical',command=text.yview,style='O.Vertical.TScrollbar')
+            def _scrolled(first,last,bar=bar,text=text):
+                bar.set(first,last)
+                # Shown while the text overflows. Hidden only when the text fits beside the bar, so it fits
+                # all the more without it: the two never take turns.
+                fits=float(first)<=0.0 and float(last)>=1.0
+                if not fits and not bar.winfo_manager():
+                    bar.pack(side='right',fill='y',before=text)
+                elif fits and bar.winfo_manager():
+                    bar.pack_forget()
+            text._ovc_bar=bar
+            text.configure(yscrollcommand=_scrolled)
             text.pack(fill='both',expand=True)
             for tag,cfg in (('muted',{'foreground':DIM}),('adverse',{'foreground':RED}),('good',{'foreground':GREEN}),
                             ('big',{'font':self.theme.fonts['big']}),('head',{'foreground':INK,'font':(self._font,11,'bold')}),
@@ -826,6 +846,8 @@ class NewsOraclePanel(tk.Frame):
     def _write_card(self,key,items):
         """items: (text, tag) or (text, tag, callback). Callbacks become clickable links."""
         text=self.dash_cards[key]
+        bar=getattr(text,'_ovc_bar',None)
+        if bar is not None:bar.pack_forget()
         text.config(state='normal');text.delete('1.0','end')
         for n,item in enumerate(items):
             content,tag=item[0],item[1]
@@ -1789,6 +1811,8 @@ class NewsOraclePanel(tk.Frame):
               'extra_models':self.extra_models.get().strip()[:300],
               'appearance':self.appearance.get() if hasattr(self,'appearance') else self.theme.appearance,
               'accent':self.accent.get() if hasattr(self,'accent') else self.theme.accent}
+        if self._host_look:
+            data['appearance'],data['accent']=self._own_look
         try:
             tmp=self._settings_path.with_suffix('.tmp')
             tmp.write_text(json.dumps(data),encoding='utf-8')

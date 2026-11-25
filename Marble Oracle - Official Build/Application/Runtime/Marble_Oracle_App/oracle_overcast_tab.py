@@ -47,9 +47,11 @@ class EmbeddedOvercast:
         # 0.5.1: in Dark and Light OVERCAST follows the suite's appearance and accent (its own saved choice is
         # kept for when it runs on its own). In Classic it keeps its own.
         look = oracle_appearance.appearance() if oracle_appearance.modern() else None
+        # 0.5.4: in Classic OVERCAST takes Classic's Ember colours and serif face too (it was the only
+        # workspace in its own grey Dark look there).
         self.frame = create_panel(canvas, state_dir=str(overcast_state_dir()), on_event=self._event,
-                                  appearance=look, accent=oracle_appearance.accent() if look else None,
-                                  font=oracle_appearance.family() if look else None)
+                                  appearance=look or 'classic', accent=oracle_appearance.accent() if look else None,
+                                  font=oracle_appearance.family())
         self.frame._marble_no_round = True     # OVERCAST draws its own rounded artwork (oracle_round)
         self.window = canvas.create_window(0, 0, anchor='nw', window=self.frame, tags=(self.TAG,))
         self._box = None

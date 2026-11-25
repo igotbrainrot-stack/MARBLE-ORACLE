@@ -698,3 +698,291 @@ class RoundButton(tk.Button):
 def _mix(a, b, t, widget=None):
     ca, cb = _hex(a, widget), _hex(b, widget)
     return '#%02X%02X%02X' % tuple(round(ca[i] * (1 - t) + cb[i] * t) for i in range(3))
+
+
+def empty_hint(listbox, text, *, fg=None):
+    """A quiet line centred in `listbox` while it has no rows ("No files yet. Use Open or Folder.") (0.5.4).
+
+    An empty list read as a broken or unfinished panel. The hint is a label placed over the list; it is shown
+    and hidden as rows are inserted and deleted (the list's own insert/delete are wrapped), and it passes
+    clicks through to the list underneath."""
+    hint = tk.Label(listbox, text=text, bg=listbox.cget('bg'), fg=fg or listbox.cget('fg'),
+                    font=listbox.cget('font'), justify='center', wraplength=260)
+    try:
+        import oracle_appearance
+        palette = oracle_appearance.palette()
+        if fg is None and palette is not None:
+            hint.configure(fg=palette['dim'])
+    except Exception:
+        pass
+    hint._marble_round_skip = True
+
+    def refresh(*_args):
+        try:
+            if listbox.size() == 0:
+                hint.configure(wraplength=max(120, listbox.winfo_width() - 40))
+                hint.place(relx=0.5, rely=0.5, anchor='center')
+            else:
+                hint.place_forget()
+        except tk.TclError:
+            pass
+    insert, delete = listbox.insert, listbox.delete
+
+    def wrapped_insert(*args, **kwargs):
+        result = insert(*args, **kwargs)
+        refresh()
+        return result
+
+    def wrapped_delete(*args, **kwargs):
+        result = delete(*args, **kwargs)
+        refresh()
+        return result
+    listbox.insert, listbox.delete = wrapped_insert, wrapped_delete
+    hint.bind('<Button-1>', lambda _e: listbox.focus_set())
+    listbox.bind('<Configure>', refresh, add='+')
+    listbox.after_idle(refresh)
+    listbox._empty_hint = hint
+    return hint
+
+
+class FlatSlider(tk.Canvas):
+    """A modern horizontal slider for Dark and Light (0.5.4), standing in for tk.Scale.
+
+    A rounded track, the filled part in the accent and a round thumb; click anywhere to jump there, drag to
+    follow, arrow keys and the wheel to nudge. It keeps the parts of tk.Scale's interface the suite uses:
+    from_/to, variable, command (called with the value as text, as tk.Scale does), get(), set(), cget() and
+    configure() for from/to, and callers' own <ButtonPress-1>/<ButtonRelease-1> bindings (added with '+').
+    """
+
+    def __init__(self, master, from_=0.0, to=100.0, variable=None, command=None, length=160, *,
+                 ground=None, track=None, fill=None, thumb=None, focus=None, resolution=1.0, height=20):
+        super().__init__(master, width=length, height=height, highlightthickness=0, bd=0, takefocus=1,
+                         cursor='hand2', bg=ground or master.cget('bg'))
+        self._from, self._to, self._resolution = float(from_), float(to), float(resolution) or 1.0
+        self.variable = variable if variable is not None else tk.DoubleVar(master=self, value=self._from)
+        self.command = command
+        self.colours = dict(track=track or '#48484A', fill=fill or '#FF9F0A', thumb=thumb or '#FFFFFF',
+                            focus=focus or fill or '#FF9F0A')
+        self._focus = False
+        self._trace = self.variable.trace_add('write', lambda *_: self.redraw())
+        self.bind('<ButtonPress-1>', self._pointer)
+        self.bind('<B1-Motion>', self._pointer)
+        self.bind('<Configure>', lambda _e: self.redraw())
+        for key, step in (('<Left>', -1), ('<Down>', -1), ('<Right>', 1), ('<Up>', 1), ('<Button-5>', -1),
+                          ('<Button-4>', 1)):
+            self.bind(key, lambda _e, s=step: self._nudge(s))
+        self.bind('<MouseWheel>', lambda e: self._nudge(1 if e.delta > 0 else -1))
+        self.bind('<FocusIn>', lambda _e: self._set_focus(True))
+        self.bind('<FocusOut>', lambda _e: self._set_focus(False))
+        self.bind('<Destroy>', self._destroyed, add='+')
+
+    # -- tk.Scale's interface
+    def get(self):
+        try:
+            return float(self.variable.get())
+        except (tk.TclError, ValueError):
+            return self._from
+
+    def set(self, value):
+        low, high = sorted((self._from, self._to))
+        value = max(low, min(high, float(value)))
+        self.variable.set(int(round(value)) if isinstance(self.variable, tk.IntVar) else value)
+
+    def cget(self, key):
+        if key in ('from', 'from_'):
+            return self._from
+        if key == 'to':
+            return self._to
+        return super().cget(key)
+
+    def configure(self, cnf=None, **kw):
+        for key in ('from_', 'from'):
+            if key in kw:
+                self._from = float(kw.pop(key))
+        if 'to' in kw:
+            self._to = float(kw.pop('to'))
+        if 'command' in kw:
+            self.command = kw.pop('command')
+        result = super().configure(cnf, **kw) if (cnf or kw) else None
+        self.redraw()
+        return result
+    config = configure
+
+    # -- behaviour
+    def _value_at(self, x):
+        pad = self._pad()
+        span = max(1, self.winfo_width() - 2 * pad)
+        t = min(1.0, max(0.0, (x - pad) / span))
+        value = self._from + (self._to - self._from) * t
+        return round(value / self._resolution) * self._resolution
+
+    def _changed(self, value):
+        self.set(value)
+        if self.command is not None:
+            self.command(str(self.get()))
+
+    def _pointer(self, event):
+        self.focus_set()
+        self._changed(self._value_at(event.x))
+
+    def _nudge(self, step):
+        span = abs(self._to - self._from) or 1
+        self._changed(self.get() + step * max(self._resolution, span / 50) * (1 if self._to >= self._from else -1))
+
+    def _set_focus(self, on):
+        self._focus = on
+        self.redraw()
+
+    def _destroyed(self, event):
+        if event.widget is self:
+            try:
+                self.variable.trace_remove('write', self._trace)
+            except (tk.TclError, ValueError):
+                pass
+
+    def _pad(self):
+        return max(6, int(self.winfo_height()) // 2)
+
+    def redraw(self):
+        try:
+            w, h = max(2, self.winfo_width()), max(2, self.winfo_height())
+        except tk.TclError:
+            return
+        self.delete('all')
+        pad, mid = self._pad(), h / 2
+        span = (self._to - self._from) or 1
+        t = min(1.0, max(0.0, (self.get() - self._from) / span))
+        x = pad + (w - 2 * pad) * t
+        c = self.colours
+        self.create_line(pad, mid, w - pad, mid, fill=c['track'], width=4, capstyle='round')
+        if x > pad:
+            self.create_line(pad, mid, x, mid, fill=c['fill'], width=4, capstyle='round')
+        r = 6
+        if self._focus:
+            self.create_oval(x - r - 3, mid - r - 3, x + r + 3, mid + r + 3, outline=c['focus'], width=2)
+        self.create_oval(x - r, mid - r, x + r, mid + r, fill=c['thumb'], outline=c['track'])
+
+
+_CHECK_IMAGES = {}
+
+
+def check_images(widget, size, *, ground, box, line, accent, tick):
+    """(off, on) PhotoImages for a modern check box (0.5.4): a rounded square, outlined when off and filled
+    with the accent and a tick when on. Anti-aliased, pure Python, cached per colour set."""
+    key = (widget.tk.interpaddr(), size, ground, box, line, accent, tick)
+    if key in _CHECK_IMAGES:
+        return _CHECK_IMAGES[key]
+    g, b, l, a, t = (_hex(c, widget) for c in (ground, box, line, accent, tick))
+    r = size * 0.28
+    points = ((0.26, 0.52), (0.43, 0.69), (0.75, 0.33))       # the tick, as fractions of the box
+
+    def inside(px, py, inset):
+        x0, y0, x1, y1 = inset, inset, size - inset, size - inset
+        rr = max(0.0, r - inset)
+        if not (x0 <= px <= x1 and y0 <= py <= y1):
+            return False
+        cx, cy = min(max(px, x0 + rr), x1 - rr), min(max(py, y0 + rr), y1 - rr)
+        return (px - cx) ** 2 + (py - cy) ** 2 <= rr * rr
+
+    def near_tick(px, py):
+        width = max(1.2, size * 0.085)
+        for (ax, ay), (bx, by) in zip(points, points[1:]):
+            ax, ay, bx, by = ax * size, ay * size, bx * size, by * size
+            dx, dy = bx - ax, by - ay
+            u = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)))
+            if (px - ax - u * dx) ** 2 + (py - ay - u * dy) ** 2 <= width * width:
+                return True
+        return False
+
+    def build(on):
+        rows = []
+        for y in range(size):
+            row = []
+            for x in range(size):
+                acc = [0.0, 0.0, 0.0]
+                for sx, sy in ((0.25, 0.25), (0.75, 0.25), (0.25, 0.75), (0.75, 0.75)):
+                    px, py = x + sx, y + sy
+                    if not inside(px, py, 0):
+                        colour = g
+                    elif on:
+                        colour = t if near_tick(px, py) else a
+                    elif inside(px, py, 1.5):
+                        colour = b
+                    else:
+                        colour = l
+                    for i in range(3):
+                        acc[i] += colour[i] / 4
+                row.append('#%02x%02x%02x' % tuple(round(v) for v in acc))
+            rows.append('{' + ' '.join(row) + '}')
+        image = tk.PhotoImage(master=widget, width=size, height=size)
+        image.put(' '.join(rows), to=(0, 0))
+        return image
+    _CHECK_IMAGES[key] = images = (build(False), build(True))
+    return images
+
+
+def modern_check(widget):
+    """Turn a tk.Checkbutton into a modern check box (Dark/Light): a drawn box beside the text in place of
+    Tk's small square indicator. Behaviour, variable and command are unchanged."""
+    try:
+        import oracle_appearance
+        palette = oracle_appearance.palette()
+        if palette is None and oracle_appearance.modern():
+            # A window outside the suite's own (the setup window): the chosen look's palette.
+            from overcast.theme import palette as overcast_palette
+            palette = overcast_palette(*oracle_appearance.chosen())
+        if palette is None:
+            return False
+        bg = widget.cget('bg')
+        # Measured with a Tcl call, not a Font object (whose deletion on a worker thread can hang Tk).
+        linespace = int(widget.tk.call('font', 'metrics', widget.cget('font'), '-linespace'))
+        size = max(14, min(20, int(linespace * 0.8)))
+        off, on = check_images(widget, size, ground=bg, box=palette['field'], line=palette['faint'],
+                               accent=palette['accent'], tick=palette['on_accent'])
+        widget.configure(image=off, selectimage=on, compound='left', indicatoron=False, relief='flat',
+                         offrelief='flat', overrelief='flat', bd=0, selectcolor=bg, activebackground=bg,
+                         padx=2)
+        widget._marble_check = (off, on)
+        text = widget.cget('text')
+        if text and not text.startswith(' '):
+            widget.configure(text='  ' + text)
+        return True
+    except (tk.TclError, AttributeError, ValueError):
+        return False
+
+
+def scroll_with_wheel(area, canvas):
+    """The mouse wheel scrolls `canvas` while the pointer is anywhere over `area` (0.5.4).
+
+    A scrolled settings column could only be moved by its slim scroll bar, so settings below the fold looked
+    missing. A binding tag of its own is added to every widget in the area (re-checked whenever the pointer
+    enters, so widgets made later join in), so no application-wide binding is touched; lists and text boxes
+    keep scrolling themselves first."""
+    tag = f'MarbleWheel{id(area)}'
+
+    def wheel(event):
+        if getattr(event, 'num', None) == 4:
+            step = -1
+        elif getattr(event, 'num', None) == 5:
+            step = 1
+        else:
+            step = -1 if event.delta > 0 else 1
+        first, last = canvas.yview()
+        if first > 0.0 or last < 1.0:
+            canvas.yview_scroll(step * 2, 'units')
+
+    def tag_all(_event=None):
+        stack = [area]
+        while stack:
+            widget = stack.pop()
+            try:
+                tags = widget.bindtags()
+                if tag not in tags and widget.winfo_class() not in ('Listbox', 'Text'):
+                    widget.bindtags(tags + (tag,))
+                stack.extend(widget.winfo_children())
+            except tk.TclError:
+                pass
+    for sequence in ('<MouseWheel>', '<Button-4>', '<Button-5>'):
+        area.bind_class(tag, sequence, wheel)
+    area.bind('<Enter>', tag_all, add='+')
+    area.after_idle(tag_all)

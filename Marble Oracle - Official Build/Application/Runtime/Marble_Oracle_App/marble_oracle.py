@@ -1376,8 +1376,15 @@ class Scene(SidebarMixin, HomeFocusMixin, ChromeMixin, SkinMixin):
         self.lex_mode = self.T(x0 + max(102, int(112 * self.k)), y1 - 12 * self.sy, "", 11, "dim", "w", ("content", "lexvoice") if self.clean() else "content", mono=not self.clean())
         if self.clean():
             self.lex_voice_open = False
-            self.voice_btn = self.T(x0 + max(102, int(112 * self.k)), y1 - 12 * self.sy, "Voice", 11, "dim", "w", "content", False, False)
-            self.hot.append((x0 + max(98, int(108 * self.k)), int(y1 - 24 * self.sy), x1, y1, "lexvoice"))
+            # 0.5.4: "Voice" sits just left of SPEAK (it was placed from the left edge, so in a narrow panel,
+            # 900x580, SPEAK covered it), and gives way when there is no room beside the word button.
+            vx = sb[0] - 10
+            room = vx - (x0 + max(98, int(108 * self.k)))
+            self.voice_btn = self.T(vx, y1 - 12 * self.sy, "Voice", 11, "dim", "e", "content", False, False)
+            self._voice_room = room >= 34
+            if not self._voice_room:
+                self.c.itemconfigure(self.voice_btn, state="hidden")
+            self.hot.append((max(x0 + max(98, int(108 * self.k)), vx - 60), int(y1 - 24 * self.sy), sb[0] - 2, y1, "lexvoice"))
             self.c.itemconfigure("lexvoice", state="hidden")
         else:
             self.hot.append((x0 + max(98, int(108 * self.k)), int(y1 - 24 * self.sy), x1, y1, "ecc"))
@@ -2736,7 +2743,8 @@ class Scene(SidebarMixin, HomeFocusMixin, ChromeMixin, SkinMixin):
             self.lex_voice_open = not getattr(self, "lex_voice_open", False)
             self.c.itemconfigure("lexvoice", state="normal" if self.lex_voice_open else "hidden")
             if getattr(self, "voice_btn", None):
-                self.c.itemconfigure(self.voice_btn, state="hidden" if self.lex_voice_open else "normal")
+                shown = not self.lex_voice_open and getattr(self, "_voice_room", True)
+                self.c.itemconfigure(self.voice_btn, state="normal" if shown else "hidden")
         elif name == "slider" and x is not None:
             tx0, tx1, _ = self.slider
             self.voice.vol = max(0.0, min(1.0, (x - tx0) / float(tx1 - tx0)))

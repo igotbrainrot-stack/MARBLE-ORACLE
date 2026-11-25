@@ -122,7 +122,11 @@ def label_fits(label):
     if not text or '\n' in text or int(label.cget('wraplength') or 0):
         return True
     font = tkfont.Font(font=label.cget('font'))
-    return font.measure(text) <= label.winfo_width() - 2 * int(label.cget('padx') or 0)
+    try:
+        pad = int(label.cget('padx') or 0)
+    except tk.TclError:          # 0.5.4: the rail's labels are textured ttk labels (no padx)
+        pad = 0
+    return font.measure(text) <= label.winfo_width() - 2 * pad
 
 
 def inside(widget, root):

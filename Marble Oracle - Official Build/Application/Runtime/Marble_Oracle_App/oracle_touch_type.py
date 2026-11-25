@@ -16,6 +16,11 @@ from oracle_ogg_texture import frame as ogl_frame, label as ogl_label, install a
 from oggcultist_design_system import COLOR as C
 import oracle_shell as shell
 from oracle_widgets import style_dropdown, tooltip
+
+
+def _shown(text):
+    """Text Tk does not case for us (canvas items, an entry's contents): as the appearance writes it."""
+    return shell.shown(text)
 from oracle_assets import load_json, save_json
 
 LESSONS = (
@@ -265,7 +270,9 @@ class TouchTypePanel(tk.Frame):
         self.home_button, _version = self.shell.home(self.on_home, 'KEYBOARD · LOCAL')
         self.best_label = shell.label(self.shell.rail_bottom(), 'BEST  —', 'small', 'text_2', justify='left',
                                       wraplength=shell.RAIL_WIDTH - 2 * shell.RAIL_PADX)
-        self.best_label.pack(anchor='w', pady=(0, 8), before=self.home_button)
+        # Above HOME in Classic; in Dark/Light (no HOME here: the sidebar has it) above the version line.
+        first = self.home_button if self.home_button.winfo_manager() else _version
+        self.best_label.pack(anchor='w', pady=(0, 8), **({'before': first} if first is not None else {}))
         self.shell._wrapped.append(self.best_label)     # re-wraps when the rail narrows
         self.rail_title, self.rail_subtitle = self.shell.brand('TOUCH TYPE', 'LEARN · PLAY · IMPROVE')
         self.shell.group('TRAINING GAMES')
@@ -334,10 +341,13 @@ class TouchTypePanel(tk.Frame):
         self.reset_button.pack(side='left', padx=(6,0))
 
         self.keyboard = tk.Canvas(main, bg=C['canvas'], highlightthickness=0, height=147)
-        self.keyboard.pack(fill='x', padx=shell.MAIN_PADX, pady=(2, 0))
+        # 0.5.4: the keyboard takes the height that is left and grows with it (at 1920x1080 it was a strip of
+        # 57 px keys over an empty half page).
+        self.keyboard.pack(fill='both', expand=True, padx=shell.MAIN_PADX, pady=(2, 0))
         self.keyboard.bind('<Configure>', lambda e: self._draw_keyboard())
         info = ogl_frame(main, bg=C['canvas'])
-        info.pack(fill='x', padx=shell.MAIN_PADX, pady=(1, 2))
+        # The finger hint sits between the typing field and the keyboard, which takes the rest of the page.
+        info.pack(fill='x', padx=shell.MAIN_PADX, pady=(1, 2), before=self.keyboard)
         self.finger_label = self._label(info, 'INDEX FINGERS · F / J', 11, 'accent', bold=True)
         self.finger_label.pack(side='left')
         self.info_label = self._label(info, 'Focus: typing field', 10, 'text_2')
@@ -375,7 +385,7 @@ class TouchTypePanel(tk.Frame):
         if compact:
             self.keyboard.pack_forget()
         else:
-            self.keyboard.pack(fill='x', padx=shell.MAIN_PADX, pady=(2, 0), before=self._info_row)
+            self.keyboard.pack(fill='both', expand=True, padx=shell.MAIN_PADX, pady=(2, 0), after=self._info_row)
         if narrow:
             self.reset_button.pack_forget()
             self.info_label.pack_forget()
@@ -481,28 +491,37 @@ class TouchTypePanel(tk.Frame):
             return
         c.delete('all')
         w = max(200, c.winfo_width())
+        h = max(147, c.winfo_height())
         e = self.engine
-        unit = min(57.0, (w-14)/11.0)
-        kw = max(13,unit-5)
+        # Key pitch from the room there is: the width for ten keys and a half, the height for three rows and
+        # the space bar; never smaller than before (57 px at most then) once there is room, and at most 84.
+        unit = max(13.0, min(84.0, (w-14)/11.0, (h-6)/2.6))
+        kw = max(13, unit-5)
+        key_h = max(30.0, unit*0.6)
+        pitch = key_h + max(6.0, unit*0.1)
+        space_h = max(23.0, key_h*0.7)
+        top = 4.0
+        size = max(11, int(unit*0.2))
         rows = [('qwertyuiop',0.1),('asdfghjkl;',0.52),('zxcvbnm,./',0.23)]
         for ri,(chars,offset) in enumerate(rows):
             row_w = len(chars)*unit
             x0 = (w-row_w)/2 + offset*unit
-            y0 = 2+ri*39
+            y0 = top+ri*pitch
             for j,ch in enumerate(chars):
                 x = x0+j*unit
                 active = ch == e.expected
                 home = ch in 'asdfjkl;'
                 bg = C['accent'] if active else C['control'] if home else C['raised']
                 fg = C['text_on_accent'] if active else C['text_bright'] if home else C['text_2']
-                key_shape(c,x,y0,x+kw,y0+33,fill=bg,outline=C['accent'] if active else C['control_line'])
-                c.create_text(x+kw/2,y0+17,text=ch.upper(),font=(FAMILY,11,'bold'),fill=fg)
+                key_shape(c,x,y0,x+kw,y0+key_h,fill=bg,outline=C['accent'] if active else C['control_line'])
+                c.create_text(x+kw/2,y0+key_h/2,text=ch.upper(),font=(FAMILY,size,'bold'),fill=fg)
         space_on = e.expected == ' '
-        ww = min(w*0.4, 250)
+        ww = min(w*0.4, unit*4.4)
         x = (w-ww)/2
-        key_shape(c,x,122,x+ww,145,fill=C['accent'] if space_on else C['control'],
+        sy = top+3*pitch
+        key_shape(c,x,sy,x+ww,sy+space_h,fill=C['accent'] if space_on else C['control'],
                   outline=C['accent'] if space_on else C['control_line'])
-        c.create_text(w/2,133,text='SPACE · THUMBS',font=(FAMILY,10,'bold'),
+        c.create_text(w/2,sy+space_h/2,text=_shown('SPACE · THUMBS'),font=(FAMILY,max(10,size-1),'bold'),
                       fill=C['text_on_accent'] if space_on else C['text_2'])
 
     def _paint(self):
@@ -536,10 +555,10 @@ class TouchTypePanel(tk.Frame):
         self._info_full = e.message
         self._fit_info()
         self.input_var.set(self._recent_keys if e.phase in ('running','paused') else
-                           'TYPE HERE · SELECT START GAME' if e.phase == 'ready' else
-                           'ROUND COMPLETE · PLAY AGAIN')
+                           _shown('TYPE HERE · SELECT START GAME') if e.phase == 'ready' else
+                           _shown('ROUND COMPLETE · PLAY AGAIN'))
         best = self.stats.get(e.mode, {})
-        self.best_label.configure(text='BEST  %s WPM  ·  %s pts' %
+        self.best_label.configure(text=_shown('BEST') + '  %s WPM  ·  %s pts' %
                                   (best.get('best_wpm','—'),best.get('best_score','—')))
         self._paint_target()
         self._draw_keyboard()

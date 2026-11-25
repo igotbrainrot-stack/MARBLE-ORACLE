@@ -25,7 +25,7 @@ from oracle_ogg_texture import frame as ogl_frame, label as ogl_label, install a
 from oggcultist_design_system import COLOR as C
 import oracle_shell as shell
 from oracle_version import SUITE_VERSION
-from oracle_widgets import SlimScrollbar, flow, style_dropdown, wrap_to_parent
+from oracle_widgets import SlimScrollbar, empty_hint, flow, scroll_with_wheel, style_dropdown, wrap_to_parent
 from oracle_assets import load_json, save_json, state_dir
 from oracle_eidolith_core import (PROFILES, PROFILE_ORDER, DEFAULT_PROFILE, LEGACY_PROFILE_NAMES, NAME_MODES, RESOLUTIONS, RESOLUTION_ORDER, output_name,
                                   detect_encoders, profile_support, seconds_label)
@@ -264,6 +264,7 @@ class EidolithPanel(tk.Frame):
         conv_window = conv_canvas.create_window((0, 0), window=conv_right, anchor='nw')
         conv_right.bind('<Configure>', lambda _e: conv_canvas.configure(scrollregion=conv_canvas.bbox('all')), add='+')
         conv_canvas.bind('<Configure>', lambda e: conv_canvas.itemconfigure(conv_window, width=max(1, e.width)), add='+')
+        scroll_with_wheel(conv_shell, conv_canvas)
         self._section_convert_sources(conv_left)
         self._section_convert(conv_right)
 
@@ -322,6 +323,7 @@ class EidolithPanel(tk.Frame):
         self.file_list.config(yscrollcommand=ys.set)
         self.file_list.pack(side='left', fill='both', expand=True)
         ys.pack(side='right', fill='y')
+        empty_hint(self.file_list, 'No videos yet. Choose Open or Folder to add some.')
         self.file_list.bind('<<ListboxSelect>>', lambda e: self._probe_selected())
         self.file_list.bind('<Control-a>', lambda e: (self.select_all(), 'break')[-1])
         act = ogl_frame(box, bg=C['raised'])
@@ -354,6 +356,7 @@ class EidolithPanel(tk.Frame):
         self.convert_list.config(yscrollcommand=ys.set)
         self.convert_list.pack(side='left', fill='both', expand=True)
         ys.pack(side='right', fill='y')
+        empty_hint(self.convert_list, 'No files to convert yet. Choose Add files.')
         self.convert_list.bind('<Control-a>', lambda e: (self.select_all(), 'break')[-1])
         self.convert_list.bind('<<ListboxSelect>>', lambda e: self._update_name_preview())
 
@@ -517,6 +520,7 @@ class EidolithPanel(tk.Frame):
                                      selectbackground=C['hover'], selectforeground=C['text_bright'],
                                      exportselection=False, selectmode='extended', font=(FAMILY, 11), height=3)
         self.queue_list.pack(fill='both', expand=True, padx=12, pady=(12, 6))
+        empty_hint(self.queue_list, 'No jobs. Queue files from Convert.')
         self.queue_list.bind('<<ListboxSelect>>', lambda e: self._update_progress_panel())
         self.queue_list.bind('<Delete>', lambda e: self.remove_selected_jobs())
         self.queue_list.bind('<BackSpace>', lambda e: self.remove_selected_jobs())
@@ -1192,7 +1196,15 @@ class EidolithPanel(tk.Frame):
 
     # ---------- lifecycle ----------
     def resume_panel(self):
-        self.after_idle(lambda: self.file_list.focus_set())
+        # Keyboard focus goes to the workspace, not the file list: a focused, empty list showed the accent
+        # focus ring as if something needed attention (0.5.4). Tab reaches the list; clicking it focuses it.
+        self.after_idle(self._focus_workspace)
+
+    def _focus_workspace(self):
+        try:
+            self.focus_set()
+        except tk.TclError:
+            pass
 
     def suspend(self):
         self.video.suspend()

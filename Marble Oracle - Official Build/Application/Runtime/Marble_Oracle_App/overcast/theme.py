@@ -40,6 +40,15 @@ ACCENTS = {
     'Graphite': (('#AEAEB2', '#C7C7CC', '#1C1C1E'), ('#6E6E73', '#8E8E93', '#FFFFFF')),
 }
 APPEARANCES = tuple(PALETTES)
+# 1.1.3: looks a host can ask for but OVERCAST's own settings do not offer. 'classic' is Marble Oracle's
+# Ember (warm browns and the orange accent), so OVERCAST inside the suite's Classic look matches it.
+HOST_PALETTES = {
+    'classic': {'bg': '#1D1714', 'side': '#130F0D', 'card': '#261F1B', 'field': '#2F2620',
+                'field_hover': '#372A23', 'line': '#3A2E27', 'ink': '#F2E8DE', 'dim': '#B9A99B',
+                'faint': '#85705F', 'red': '#FF6B57', 'green': '#7BD88F', 'knob': '#FFF4E6',
+                'track_off': '#493B32', 'shadow': '#0E0A08'},
+}
+HOST_ACCENTS = {'classic': ('#FB8E22', '#FFA04A', '#2B1405')}
 DEFAULT_APPEARANCE = 'dark'
 DEFAULT_ACCENT = 'Amber'
 FONT_PREFERENCE = ('SF Pro Text', 'SF Pro Display', 'Inter', 'Inter Variable', 'Adwaita Sans',
@@ -91,13 +100,27 @@ def readable(colour, backgrounds, minimum=4.5):
 
 
 def palette(appearance=DEFAULT_APPEARANCE, accent=DEFAULT_ACCENT):
-    appearance = appearance if appearance in PALETTES else DEFAULT_APPEARANCE
+    appearance = appearance if appearance in PALETTES or appearance in HOST_PALETTES else DEFAULT_APPEARANCE
     accent = accent if accent in ACCENTS else DEFAULT_ACCENT
-    p = dict(PALETTES[appearance])
-    a, hover, on = ACCENTS[accent][0 if appearance == 'dark' else 1]
+    if appearance in HOST_PALETTES:
+        p = dict(HOST_PALETTES[appearance])
+        a, hover, on = HOST_ACCENTS[appearance]
+    else:
+        p = dict(PALETTES[appearance])
+        a, hover, on = ACCENTS[accent][0 if appearance == 'dark' else 1]
+    select = mix(a, p['card'], 0.32)
+    # Text colours must read (WCAG AA, 4.5:1) on every surface they are drawn on: the page, cards, the
+    # sidebar and fields. The stock dim, green and red fell short on fields (and in Light on every
+    # surface), so they are nudged just far enough, keeping their hue (1.1.3). Selected rows carry ink.
+    surfaces = (p['bg'], p['card'], p['side'], p['field'])
+    for name in ('dim', 'green', 'red'):
+        p[name] = readable(p[name], surfaces)
+    # Text on an accent button: the stock pairing where it reads, otherwise whichever of white and near
+    # black reads best (Blue in Dark was 3.6:1).
+    on = max((on, '#FFFFFF', '#1C1C1E'), key=lambda c: (contrast(c, a) >= 4.5 and c == on, contrast(c, a)))
     p.update({'accent': a, 'accent_hover': hover, 'on_accent': on,
-              'select': mix(a, p['card'], 0.32), 'select_side': mix(a, p['side'], 0.22),
-              'accent_text': readable(a, (p['bg'], p['card'], p['side'])),
+              'select': select, 'select_side': mix(a, p['side'], 0.22),
+              'accent_text': readable(a, surfaces),
               'appearance': appearance, 'accent_name': accent})
     return p
 
