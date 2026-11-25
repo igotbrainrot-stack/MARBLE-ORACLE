@@ -46,11 +46,16 @@
 | 19 | Medium | Passphrase | Half of the page was empty. | **Fixed.** A "How strong is it" panel when there is room: each part's bits from the engine's own figures, and a plain statement that this is the strength of the method, not a crack time. |
 | 20 | Medium | Classic, OVERCAST | The one workspace in its own grey Dark look and sans-serif face. | **Fixed.** Ember colours and the Classic serif in Classic. OVERCAST's own saved look is kept for standalone use. Before, a host's look overwrote it. |
 | 21 | Low | Eidolith player | "−10 SEC" / "+10 SEC" | **Fixed** ("−10 sec"). |
-| 22 | Low | AUGURSPEX | Dropdown values (LINE, MAX BARS) stay in capitals in Dark/Light. They are option values held in variables, not labels. | **Open.** Cosmetic. |
-| 23 | Low | Eidolith, Passphrase, Touch Type, AUGURSPEX | The workspace name appears in the suite's top bar and again as the rail's title. | **Open, by choice.** The same pattern as OVERCAST and Oggcultist. The rail title anchors the workspace's own navigation. |
-| 24 | Low | 1920×1080 | The suite's sidebar type grows with the window, but workspace type does not. | **Partly.** Touch Type now uses the room. Other workspaces keep fixed, readable type, and their lists and charts take the extra space. |
-| 25 | Low | Eidolith, About | A plain text box with capitalised headings. | **Partly.** Padding added; headings are capitalised in the source text. |
-| 26 | Low | Oggcultist player bar, 900×580 | The track title is shortened ("Nothing pl…"). | **Open.** Oggcultist's own layout. Full text on wider windows. |
+| 22 | Low | AUGURSPEX | Dropdown values (LINE, MAX BARS) stay in capitals in Dark/Light. They are option values held in variables, not labels. | **Fixed in 0.5.5.** Choices and the button are shown in sentence case; the values the code compares are unchanged. |
+| 23 | Low | Eidolith, Passphrase, Touch Type, AUGURSPEX | The workspace name appears in the suite's top bar and again as the rail's title. | **Fixed in 0.5.5.** In Dark/Light the rail starts with its first section. Classic, which has no top bar, keeps the title. |
+| 24 | Low | 1920×1080 | The suite's sidebar type grows with the window, but workspace type does not. | **Fixed in 0.5.5.** The sidebar and top bar no longer grow past their size at the reference window, so they match the workspaces. Touch Type's keyboard uses the room (0.5.4). |
+| 25 | Low | Eidolith, About | A plain text box with capitalised headings. | **Fixed in 0.5.5.** Headings are set as bold headings, and bulleted lines have hanging indents. Button names match the buttons. |
+| 26 | Low | Oggcultist player bar, 900×580 | The track title is shortened ("Nothing pl…"). | **Fixed in 0.5.5.** Below 900 px the controls narrow and the cover steps aside, so the song name reads in full. Long titles still end in "…", with the full name on wider windows. |
+
+## 0.5.5 follow-up
+
+Items 22–26 were fixed in 0.5.5, so every finding in this review is now closed.
+Also in 0.5.5: AUGURSPEX chart messages ("NETWORK DISABLED") are now in sentence case in Dark and Light.
 
 ## What was not checked
 

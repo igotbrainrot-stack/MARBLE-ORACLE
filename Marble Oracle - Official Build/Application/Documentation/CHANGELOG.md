@@ -2,6 +2,19 @@
 
 Newest first. Releases before 0.4.9.3 have their original notes in `History/ReleaseNotes/`.
 
+## 0.5.5 · 25 November 2026 · The review's last open items
+
+Built on 0.5.4. No saved setting changes format. Every finding in `Documentation/DESIGN_REVIEW_0.5.4.md` is now closed.
+
+- **Dropdowns** (Dark/Light): choices and the selected value are shown in sentence case ("Max bars", "Line"). The values the code compares are unchanged (`oracle_widgets._case_options`, a Tcl variable trace).
+- **No repeated workspace names** (Dark/Light): workspace rails start with their first section, because the suite's top bar already names the workspace. Classic keeps the rail title.
+- **Consistent type at large sizes:** the sidebar and top bar shrink with a small window but no longer grow past their reference size (`chrome_font`). At 1920×1080 they were a third larger than the text beside them.
+- **Eidolith About:** bold headings, bullets with hanging indents, and button names as the buttons show them.
+- **Oggcultist now-playing bar:** below 900 px the centre narrows and the cover steps aside, so the song name reads in full at 900×580. This is a patch to the bundled Oggcultist; its version number is unchanged.
+- **AUGURSPEX:** chart messages are cased like the rest.
+- **Fixed during the work:** AUGURSPEX's rail failed to build when its title was not shown. HOME's foot is now packed before the rail's first shown item.
+- **Tests:** new `test_polish_0550.py` (14 checks).
+
 ## 0.5.4 · 25 November 2026 · Final design and layout review
 
 Built on 0.5.3. No saved setting changes format.

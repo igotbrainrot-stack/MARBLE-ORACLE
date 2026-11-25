@@ -389,6 +389,50 @@ def _chevron(widget, colour):
     return image
 
 
+def _case_options(menu_button, menu):
+    """Dark/Light (0.5.5): a dropdown's choices in the same case as every other label.
+
+    An OptionMenu shows its variable's value, and the values ("LINE", "MAX BARS") are what the code compares,
+    so they cannot change. The menu's entries get the sentence-case label (their commands still set the
+    original value), and the button shows the cased value through its own text, following the variable.
+    Values with a lower-case letter, numbers and symbols are unchanged, and Classic is untouched."""
+    try:
+        import oracle_appearance
+        if not oracle_appearance.modern():
+            return
+        shown = oracle_appearance.display
+        last = menu.index('end')
+        for index in range(0 if last is None else int(last) + 1):
+            if menu.type(index) in ('command', 'radiobutton', 'checkbutton'):
+                label = menu.entrycget(index, 'label')
+                if shown(label) != label:
+                    menu.entryconfigure(index, label=shown(label))
+        name = str(menu_button.cget('textvariable'))
+        if not name:
+            return
+
+        def follow(*_args):
+            try:
+                menu_button.configure(text=shown(str(menu_button.getvar(name))))
+            except tk.TclError:
+                pass
+        menu_button.configure(textvariable='')
+        follow()
+        callback = menu_button.register(follow)
+        menu_button.tk.call('trace', 'add', 'variable', name, 'write', callback)
+
+        def forget(event):
+            if event.widget is menu_button:
+                try:
+                    menu_button.tk.call('trace', 'remove', 'variable', name, 'write', callback)
+                except tk.TclError:
+                    pass
+        menu_button.bind('<Destroy>', forget, add='+')
+        menu_button._marble_case_var = name
+    except (tk.TclError, ImportError):
+        pass
+
+
 def style_dropdown(menu_button, *, bg=None, fg=None, hover=None, line=None, font=None, menu_bg=None):
     """One look for every dropdown (tk.OptionMenu) in the suite.
 
@@ -428,6 +472,7 @@ def style_dropdown(menu_button, *, bg=None, fg=None, hover=None, line=None, font
         return 'break'
     menu_button.bind('<space>', open_menu, add='+')
     menu_button.bind('<Return>', open_menu, add='+')
+    _case_options(menu_button, menu)
 
     # A dropdown that sizes to its text keeps the chevron straight after it.
     # One stretched across a column gets the chevron pinned to its right edge

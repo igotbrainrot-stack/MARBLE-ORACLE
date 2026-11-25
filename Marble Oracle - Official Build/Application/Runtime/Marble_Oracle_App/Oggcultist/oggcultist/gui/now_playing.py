@@ -138,9 +138,18 @@ class NowPlayingBar(ttk.Frame):
         if event.widget is not self:
             return
         compact = event.width < 1120
-        new_width = round((420 if compact else 525) * self._scale)
+        # Marble Oracle 0.5.5: a third, narrower step for small windows (about 840 px wide in the suite at
+        # 900x580), where the song name had room for eight letters: the centre narrows further and the
+        # cover steps aside, so the name and artist read in full.
+        tight = event.width < 900
+        new_width = round((330 if tight else 420 if compact else 525) * self._scale)
         self.columnconfigure(1, minsize=new_width)
-        self.volume_slider.configure(width=round((96 if compact else 130) * self._scale))
+        self.volume_slider.configure(width=round((70 if tight else 96 if compact else 130) * self._scale))
+        if tight and self.cover.winfo_manager():
+            self.cover.pack_forget()
+        elif not tight and not self.cover.winfo_manager():
+            self.cover.pack(side='left', padx=(0, 14), before=self._title_label.master)
+        self.after_idle(self._fit_info)
         # Keep centre transport controls centred while reclaiming room for song names.
 
     HOLD_MS = 350           # how long a press must last to count as holding
@@ -233,7 +242,8 @@ class NowPlayingBar(ttk.Frame):
     def _fit_info(self) -> None:
         """Put title and detail into their labels, shortened with "..." to the free width."""
         try:
-            room = self._info_left.winfo_width() - self.COVER - 12 - 8
+            cover = self.COVER + 12 if self.cover.winfo_manager() else 0     # the cover steps aside when tight
+            room = self._info_left.winfo_width() - cover - 8
         except tk.TclError:
             return
         for label, var, font in ((self._title_label, self.title_var, 'OgNowTitle'),
