@@ -156,6 +156,59 @@ class PassphrasePanel(tk.Frame):
         action_button(controls, "SWAP 1 / 2   [S]", self.swap).pack(side="left", padx=(0, 8))
         self.copy_button = action_button(controls, "COPY   [CTRL+C]", self.copy)
         self.copy_button.pack(side="left")
+        self._build_strength(body)
+
+    def _build_strength(self, body):
+        """How the phrase's strength adds up, part by part (0.5.4): the engine's own figures, in the space
+        that was left empty under the controls. Shown only when the page has the height for it."""
+        box = ogl_frame(body, bg=PANEL, highlightbackground=BORDER, highlightthickness=1, padx=14, pady=12)
+        self.strength_box = box
+        shell.label(box, "HOW STRONG IS IT", "group", "text_3").pack(anchor="w")
+        parts = self.engine.breakdown()
+        total = sum(bits for _part, bits, _how in parts)
+        grid = ogl_frame(box, bg=PANEL)
+        grid.pack(fill="x", pady=(8, 6))
+        grid.grid_columnconfigure(2, weight=1)
+        self._strength_bars = []
+        for row, (part, bits, how) in enumerate(parts):
+            shell.label(grid, PART_NAMES[part], "small", "text_2", anchor="w").grid(row=row, column=0, sticky="w",
+                                                                                    padx=(0, 12), pady=2)
+            shell.label(grid, f"{bits:.1f} bits", "small", "text", anchor="e").grid(row=row, column=1, sticky="e",
+                                                                                     padx=(0, 12), pady=2)
+            bar = tk.Canvas(grid, height=8, bg=PANEL, highlightthickness=0, bd=0)
+            bar.grid(row=row, column=2, sticky="ew", pady=2)
+            bar._share = bits / total if total else 0
+            self._strength_bars.append(bar)
+            bar.bind("<Configure>", lambda e, b=bar: self._draw_share(b), add="+")
+            shell.label(grid, how, "small", "text_3", anchor="w").grid(row=row, column=3, sticky="w", padx=(12, 0),
+                                                                        pady=2)
+        note = shell.label(box, f"Total {total:.1f} bits: about 2^{total:.0f} equally likely phrases. That is the "
+                                "strength of the method when a phrase is used as rolled, not a time to crack it; "
+                                "rerolling parts you dislike lowers it a little.", "small", "text_2", anchor="w",
+                           justify="left")
+        note.pack(fill="x")
+        box.bind("<Configure>", lambda e: note.configure(wraplength=max(200, e.width - 30)), add="+")
+        body.bind("<Configure>", self._fit_strength, add="+")
+
+    def _draw_share(self, bar):
+        bar.delete("all")
+        width = bar.winfo_width()
+        if width <= 1:
+            return
+        bar.create_rectangle(0, 2, width, 6, fill=OGG["control"], outline="")
+        bar.create_rectangle(0, 2, max(2, width * bar._share * 2.5), 6, fill=OGG["accent"], outline="")
+
+    def _fit_strength(self, _event=None):
+        """Shown below the controls when the page has room for it; a short window keeps its height for the
+        phrase itself."""
+        box = self.strength_box
+        body = box.master
+        used = sum(child.winfo_reqheight() + 14 for child in body.pack_slaves() if child is not box)
+        fits = body.winfo_height() - used >= box.winfo_reqheight() + 24
+        if fits and not box.winfo_manager():
+            box.pack(fill="x", pady=(22, 0))
+        elif not fits and box.winfo_manager():
+            box.pack_forget()
 
     def _home(self):
         if self.on_home is not None:

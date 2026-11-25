@@ -15,7 +15,9 @@ import subprocess
 import threading
 import tkinter as tk
 
+import oracle_appearance
 import oracle_shell as shell
+from oracle_widgets import FlatSlider
 
 from oracle_eidolith_core import end_process
 
@@ -72,6 +74,15 @@ def _ppm_frame(stream):
     return b'P6\n%d %d\n255\n' % (w, h) + bytes(data)
 
 
+def _modern():
+    return oracle_appearance.modern()
+
+
+def _shown(text):
+    """Canvas text is not cased by oracle_appearance's widget hook: the viewer's messages go through here."""
+    return oracle_appearance.display(text)
+
+
 class InTabVideoPlayer:
     def __init__(self, parent, *, ffmpeg, ffplay, colors, font):
         self.parent, self.ffmpeg, self.ffplay, self.C, self.font = parent, ffmpeg, ffplay, colors, font
@@ -112,7 +123,7 @@ class InTabVideoPlayer:
         self.canvas.pack(fill='both', expand=True)
         self.image_id = self.canvas.create_image(0, 0, anchor='center')
         self.placeholder_id = self.canvas.create_text(0, 0, anchor='center',
-                                                      text='EIDOLITH VIEWER\n\nChoose a video and press PLAY',
+                                                      text=_shown('EIDOLITH VIEWER') + '\n\n' + _shown('Choose a video and press PLAY'),
                                                       justify='center', fill=c['text_3'], font=(self.font, 13, 'bold'))
         self.canvas.bind('<Configure>', self._recenter)
         self.canvas.bind('<Button-1>', lambda _e: self.toggle_pause())
@@ -120,11 +131,17 @@ class InTabVideoPlayer:
         timebar = tk.Frame(self.root, bg=c['raised'])
         timebar.pack(fill='x', padx=10, pady=(8, 0))
         self.seek_var = tk.DoubleVar(value=0)
-        self.seek_slider = tk.Scale(timebar, from_=0, to=1000, orient='horizontal', showvalue=False,
-                                    bd=0, highlightthickness=0, troughcolor=c['sunken'],
-                                    bg=c['raised'], fg=c['text'], activebackground=c['accent'],
-                                    command=self._seek_dragged, sliderlength=14, width=9,
-                                    relief='flat')
+        if _modern():
+            # 0.5.4: a rounded slider in Dark/Light (tk.Scale's square thumb and sunken trough looked dated).
+            self.seek_slider = FlatSlider(timebar, from_=0, to=1000, command=self._seek_dragged, length=120,
+                                          ground=c['raised'], track=c['control'], fill=c['accent'],
+                                          thumb=c['text_bright'], focus=c['focus'])
+        else:
+            self.seek_slider = tk.Scale(timebar, from_=0, to=1000, orient='horizontal', showvalue=False,
+                                        bd=0, highlightthickness=0, troughcolor=c['sunken'],
+                                        bg=c['raised'], fg=c['text'], activebackground=c['accent'],
+                                        command=self._seek_dragged, sliderlength=14, width=9,
+                                        relief='flat')
         self.seek_slider.pack(side='left', fill='x', expand=True)
         self.seek_slider.bind('<ButtonPress-1>', lambda _e: setattr(self, '_seeking', True), add='+')
         self.seek_slider.bind('<ButtonRelease-1>', self._seek_released, add='+')
@@ -150,12 +167,20 @@ class InTabVideoPlayer:
         volume.pack(fill='x', padx=10, pady=(7, 5))
         tk.Label(volume, text='AUDIO', bg=c['raised'], fg=c['text_3'],
                  font=shell.font('group')).pack(side='left')
-        self.volume_slider = tk.Scale(volume, from_=0, to=100, variable=self.volume_var,
-                                      orient='horizontal', showvalue=True, length=125,
-                                      bd=0, highlightthickness=0, troughcolor=c['sunken'],
-                                      bg=c['raised'], fg=c['text'], sliderlength=12,
-                                      width=8, relief='flat')
-        self.volume_slider.pack(side='left', padx=(5, 0))
+        if _modern():
+            self.volume_slider = FlatSlider(volume, from_=0, to=100, variable=self.volume_var, length=140,
+                                            ground=c['raised'], track=c['control'], fill=c['accent'],
+                                            thumb=c['text_bright'], focus=c['focus'])
+            self.volume_slider.pack(side='left', padx=(8, 0))
+            tk.Label(volume, textvariable=self.volume_var, bg=c['raised'], fg=c['text_2'], width=3, anchor='e',
+                     font=(self.font, 10)).pack(side='left', padx=(6, 0))
+        else:
+            self.volume_slider = tk.Scale(volume, from_=0, to=100, variable=self.volume_var,
+                                          orient='horizontal', showvalue=True, length=125,
+                                          bd=0, highlightthickness=0, troughcolor=c['sunken'],
+                                          bg=c['raised'], fg=c['text'], sliderlength=12,
+                                          width=8, relief='flat')
+            self.volume_slider.pack(side='left', padx=(5, 0))
         # FFplay's CLI has no live volume API. Apply the new level when the
         # user releases the slider by restarting only the audio process.
         self.volume_slider.bind('<ButtonRelease-1>', lambda _e: self._apply_volume())
@@ -173,6 +198,8 @@ class InTabVideoPlayer:
         height = max(1, self.canvas.winfo_height())
         self.canvas.coords(self.image_id, width // 2, height // 2)
         self.canvas.coords(self.placeholder_id, width // 2, height // 2)
+        # The message wraps inside the viewer instead of running past both edges in a narrow window (0.5.4).
+        self.canvas.itemconfigure(self.placeholder_id, width=max(80, width - 40))
         if self._fullscreen_canvas:
             self._fullscreen_canvas.coords('video', self._fullscreen_canvas.winfo_width() // 2,
                                            self._fullscreen_canvas.winfo_height() // 2)
@@ -183,7 +210,7 @@ class InTabVideoPlayer:
         self.duration = max(0.0, float(duration))
         self.position = 0.0
         self.file_title.config(text=os.path.basename(path).upper())
-        self.canvas.itemconfigure(self.placeholder_id, text='READY TO PLAY\n\nPress PLAY / RESUME', state='normal')
+        self.canvas.itemconfigure(self.placeholder_id, text=_shown('READY TO PLAY') + '\n\n' + _shown('Press PLAY / RESUME'), state='normal')
         self._update_time()
 
     def _video_dimensions(self):

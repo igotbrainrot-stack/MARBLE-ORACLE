@@ -85,6 +85,11 @@ def shown(text):
     return oracle_appearance.display(text)
 
 
+def workspace_home_shown():
+    """Classic has no sidebar, so each workspace carries its own HOME button; Dark and Light use the sidebar's."""
+    return not _modern()
+
+
 def _modern():
     import oracle_appearance
     return oracle_appearance.modern()
@@ -300,10 +305,17 @@ class Shell:
         return self._rail_bottom
 
     def home(self, on_home, version_text=''):
-        """HOME and the version line, always at the foot of the rail."""
+        """HOME and the version line, always at the foot of the rail.
+
+        In Dark and Light the suite's sidebar already has Home (and the suite's version), so the workspace's
+        own HOME button is made (callers and tests keep it) but not shown, and a line repeating the suite's
+        version is left out (0.5.4)."""
         bottom = self.rail_bottom()
         btn = button(bottom, HOME_LABEL, on_home)
-        btn.pack(fill='x')
+        if workspace_home_shown():
+            btn.pack(fill='x')
+        elif version_text.upper().startswith('MARBLE ORACLE'):
+            version_text = ''
         version = None
         if version_text:
             version = label(bottom, version_text, 'small', 'text_3')

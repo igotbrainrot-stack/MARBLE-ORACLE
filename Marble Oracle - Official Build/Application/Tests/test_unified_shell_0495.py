@@ -112,9 +112,11 @@ dk_titles = [w for w in descendants(dk) if isinstance(w, ttk.Label) and w.cget('
 check('PASSPHRASE page title type', dk_titles and same_font(dk_titles[0], 'page_title'))
 dk_brand = [w for w in descendants(dk.shell.rail) if isinstance(w, ttk.Label) and w.cget('text') == 'PASSPHRASE']
 check('PASSPHRASE brand type', dk_brand and same_font(dk_brand[0], 'brand'))
-aug_brand = [w for w in descendants(aug.rail) if isinstance(w, tk.Label) and w.cget('text') == 'AUGURSPEX']
+# 0.5.4: a textured ttk label (a flat tk.Label showed as a slab on the rail's texture).
+aug_brand = [w for w in descendants(aug.rail) if isinstance(w, (tk.Label, ttk.Label)) and w.cget('text') == 'AUGURSPEX']
 check('AUGURSPEX brand type and colour', aug_brand and same_font(aug_brand[0], 'brand')
-      and aug_brand[0].cget('fg').upper() == COLOR['text_bright'].upper())
+      and str(aug_brand[0].cget('foreground' if isinstance(aug_brand[0], ttk.Label) else 'fg')).upper()
+      == COLOR['text_bright'].upper())
 
 # ---- HOME at the foot of every rail -----------------------------------------
 for action in ('tab_eidolith', 'tab_passphrase', 'tab_touch_type', 'tab_augurspex', 'tab_oggcultist'):

@@ -74,19 +74,21 @@ class OggcultistPanel(tk.Frame):
         if sidebar is None or anchor is None:
             return
         self.home_button = shell.button(sidebar, HOME_LABEL, on_home, padx=4)   # whole in the 64 px icon rail
+        show_home = shell.workspace_home_shown()       # Dark/Light: the suite's sidebar has Home
         if first is not None:
             # Packed ahead of the rail's top items, so in a short window the
             # version line and HOME keep their place and the items above give
             # way (Tk's packer serves widgets in packing order).
             anchor.pack_configure(before=first)
-        self.home_button.pack(side='bottom', fill='x', padx=3, pady=(8, 0), after=anchor)   # whole even in the icon rail
+        if show_home:
+            self.home_button.pack(side='bottom', fill='x', padx=3, pady=(8, 0), after=anchor)   # whole even in the icon rail
         # 0.4.9.8: Settings sits at the foot of the rail too, so it is served
         # with HOME and the version line, ahead of the items above. Before, it
         # was packed last: at 1280x720 HOME covered half of it, and at 900x580
         # it was not reachable at all.
         settings = getattr(app, 'nav', {}).get('settings')
         if settings is not None:
-            settings.pack_configure(after=self.home_button)
+            settings.pack_configure(after=self.home_button if show_home else anchor)
         groups = getattr(app, '_group_labels', None) or []
 
         def numbers(value):
@@ -139,7 +141,8 @@ class OggcultistPanel(tk.Frame):
                     self.home_button._compact = compact
                     self.home_button.configure(font=shell.font('group' if compact else 'button'),
                                                padx=2 if compact else shell.BUTTON_PAD[0])
-                    self.home_button.pack_configure(padx=6 if compact else shell.RAIL_PADX)
+                    if show_home:
+                        self.home_button.pack_configure(padx=6 if compact else shell.RAIL_PADX)
                 fit_logo()
             except tk.TclError:
                 pass

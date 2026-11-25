@@ -2,6 +2,45 @@
 
 Newest first. Releases before 0.4.9.3 have their original notes in `History/ReleaseNotes/`.
 
+## 0.5.4 · 25 November 2026 · Final design and layout review
+
+Built on 0.5.3. No saved setting changes format.
+
+Every workspace was reviewed in Dark, Light and Classic at five window sizes, along with the dialogs. The full
+list of 26 findings, with the status of each, is `Documentation/DESIGN_REVIEW_0.5.4.md`.
+
+- **Contrast (WCAG AA):**
+  - Every text colour now reads at 4.5:1 or better on the page, cards, sidebar and fields, in every look and accent. This is OVERCAST 1.1.3's palette, which keeps each colour's hue.
+  - AUGURSPEX's market colours are recomputed for each look (they were 1.5:1 in Light).
+  - Selected chips and rows use bright text.
+- **One case style in Dark and Light.** Widget labels written in capitals for Classic are shown in sentence case on their way to Tk (`oracle_appearance.install_text_case`). These keep their capitals:
+  - acronyms;
+  - market symbols, which AUGURSPEX registers;
+  - keys and key combinations;
+  - list numbers.
+  - Classic is unchanged. Canvas messages are converted where they are drawn.
+- **No duplicate Home.** In Dark/Light, workspaces leave Home to the suite's sidebar. The buttons still exist, unshown; Classic keeps them. Eidolith drops its repeated suite-version line.
+- **Controls:**
+  - Text fields have inner padding.
+  - Check boxes are drawn (`oracle_widgets.modern_check`).
+  - Eidolith's seek and volume use a rounded slider (`oracle_widgets.FlatSlider`).
+  - Empty lists say what to do (`oracle_widgets.empty_hint`).
+  - Eidolith's scrolled Convert settings take the mouse wheel (`oracle_widgets.scroll_with_wheel`, a binding tag of its own).
+- **Layout:**
+  - Touch Type's keyboard grows with the window, and its finger hint sits above the keyboard.
+  - Passphrase shows how its strength adds up, when there is room (`Dicekey.breakdown()`).
+  - HOME's Voice label no longer sits under SPEAK at 900×580.
+  - Eidolith's viewer message wraps.
+  - OVERCAST's dashboard cards scroll when their text overflows, and its sidebar note wraps to the rail.
+  - AUGURSPEX's rail labels are textured, not flat slabs.
+  - Eidolith no longer opens with the focus ring on an empty list.
+- **Classic:**
+  - OVERCAST uses the Ember colours and the serif face.
+  - OVERCAST's own saved look is kept for standalone use; before, a host's look overwrote it.
+- **Tests:**
+  - New `test_final_review_0540.py` (42 checks, Dark and Light).
+  - `test_ogg_rail_0498.py`, `test_unified_shell_0495.py` and `test_augurspex_charts_layout_0485.py` follow the changes.
+
 ## 0.5.3 · 24 November 2026 · Rounded corners and the Inter typeface
 
 Built on 0.5.2. No saved setting changes format. Classic is unchanged.

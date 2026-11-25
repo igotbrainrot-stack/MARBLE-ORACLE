@@ -8,7 +8,7 @@ EVENT_SCHEMA_VERSION. No Marble Oracle internals are imported by this package.
 """
 APP_NAME = 'OVERCAST'
 TAGLINE = "Mostly cloudy, with a chance of being right."
-__version__ = '1.1.2'
+__version__ = '1.1.3'
 EVENT_SCHEMA_VERSION = 1
 
 

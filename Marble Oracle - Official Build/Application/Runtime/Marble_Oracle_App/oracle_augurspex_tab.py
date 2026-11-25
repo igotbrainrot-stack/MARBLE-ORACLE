@@ -16,7 +16,7 @@ import time
 import tkinter as tk
 from tkinter import messagebox, filedialog
 from tkinter import font as tkfont  # noqa: F401  (kept for importers)
-from oracle_ogg_texture import frame as ogg_frame
+from oracle_ogg_texture import frame as ogg_frame, label as ogg_label
 from concurrent.futures import ThreadPoolExecutor
 from collections import deque
 from pathlib import Path
@@ -63,10 +63,20 @@ def palette(theme=None):
     colours = dict(bg=C['canvas'], panel=C['raised'], inset=C['sunken'], rail=C['sidebar'],
                    border=C['line'], control=C['control'], active=C['accent_soft'],
                    accent=C['accent'], ink=C['text'], muted=C['text_2'],
-                   weak=C['text_3'], green=C['done'], red=C['failed'])
+                   weak=C['text_3'], green=C['done'], red=C['failed'], on_active=C['accent'])
+    try:
+        import oracle_appearance
+        if oracle_appearance.modern():
+            # Text on a selected chip or row (0.5.4): the accent on the accent-tinted selection read at 3.5:1
+            # in Dark; the bright text colour reads at 6.7:1 or more.
+            colours['on_active']=C['text_bright']
+    except Exception:
+        pass
     if theme is not None:
         colours.update(accent=theme.get('cyan',colours['accent']),
                        green=theme.get('lime',colours['green']), red=theme.get('red',colours['red']))
+        if colours['on_active']==C['accent']:
+            colours['on_active']=colours['accent']
     return colours
 
 
@@ -162,7 +172,7 @@ class PriceChart(tk.Frame):
         for code,button in self.style_buttons.items():
             on=code==self.style
             button.configure(bg=self.p['active'] if on else self.p['control'],
-                             fg=self.p['accent'] if on else self.p['muted'])
+                             fg=self.p.get('on_active',self.p['accent']) if on else self.p['muted'])
 
     def _fit_card_labels(self):
         width=max(80,self.winfo_width()-24)
@@ -451,6 +461,11 @@ class AugurspexPanel(tk.Frame):
         self._build_ui()
         self._refresh_watch();self._refresh_charts()
 
+    def _rail_label(self,text,fg='weak',font=None,parent=None,**kw):
+        # A textured label: on the pumice / grain rail a flat tk.Label showed as a slab of plain colour (0.5.4).
+        return ogg_label(parent if parent is not None else self.rail,bg='#130F0D',fg=self.p[fg],text=text,
+                         font=font or shell.font('group'),**kw)
+
     def _label(self,parent,text,fg='ink',size=10,bold=False,**kw):
         kw.setdefault('font',(FAMILY,size,'bold' if bold else 'normal'))
         return tk.Label(parent,text=text,bg=_parent_bg(parent,self.p['bg']),fg=self.p[fg],**kw)
@@ -460,7 +475,7 @@ class AugurspexPanel(tk.Frame):
         # rows of filters and tools. `active` marks the current filter.
         btn=shell.button(parent,text,callback,padx=10,pady=6)
         if active:
-            btn.configure(bg=self.p['active'],fg=self.p['accent'],highlightbackground=self.p['accent'])
+            btn.configure(bg=self.p['active'],fg=self.p.get('on_active',self.p['accent']),highlightbackground=self.p['accent'])
         return btn
 
     def _fit_rail_height(self,event):
@@ -501,7 +516,11 @@ class AugurspexPanel(tk.Frame):
         if width is None:
             width=label.winfo_width()
             if width<=1:width=label.winfo_reqwidth()
-        width=max(20,int(width)-2*int(label.cget('padx') or 0)-2)
+        try:
+            pad=int(label.cget('padx') or 0)
+        except tk.TclError:  # a textured ttk label has no padx
+            pad=0
+        width=max(20,int(width)-2*pad-2)
         fitted=fit_text_pixels(text,FontMeasure(self,label.cget('font')),width)
         if label.cget('text')!=fitted:label.configure(text=fitted)
         # The full wording is one hover away whenever it had to be shortened.
@@ -524,12 +543,12 @@ class AugurspexPanel(tk.Frame):
         self.work=ogg_frame(self,bg='#1D1714');self.work._oracle_bg=self.p['bg'];self.work.pack(side='left',fill='both',expand=True)
         # Brand and group labels in the suite's rail style (oracle_shell).
         pad=shell.RAIL_PADX
-        brand=tk.Label(self.rail,text='AUGURSPEX',bg=self.p['rail'],fg=C_TEXT_BRIGHT,font=shell.font('brand'),anchor='w')
+        brand=ogg_label(self.rail,bg='#130F0D',fg=C_TEXT_BRIGHT,text='AUGURSPEX',font=shell.font('brand'),anchor='w')
         brand.pack(fill='x',padx=pad,pady=(shell.RAIL_TOP,0))
         self._rail_brand=brand
-        self.rail_tagline=self._label(self.rail,'MARKETS · HISTORY','weak',anchor='w',font=shell.font('group'))
+        self.rail_tagline=self._rail_label('MARKETS · HISTORY',anchor='w')
         self.rail_tagline.pack(fill='x',padx=pad,pady=(4,0))
-        self._label(self.rail,'FIND MARKET','weak',anchor='w',font=shell.font('group')).pack(fill='x',padx=pad,pady=(14,6))
+        self._rail_label('FIND MARKET',anchor='w').pack(fill='x',padx=pad,pady=(14,6))
         self._entry(self.rail,self.search).pack(fill='x',padx=pad,pady=(0,6))
         filt=ogg_frame(self.rail,bg='#130F0D');filt._oracle_bg=self.p['rail'];filt.pack(fill='x',padx=pad-2,pady=(0,6))
         self.filters={}
@@ -549,7 +568,7 @@ class AugurspexPanel(tk.Frame):
         sourcing.pack(fill='x',padx=pad,pady=(0,5))
         self.sourced_button=self._button(sourcing,'SHOW ALL MARKETS',self._toggle_sourced)
         self.sourced_button.pack(side='left',fill='x',expand=True)
-        self.source_count=self._label(self.rail,'VERIFYING DATA SOURCES','weak',anchor='w',font=shell.font('group'))
+        self.source_count=self._rail_label('VERIFYING DATA SOURCES',anchor='w')
         self.source_count.pack(fill='x',padx=pad,pady=(4,6))
         # Keep the entire watchlist visible on the suite's compact CRT.
         # Rarely used editing controls now live in a separate MANAGE dialog.
@@ -561,8 +580,9 @@ class AugurspexPanel(tk.Frame):
         bottom.pack(side='bottom',fill='x',padx=pad,pady=(8,14),before=brand)
         self._button(bottom,'MANAGE LIST',self._manage_watchlist).pack(fill='x',pady=(0,6))
         self.home_button=shell.button(bottom,HOME_LABEL,self.on_home)
-        self.home_button.pack(fill='x')
-        self.rail_version=self._label(bottom,'MARKET HISTORY · LOCAL','weak',anchor='w',font=shell.font('small'))
+        if shell.workspace_home_shown():  # Dark/Light: the suite's sidebar has Home
+            self.home_button.pack(fill='x')
+        self.rail_version=self._rail_label('MARKET HISTORY · LOCAL',parent=bottom,anchor='w',font=shell.font('small'))
         self.rail_version.pack(fill='x',pady=(8,0))
         # In a short window the tagline and version line go first, as on every tab (oracle_shell).
         self._rail_short=None
@@ -570,7 +590,7 @@ class AugurspexPanel(tk.Frame):
         lst=ogg_frame(self.rail,bg='#130F0D');lst._oracle_bg=self.p['rail'];lst.pack(fill='both',expand=True,padx=pad)
         self.watch=tk.Listbox(lst,selectmode='browse',exportselection=False,
                               bg=self.p['inset'],fg=self.p['ink'],selectbackground=self.p['active'],
-                              selectforeground=self.p['accent'],relief='flat',bd=0,
+                              selectforeground=self.p.get('on_active',self.p['accent']),relief='flat',bd=0,
                               highlightthickness=1,highlightbackground=self.p['border'],
                               activestyle='none',font=(FAMILY,13,'bold'))
         self._watch_full=[]
@@ -1063,6 +1083,12 @@ class AugurspexPanel(tk.Frame):
     def _load_watchlist(self):
         self.watchlist,_=merge_watchlists(self.home,DEFAULT_FILE,self.settings)
         self._names={x['symbol']:x['name'] for x in self.watchlist}
+        try:  # market symbols stay in capitals wherever Dark/Light write labels in sentence case
+            import oracle_appearance
+            oracle_appearance.register_terms(part for x in self.watchlist
+                                             for part in str(x['symbol']).replace(':','-').split('-'))
+        except Exception:
+            pass
 
     def _refresh_watch(self):
         if not hasattr(self,'watch'):return
@@ -1096,7 +1122,7 @@ class AugurspexPanel(tk.Frame):
             on=key==filt
             rest=MARKET_COLORS.get(key,self.p['ink'])
             button.configure(bg=self.p['active'] if on else self.p['control'],
-                             fg=self.p['accent'] if on and key not in MARKET_COLORS else rest,
+                             fg=self.p.get('on_active',self.p['accent']) if on and key not in MARKET_COLORS else rest,
                              highlightbackground=self.p['accent'] if on else self.p['border'])
 
     def _watch_resize(self):
@@ -1299,7 +1325,7 @@ class AugurspexPanel(tk.Frame):
             active=i==self.active
             chip=tk.Label(self.chip_strip,text='',anchor='w',font=font,padx=6,pady=3,cursor='hand2',
                           bg=self.p['active'] if active else self.p['control'],
-                          fg=self.p['accent'] if active else self.p['muted'],
+                          fg=self.p.get('on_active',self.p['accent']) if active else self.p['muted'],
                           highlightthickness=1,highlightbackground=self.p['accent'] if active else self.p['border'])
             chip.grid(row=k//per_row,column=k%per_row,sticky='ew',padx=2,pady=2)
             # The status is the point of the tab: keep it whole, shorten the name.

@@ -117,6 +117,16 @@ class Dicekey:
         self.bits = (math.log2(n1) + mean_b + math.log2(len(self.eligible) - 2) + math.log2(100)
                      + math.log2(len(SYMBOLS)))
 
+    def breakdown(self):
+        """[(part, bits, how)] behind self.bits, in phrase order (they sum to self.bits)."""
+        n1 = len(self.first_pool)
+        mean_b = sum(math.log2(len(self.buckets[initial(w)]) - 1) for w in self.first_pool) / n1
+        return [('w1', math.log2(n1), f'one of {n1:,} words'),
+                ('w2', mean_b, "a word with word 1's first letter"),
+                ('w3', math.log2(len(self.eligible) - 2), f'one of {len(self.eligible) - 2:,} other words'),
+                ('digits', math.log2(100), 'two digits, 00 to 99'),
+                ('symbol', math.log2(len(SYMBOLS)), f'one of {len(SYMBOLS)} symbols')]
+
     def roll(self):
         """One passphrase string: 'word word word DDs'."""
         w1 = self.first_pool[randint(len(self.first_pool))]

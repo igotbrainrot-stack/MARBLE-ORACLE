@@ -16,7 +16,8 @@ import tkinter as tk
 
 import oracle_appearance
 
-CLASSES = ('Entry', 'Listbox', 'Text', 'Spinbox', 'Menubutton', 'Label', 'Frame', 'Button', 'Canvas', 'TLabel')
+CLASSES = ('Entry', 'Listbox', 'Text', 'Spinbox', 'Menubutton', 'Label', 'Frame', 'Button', 'Canvas', 'TLabel',
+           'Checkbutton')
 RADIUS = {'Entry': 6, 'Listbox': 7, 'Text': 7, 'Spinbox': 6, 'Menubutton': 7, 'Label': 6, 'TLabel': 6,
           'Frame': 9, 'Button': 7, 'Canvas': 9}
 POLL_MS = 500
@@ -163,11 +164,36 @@ def _apply(entry):
         piece.lift(widget)
 
 
+def _comfort(widget):
+    """Inner padding for text fields (0.5.4): text set against the field's left edge looked unfinished.
+
+    A flat Tk border is drawn in the field's own colour, so a wider one is padding. Bordered fields (relief
+    other than flat) and fields that already have room are left alone."""
+    if getattr(widget, '_marble_comfort', False):
+        return
+    widget._marble_comfort = True
+    try:
+        kind = widget.winfo_class()
+        if kind in ('Entry', 'Spinbox') and str(widget.cget('relief')) == 'flat' and int(float(widget.cget('bd'))) < 4:
+            widget.configure(bd=5)
+        elif kind == 'Checkbutton':
+            from oracle_widgets import modern_check
+            modern_check(widget)
+        elif kind == 'Text':
+            if int(float(str(widget.cget('padx')))) < 6:
+                widget.configure(padx=9)
+            if int(float(str(widget.cget('pady')))) < 4:
+                widget.configure(pady=6)
+    except (tk.TclError, ValueError):
+        pass
+
+
 def consider(widget):
     if not oracle_appearance.modern() or getattr(widget, '_marble_round_entry', None) is not None:
         return
     if getattr(widget, '_marble_round_skip', False) or _excluded(widget):
         return
+    _comfort(widget)
     entry = [widget, {}, None]
     widget._marble_round_entry = entry
     _TRACKED.append(entry)

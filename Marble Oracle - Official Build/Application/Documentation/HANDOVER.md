@@ -1,4 +1,4 @@
-# Handover: Marble Oracle 0.5.3
+# Handover: Marble Oracle 0.5.4
 
 22 November 2026 (0.4.9.7: 16 November). For whoever picks this up next, human or AI. Earlier handovers (0.4.9.3 to 0.4.9.5) are in `History/HANDOVER_0.4.9.3-0.4.9.5.md`; this file replaces them.
 
@@ -20,7 +20,8 @@
 | #13 | `claude/marble-oracle-0500-overcast` | 0.5.0 | OVERCAST 1.1.2 as the seventh workspace |
 | #14 | `claude/marble-oracle-0510-design` | 0.5.1 | Dark / Light (OVERCAST's design, default) and Classic; left sidebar |
 | #15 | `claude/marble-oracle-0520-pumice` | 0.5.2 | A faint pumice surface for Dark and Light |
-| **#16** | **`claude/marble-oracle-0530-rounded`** | **0.5.3** | **Rounded corners throughout and the bundled Inter typeface** |
+| #16 | `claude/marble-oracle-0530-rounded` | 0.5.3 | Rounded corners throughout and the bundled Inter typeface |
+| **#17** | **`claude/marble-oracle-0540-final`** | **0.5.4** | **Final design and layout review (contrast, case, duplicates, controls, layout)** |
 
 - **The branch is the whole application:** every asset archive, font and texture is in Git. Only the two third-party research PDFs are left out (`.gitignore`); they are in the release ZIP under `Documentation/Research/`.
 - **Read next:** `README.md`, `ARCHITECTURE.md`, `DEVELOPMENT.md`, `CHANGELOG.md`, `TESTING_REPORT.md`.
@@ -28,6 +29,19 @@
 ## State in one paragraph
 
 All six workspaces work, share one page shell and one interaction look (hover, a cream keyboard-focus ring, an amber "current" fill), and HOME can now be used from the keyboard. The whole regression suite passes on GitHub's Linux runner (Tk under Xvfb) and on its Windows runner (native Tk), and since 0.4.9.7 the Windows job is required. **Nothing has been run on a physical PC, and none of the market sources added in 0.4.9.4 has been seen answering live.**
+
+## What 0.5.4 changed
+
+- **The review:** `Documentation/DESIGN_REVIEW_0.5.4.md` lists every finding and its status. Items 22–26 are still open, deliberately.
+- **Case in Dark/Light:**
+  - `oracle_appearance.install_text_case()` wraps `tkinter.Misc._options`, so every widget's `text` goes through `display()`.
+  - Canvas items are skipped.
+  - Add acronyms to `KEEP_UPPER`. Symbols that stay in capitals go through `register_terms()`.
+- **Palette:** `overcast.theme.palette()` makes dim, green, red and accent_text readable on bg, card, side and field. `test_final_review_0540.py` checks every look and accent.
+- **New widgets in `oracle_widgets`:** `FlatSlider`, `empty_hint`, `modern_check`, `scroll_with_wheel`.
+  - Checkbuttons are converted by `oracle_round` when they are first shown.
+  - Fields get padding there too (`_comfort`).
+- **Home in workspaces:** use `oracle_shell.workspace_home_shown()`. Never pack relative to a workspace's HOME button, which is unshown in Dark and Light.
 
 ## What 0.5.3 changed (and 0.5.2)
 

@@ -1,6 +1,6 @@
 # Marble Oracle
 
-**Version 0.5.3 · 24 November 2026 · Windows 10/11 and Linux (Mint, Ubuntu, Fedora, Arch, openSUSE)**
+**Version 0.5.4 · 25 November 2026 · Windows 10/11 and Linux (Mint, Ubuntu, Fedora, Arch, openSUSE)**
 
 A dark, local-first desktop suite: an oracle dashboard, a music player, a video converter, a market observatory, a news forecasting desk, a passphrase generator and a typing trainer in one window. Python and Tk; no account or sign-in. It goes online only for public market history in AUGURSPEX, public news feeds in OVERCAST when you refresh them, album lookups in OGGCULTIST when you ask for them, and (on Windows) to download FFmpeg if you choose to install it. OVERCAST's forecasts come from a model running on your own computer (LM Studio), never from a cloud service.
 

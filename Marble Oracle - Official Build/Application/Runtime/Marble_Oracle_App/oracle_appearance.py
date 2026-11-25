@@ -186,6 +186,18 @@ def apply(root):
     import oracle_home_focus
     oracle_home_focus.FOCUS_COLOUR = p['accent']
     oracle_home_focus.HOVER_COLOUR = p['faint']
+    install_text_case()
+    # Market colours (AUGURSPEX's rows, chips and legends): the same hues, readable on this palette's surfaces.
+    # The Ember pastels were 1.5:1 on Light's white cards (0.5.4).
+    from overcast.theme import readable
+    import oracle_design
+    surfaces = (p['bg'], p['card'], p['side'], p['field'])
+    oracle_design.MARKET_COLORS.update({k: readable(v, surfaces) for k, v in oracle_design.MARKET_COLORS.items()})
+    try:
+        import oracle_augurspex_insights
+        oracle_augurspex_insights.COLORS.update(oracle_design.MARKET_COLORS)
+    except Exception:
+        pass
     # 2. A faint pumice instead of Classic's film grain (0.5.2), on the new surface colours.
     import oracle_ogg_texture
     roles = ember_roles(p)
@@ -247,11 +259,57 @@ KEEP_UPPER = {'AV1', 'HEVC', 'H.264', 'H.265', 'CSV', 'FX', 'BTC', 'ETH', 'ETF',
               'ID', 'IDS', 'PDF', 'I', 'TV', 'AAC', 'MP3', 'OGG', 'OPUS', 'FLAC', 'MKV', 'MP4', 'WEBM', 'SVT', 'CRF',
               'NVENC', 'QSV', 'AMF', 'VAAPI', 'UTC', 'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'IPA', 'WPM',
               'II', 'III', 'IV', 'VI', 'VII', 'VIII', 'IX', 'XI', 'XII', 'D', 'W', 'M', 'Y', 'OHLC', 'SMA', 'EMA', 'RSI',
-              'MACD', 'ATR', 'VWAP', 'DPI', 'UI', 'RAM'}
+              'MACD', 'ATR', 'VWAP', 'DPI', 'UI', 'RAM', 'STK', 'WAV', 'SRT', 'ASS', 'JSON', 'PNG',
+              'JPG', 'GIF', 'YAML', 'HTTP', 'HTTPS', 'LLM', 'AI', 'OS', 'NTSC', 'PAL', 'FPS', 'SDR', 'VP9', 'DTS', 'AC3'}
 NAMES = {'HOME': 'Home', 'OGGCULTIST': 'Oggcultist', 'EIDOLITH': 'Eidolith', 'AUGURSPEX': 'Augurspex',
          'OVERCAST': 'Overcast', 'MARBLE': 'Marble', 'ORACLE': 'Oracle',
          'LATIN': 'Latin', 'TAROT': 'Tarot', 'EFF': 'EFF', 'FFMPEG': 'FFmpeg', 'FFPROBE': 'FFprobe',
          'FFPLAY': 'FFplay', 'LM STUDIO': 'LM Studio'}
+
+
+_REGISTERED = set()
+
+
+def register_terms(words):
+    """Add words that stay in capitals in Dark/Light (market symbols such as AAPL, from AUGURSPEX's list)."""
+    _REGISTERED.update(str(w).upper() for w in words if w)
+
+
+def _keep_upper(word):
+    if word in KEEP_UPPER or word in _REGISTERED or any(ch.isdigit() for ch in word):
+        return True
+    for joint in ('-', ':', '/'):              # BTC-USD, FX:EURUSD, USD/JPY
+        if joint in word and len(word) > 1:
+            head = word.split(joint)[0]
+            if head in KEEP_UPPER or head in _REGISTERED:
+                return True
+    return False
+
+
+def install_text_case():
+    """Write widget labels in sentence case in Dark and Light (0.5.4).
+
+    Each workspace was written for Classic, whose serif face is set in capitals; in the sans-serif looks
+    those capitals read as shouting and clash with the sentence-case shell. Rather than rewrite hundreds of
+    strings (and lose Classic's look), every widget's `text` option passes through display() on its way to
+    Tk. Text that already has a lower-case letter is left alone, as are acronyms and market symbols
+    (KEEP_UPPER, register_terms). Canvas items are not touched: HOME and the charts set their own case.
+    """
+    import tkinter as tk
+    if getattr(tk.Misc, '_marble_case', False) or not modern():
+        return
+    original = tk.Misc._options
+
+    def _options(self, cnf, kw=None):
+        if not isinstance(self, tk.Canvas):
+            # Copies: the caller's dictionaries are left as they were.
+            if isinstance(cnf, dict) and isinstance(cnf.get('text'), str):
+                cnf = dict(cnf, text=display(cnf['text']))
+            if isinstance(kw, dict) and isinstance(kw.get('text'), str):
+                kw = dict(kw, text=display(kw['text']))
+        return original(self, cnf, kw)
+    tk.Misc._options = _options
+    tk.Misc._marble_case = True
 
 
 def display(text):
@@ -273,9 +331,11 @@ def display(text):
         if '+' in core and len(core) > 1:                   # key combinations: Ctrl+C, Shift+Tab
             new = '+'.join(part[:1].upper() + part[1:].lower() if len(part) > 1 else part.upper()
                            for part in core.split('+'))
+        elif core == 'A' and not start:                        # the article, not the A key
+            new = 'a'
         elif len(core) == 1 or (token.startswith('[') and token.rstrip(',.').endswith(']')):   # keys: R, [S]
             new = core
-        elif word in KEEP_UPPER or any(ch.isdigit() for ch in core) or (len(core) > 1 and '-' in core and core.split('-')[0] in KEEP_UPPER):
+        elif _keep_upper(word):
             new = core
         elif word in NAMES:
             new = NAMES[word]
@@ -284,8 +344,12 @@ def display(text):
         else:
             new = core.lower()
         out.append(token.replace(core, new, 1))
-        if any(ch.isalpha() for ch in core):      # numbers and symbols (01, ▣) do not start the sentence
+        if any(ch.isalpha() for ch in core):
             start = token.endswith(('.', ':', '?', '!')) or token.endswith('·')
+        elif any(ch.isdigit() for ch in core) and not (len(core) == 2 and core.startswith('0')):
+            # A count or measure reads as part of the sentence: "2 shown", "~44.3 bits", "−10 sec". A list
+            # number (01, 02) and symbols (▣) leave the next word starting the label.
+            start = False
     return ' '.join(out)
 
 
