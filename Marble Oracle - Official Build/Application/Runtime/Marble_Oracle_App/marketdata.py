@@ -25,12 +25,18 @@ COINGECKO = {"BTC": "bitcoin", "XAU": "pax-gold", "XAG": "kinesis-silver"}
 N = 28
 STALE_S = 30 * 60          # a real series older than this is reported as sim: the header must not keep saying LIVE
 UA = {"User-Agent": "Marble_Oracle (desktop toy; stdlib urllib)"}
+MAX_BYTES = 2 * 1024 * 1024
 
 
 def _get(url, timeout=8):
+    if not url.lower().startswith("https://"):
+        raise ValueError("only https market sources are allowed")
     req = urllib.request.Request(url, headers=UA)
     with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.loads(r.read().decode("utf-8", "replace"))
+        raw = r.read(MAX_BYTES + 1)                 # a misbehaving server cannot fill memory
+    if len(raw) > MAX_BYTES:
+        raise ValueError("market response too large")
+    return json.loads(raw.decode("utf-8", "replace"))
 
 
 def _thin(series, n=N):

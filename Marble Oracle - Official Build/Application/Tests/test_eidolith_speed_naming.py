@@ -8,6 +8,9 @@ import tempfile
 import time
 import tkinter as tk
 
+# Keep EIDOLITH settings, persisted queue and logs out of the user's real state.
+os.environ['MARBLE_ORACLE_STATE'] = tempfile.mkdtemp(prefix='eidolith-test-state-')
+
 RUNTIME = Path(__file__).resolve().parents[1] / 'Runtime' / 'Marble_Oracle_App'
 sys.path.insert(0, str(RUNTIME))
 
@@ -69,6 +72,9 @@ with tempfile.TemporaryDirectory(prefix='eidolith_standard_') as folder:
     panel.convert_list.selection_set(0)
     panel.rename_mode.set(NAME_MODES[0])
     panel.profile.set('Fast CPU H.264')
+    # 0.4 defaults to short names; opt in to the full form this test checks.
+    panel.name_episode_title.set(True)
+    panel.name_format_tag.set(True)
     panel.output_var.set(str(Path(folder) / 'Encoded'))
     panel.queue_selected()
     root.update_idletasks()
@@ -94,6 +100,8 @@ with tempfile.TemporaryDirectory(prefix='eidolith_standard_') as folder:
     # Check collision-safe naming on queueing a second job.
     panel._set_nav('CONVERT')
     panel.convert_list.selection_set(0)
+    # 0.4.6 skips already converted files by default; this checks the collision-safe ' (2)' path.
+    panel.skip_converted.set(False)
     panel.queue_selected()
     assert panel.queue_items[1]['dst'] != job['dst']
     assert Path(panel.queue_items[1]['dst']).name.endswith(' (2).mp4')

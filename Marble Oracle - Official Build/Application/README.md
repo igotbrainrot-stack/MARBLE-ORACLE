@@ -1,6 +1,6 @@
 # MARBLE ORACLE — Integrated Desktop Suite
 
-**Release:** EIDOLITH 0.3 maintenance/cleanup edition · 10 November 2026  
+**Release:** EIDOLITH 0.4 conversion-reliability edition · 10 November 2026 (see `Documentation/EIDOLITH_RELIABILITY_0_4.md`)  
 **Supported launch targets:** Windows 11, Linux Mint (x86-64 desktop)  
 **Application:** Python/Tkinter, local-first media features
 
@@ -17,7 +17,7 @@
 |---|---|
 | **HOME** | Wire, market ticker, Latin, 14 ASCII statues, Tarot and enlarged Rune animations |
 | **OGGCULTIST** | Embedded Oggcultist 2.0.6 audio player, library and audio converter |
-| **EIDOLITH** | Local video player, conversion profiles, video inspection, queue, speed/ETA, standard TV/movie filenames |
+| **EIDOLITH** | Local video player, conversion profiles, video inspection, fail-and-continue queue with progress/ETA and per-job logs, standard TV/movie filenames |
 | **PASSPHRASE** | Five-card Marble Passphrase Studio |
 | **TOUCH TYPE** | Four touch-typing mini-games with finger guidance and saved scores |
 
@@ -27,9 +27,28 @@ All tabs retain the established dark Oggcultist-inspired visual style and bundle
 
 - FFmpeg and FFprobe are necessary for video encoding/probing. Playback capability depends on local multimedia support.
 - The in-app video viewer is an **initial 12 fps preview implementation**, not a fully synchronised libmpv player; HDR, track switching and precise audio/video synchronisation are not assured.
+- **RESOLUTION** (CONVERT page): Original, 1080p, 720p or 480p. Video is only scaled down, keeping its aspect ratio (a widescreen film at 720p becomes 1280×536). From 1080p, 720p encodes about 2–3× faster, more for grainy video.
+- **Speed (0.4.7):** see `Documentation/EIDOLITH_SPEED_RESEARCH_0_4_7.md`.
+  - **Turbo AV1 (preset 12)** is about 2.5× the speed of Fast AV1 for roughly 15% larger files.
+  - **USE FAST PROFILE** runs a one-second test encode on each hardware encoder (NVIDIA, Intel Quick Sync, AMD) and picks the first that works. Hardware encoders have not been verified on real hardware by this project.
+  - **Don't re-encode video that is already compact AV1/HEVC** (on by default) copies such video in seconds; untick it to force a re-encode.
+  - A newer FFmpeg (SVT-AV1 2.3 or later) makes the CPU AV1 profiles faster.
+- **Default profile** is now **Fast AV1 (preset 8)**. The old default is still available as **Balanced archive** (much slower, smaller files); a saved choice is kept.
+- Upright phone video keeps its shape when resized, interlaced sources (DVD, old TV captures) are deinterlaced automatically, and a job is refused up front when the output folder has under 200 MB free.
+- **Network use:** the HOME screen fetches market prices (CoinGecko, Frankfurter) and news headlines (BBC, Guardian, Al Jazeera, NPR) unless the app is started with `--no-network`. Video and audio conversion never use the network.
+- **Windows:** if `START MARBLE ORACLE - WINDOWS.vbs` is blocked (VBScript disabled), use `START MARBLE ORACLE - WINDOWS (if the VBS launcher is blocked).bat`. This fallback has not been run on a real Windows machine yet.
+- **PASSPHRASE:** a copied passphrase is cleared from the clipboard after 60 seconds (clipboard-history tools may still keep it).
+- **SLIM OUTPUT** (on by default) keeps only the video and the main audio track. It drops extra audio tracks (dubs, commentary), subtitles, cover art, fonts, chapters and title metadata, and lists every drop in the job log. Untick it to keep everything. Most of the saving comes from extra audio tracks; subtitles, cover art and metadata are usually under 1 MB together. For the biggest audio saving, also set **AUDIO** to `opus`.
+- Two optional SLIM settings (both off by default): **keep English subtitles** (untagged subtitles are kept too; picture-based ones can't go in MP4) and **prefer English audio** over the source's default track (commentary tracks are not chosen).
+- **Skip files already converted** (on by default): a file whose output already exists in the output folder, or is already waiting in the queue, is not queued again. Untick it to convert again as ` (2)`.
+- **Fast AV1 (preset 8)** sits between Balanced and Faster CPU AV1: several times faster than Balanced, with slightly larger files.
 - **Balanced archive** is 10-bit CPU SVT-AV1 and can encode slowly. Choose **USE FAST PROFILE** to prefer compatible NVIDIA NVENC hardware or a quicker CPU preset. Neither speed nor size reduction is guaranteed.
-- Automatic TV/movie filenames recognise episode markers such as `S02E05` and movie years; ambiguous names should be reviewed before queuing.
-- Outputs are written separately and checked; original input files are **never deleted or overwritten**. HDR and unsupported track cases may be blocked for safety. Queue state is **not yet persistent** across restarts.
+- Automatic TV/movie filenames recognise episode markers such as `S02E05` and movie years; ambiguous names should be reviewed before queuing. Names are short by default (`Mr. Robot (2015) - S01E01.mkv`). Tick **Add episode title** or **Add format tag** (e.g. `[AV1 720p]`) under ORGANISE OUTPUT FILENAME to include them. Clashing names get ` (2)`, and nothing is overwritten.
+- Outputs are written separately and checked (track counts, codec, 10-bit, duration); original input files are **never deleted or overwritten**. HDR and unsupported track cases are blocked for safety with a reason.
+- The queue runs every **queued** job in order: a failed job is marked FAILED and the next one starts. **CANCEL CURRENT** skips one job, **STOP QUEUE** keeps the rest queued, and failed jobs re-run only with **RETRY**.
+- To take jobs off the queue, select them (Ctrl/Shift-click for several) and press **REMOVE SELECTED** or the Delete key, or press **CLEAR ALL**. A job that is converting stays until you CANCEL CURRENT or STOP QUEUE. Removing jobs never touches source files, finished outputs or logs.
+- The QUEUE page shows **JOB n OF m**, a progress bar (or an indeterminate sweep when duration is unknown), elapsed time, speed, ETA and the last FFmpeg activity. **OPEN LOG** shows the full per-job log; **COPY DIAGNOSTICS** copies a shareable report with your folder names removed.
+- The queue is saved. After a restart, queued jobs come back (nothing starts by itself), interrupted jobs are marked, and only their own partial files are removed. Logs: `eidolith_logs` in the state folder below.
 
 ## Requirements and troubleshooting
 

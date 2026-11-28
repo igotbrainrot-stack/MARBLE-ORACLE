@@ -36,7 +36,8 @@ REQUIRED=[
 
 def main():
     errors=[]
-    expected={'START MARBLE ORACLE - WINDOWS.vbs', 'START MARBLE ORACLE - LINUX.sh', 'Application'}
+    expected={'START MARBLE ORACLE - WINDOWS.vbs', 'START MARBLE ORACLE - LINUX.sh', 'Application',
+              'START MARBLE ORACLE - WINDOWS (if the VBS launcher is blocked).bat'}
     actual={p.name for p in ROOT.iterdir()}
     if actual!=expected:errors.append(f'Unexpected top-level entries: {actual.symmetric_difference(expected)}')
     for f in REQUIRED:

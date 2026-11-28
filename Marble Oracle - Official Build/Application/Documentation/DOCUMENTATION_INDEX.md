@@ -12,7 +12,9 @@
 
 ## Current implementation references
 
-- `EIDOLITH_SPEED_AND_NAMING_0_3.md` — current conversion profiles, ETA, stream-safe naming/verification
+- `EIDOLITH_SPEED_RESEARCH_0_4_7.md` — how leading tools speed up conversion, measurements, and the 0.4.7 speed changes
+- `EIDOLITH_RELIABILITY_0_4.md` — **current**: 0.4 defect review, queue/logging/track/naming repairs, tests, known limitations and release notes
+- `EIDOLITH_SPEED_AND_NAMING_0_3.md` — conversion profiles and ETA (queue/track/naming behaviour superseded by 0.4)
 - `EIDOLITH_PLAYER_WORKSPACES_AND_SELECT_ALL.md` — player, converter, queue workspace implementation
 - `OGGCULTIST_2_0_6_INTEGRATION.md` — embedded music player
 - `RUNE_PANEL_EXPANSION.md` — high-resolution Rune frames and sizing

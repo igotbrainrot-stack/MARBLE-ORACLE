@@ -39,6 +39,7 @@ class MarketFeed:
             pass
 
 
+MAX_FEED_BYTES = 2 * 1024 * 1024
 NEWS_FEEDS = (("BBC", "https://feeds.bbci.co.uk/news/world/rss.xml"),
               ("GUARDIAN", "https://www.theguardian.com/world/rss"),
               ("AL JAZEERA", "https://www.aljazeera.com/xml/rss/all.xml"),
@@ -82,9 +83,11 @@ class WireFeed:
         got = []
         for tag, u in self.feeds:
             try:
+                if not str(u).lower().startswith(("https://", "http://")):
+                    continue                                 # never file:// or other schemes (--wire is user input)
                 req = urllib.request.Request(u, headers={"User-Agent": "Marble_Oracle"})
                 with (opener or urllib.request.urlopen)(req, timeout=8) as r:      # 1029: the response is closed
-                    t = r.read().decode("utf-8", "replace")
+                    t = r.read(MAX_FEED_BYTES).decode("utf-8", "replace")   # capped: headlines are near the top
                 got.append(parse_headlines(t, tag))
             except Exception:
                 pass
